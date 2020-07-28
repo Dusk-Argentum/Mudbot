@@ -509,17 +509,17 @@ Please wait and retry the command.""")
                 # from the character_dc_search.
                 character_avatar_url = str(character_avatar_search.group(2))  # Specifically extracts the character's
                 # avatar url from the character_avatar_search.
-                if character_world_name not in ctx.guild.roles:  # Checks if the character's world has a role on the
+                if character_world_name not in str(ctx.guild.roles):  # Checks if the character's world has a role on the
                     # server the command is invoked on and adds the role if it doesn't exist.
                     await ctx.guild.create_role(name=f"{character_world_name}")
                     pass
-                elif character_world_name in ctx.guild.roles:
+                elif character_world_name in str(ctx.guild.roles):
                     pass
-                if character_dc_name not in ctx.guild.roles:  # Checks if the character's DC has a role on the server
+                if character_dc_name not in str(ctx.guild.roles):  # Checks if the character's DC has a role on the server
                     # the command is invoked on and adds the role if it doesn't exist.
                     await ctx.guild.create_role(name=f"{character_dc_name}")
                     pass
-                elif character_dc_name in ctx.guild.roles:
+                elif character_dc_name in str(ctx.guild.roles):
                     pass
                 with open("characters.json", "r+") as character_database:  # The first of many openings of the
                     # character database...
