@@ -42,7 +42,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.0"
+VERSION = "1.0.2"  # Defines the version number, for use in internal tracking.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -450,40 +450,26 @@ Debug information:
                     pass
                 elif check_if_not_existent is not None:  # If there are no results, this message sends.
                     retry = await ctx.send(f"""I was not able to find **{first_name} {last_name}** of **{world_name}**.
-If you're sure that information is correct, simply react with a thumbs-up and I will try again.
-If you continue to see this error message, please wait a bit and try again. Thank you for your patience!""")
+Retrying...""")
                     # A persistent error I keep running into is that occasionally (1/20?-ish), even if a search has
                     # all of the accurate information and arguments required, the Lodestone/XIVAPI will return an empty
                     # search string. The following block and the above message inform the user of this issue for
                     # transparency reasons. I would *love* to know why this shit keeps happening.
-                    await retry.add_reaction("👍")  # Adds a thumbs up reaction to the above message, to prompt
-                    # the command invoker to retry if they need to.
-
-                    def check(reaction, user):  # The command only proceeds if the command invoker adds a thumbs up
-                        # reaction to the above message.
-                        return user == ctx.message.author and str(reaction.emoji) == "👍"
-
-                    try:  # This try:except block only exists for timeout reasons.
-                        reaction, user = await bot.wait_for("reaction_add", timeout=60.0, check=check)  # Checks to
-                        # see if the command invoker has added a thumbs up reaction to the retry message.
-                    except asyncio.TimeoutError:  # If the command invoker waits too long, this sends.
-                        await ctx.send("Request has timed out. Please try again.")
-                        return
-                    else:  # Functions in this block execute if a thumbs up from the command invoker is found
-                        # on the retry message.
-                        await ctx.send("Retrying. Please wait, and thank you again for your patience.")
-                        session = aiohttp.ClientSession()  # Just retries the search.
-                        client = pyxivapi.XIVAPIClient(session=session, api_key=XIVAPI_TOKEN)
+                    session = aiohttp.ClientSession()  # Just retries the search.
+                    client = pyxivapi.XIVAPIClient(session=session, api_key=XIVAPI_TOKEN)
+                    async with ctx.typing():
                         character_search = await client.character_search(world=world_name, forename=first_name,
                                                                          surname=last_name)
-                        await session.close()
-                        second_check_if_not_existent = re.search(r"{\'Page\': 0", str(character_search), re.IGNORECASE)
-                        if second_check_if_not_existent is None:
-                            pass
-                        elif second_check_if_not_existent is not None:
-                            await ctx.send(f"""I was not able to find **{first_name} {last_name}** of **{world_name}**.
+                    await session.close()
+                    second_check_if_not_existent = re.search(r"{\'Page\': 0", str(character_search), re.IGNORECASE)
+                    if second_check_if_not_existent is None:
+                        pass
+                    elif second_check_if_not_existent is not None:
+                        await ctx.send(f"""I was not able to find **{first_name} {last_name}** of **{world_name}**.
+This could be due to an error on the Lodestone's end, such as the Lodestone returning empty information, or if your \
+information has not been updated on the Lodestone yet.
 Please wait and retry the command.""")
-                            return
+                        return
                 character_id_search = re.search(r"(\'ID\': )(\d{1,10})", str(character_search), re.IGNORECASE)
                 # Searches for the character's id from the returned Lodestone information.
                 character_name_search = re.search(r"""(\'Name\': ['"])([a-z\-\']{1,15})\s([a-z\-\']{1,15})(['"])""",
@@ -672,7 +658,7 @@ unable to change your name.""")
                                                 "character_avatar_url": f"{character_avatar_url}"}
                             # The above json defines the command invoker's character's new information.
                             licensed_hunter_role = discord.utils.get(ctx.guild.roles, name="Licensed Hunter")
-                            if character_dc_name == "Aether":  # Adds the Licensed Hunte role to a character who
+                            if character_dc_name == "Aether":  # Adds the Licensed Hunter role to a character who
                                 # verified on Aether.
                                 await ctx.author.add_roles(licensed_hunter_role)
                                 pass
