@@ -33,7 +33,7 @@ import pytz  # A timezone module.
 
 
 PREFIX = "+"  # This defines the prefix for Mudbot. Commands MUST start with this character to be processed and run.
-DESCRIPTION = "A proof of concept bot for use in the Aether Hunts Discord server. Made by Dusk Argentum#6530."
+DESCRIPTION = "A bot for use in the Aether Hunts Discord server. Made by Dusk Argentum#6530."
 # This defines Mudbot's description.
 TOKEN = os.environ.get("Mudbot_TOKEN")  # This defines the unique token used by Mudbot to log in to Discord.
 # Stored in environmental variables for obscurity's sake.
@@ -42,7 +42,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.3c"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.3d"  # Defines the version number, for use in internal tracking.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -196,11 +196,14 @@ Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # S
 # HUNT COMMANDS: These commands help generally facilitate The Hunt.
 
 
-@bot.group(pass_context=True, name="minions", aliases=["m"])
+@bot.group(pass_context=True, name="minions", aliases=["m"])  # This defines a group of commands, so that subcommands
+# can be used.
 async def minions(ctx):
     """Sends the map for `area`'s minions when invoked."""
-    if ctx.invoked_subcommand is None:
-        await ctx.send("""Please enter a valid area! Valid areas: `Amh Araeng` (`AA`), `Il Mheg` (`IL`),
+    if ctx.invoked_subcommand is None:  # Functions in this block execute if there is no invoked subcommand. In this
+        # case, if no area is mentioned when running the command.
+        await ctx.send("""Please enter a valid area! Valid areas:
+`Amh Araeng` (`AA`), `Il Mheg` (`IL`),
 `Kholusia` (`KH`), `Lakeland` (`LL`),
 `Rak'Tika` (`RT`), `Tempest` (`TM`)""")
         return
@@ -208,38 +211,56 @@ async def minions(ctx):
         return
 
 
-@minions.command(pass_context=True, name="amh araeng", aliases=["aa", "amharaeng"])
-async def amh_araeng(ctx):
+@minions.command(pass_context=True, name="amh araeng", aliases=["aa", "amharaeng"])  # This defines a subcommand of
+# the minions command.
+async def amh_araeng(ctx):  # Functions in this block execute if the invoked subcommand of the minions command is
+    # Amh Araeng.
     """Sends the map for Amh Araeng's minions when invoked."""
-    if ctx.channel.id != 579740817896374284:
-        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
-        return
-    elif ctx.channel.id == 579740817896374284:
+    allowed_channels = [int("732488105981902858"), int("579740817896374284")]  # Defines a list of allowed channels
+    # that the command can be executed in.
+    if ctx.guild.id == 542602456132091904:  # Functions in this block execute if the guild the command is invoked on is
+        # Aether Hunts.
+        if ctx.channel.id in allowed_channels:  # Allows the command to complete running if the command is invoked
+            # in one of the channels in allowed_channels.
+            pass
+        elif ctx.channel.id not in allowed_channels:  # Stops the command from running if the channel is not in
+            # allowed_channels.
+            await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+            return
+    elif ctx.guild.id != 542602456132091904:  # Functions in this block execute if the guild the command is invoked on
+        # is not Aether Hunts, for testing purposes.
         pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
-                          color=discord.Color(0xd93070))
+                          color=discord.Color(0xd93070))  # Defines an embed, and the parts of the embed are defined
+    # below.
     embed.add_field(name="Minions:", value="""`X-14, Y-32` | `X-13, Y-12`
 `X-30, Y-10` | `X-30, Y-25`""", inline=False)
     embed.add_field(name="Forgiven Rebellion:", value="`X-27, Y-35`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
     embed.add_field(name="Map:",
                     value="** **", inline=False)
-    embed.set_image(url="https://i.imgur.com/G9vPWcw.png")
+    embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/ahmssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
 https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
     await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
-<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
+<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)  # This program
+    # should not have been tainted by Minions...
     return
 
 
-@minions.command(pass_context=True, name="il mheg", aliases=["il", "ilmheg"])
+@minions.command(pass_context=True, name="il mheg", aliases=["il", "ilmheg"])  # The above comments for Amh Araeng
+# all apply to the below functions.
 async def il_mheg(ctx):
     """Sends the map for Il Mheg's minions when invoked."""
-    if ctx.channel.id != 579740817896374284:
-        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
-        return
-    elif ctx.channel.id == 579740817896374284:
+    allowed_channels = [int("732488105981902858"), int("579740817896374284")]
+    if ctx.guild.id == 542602456132091904:
+        if ctx.channel.id in allowed_channels:
+            pass
+        elif ctx.channel.id not in allowed_channels:
+            await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+            return
+    elif ctx.guild.id != 542602456132091904:
         pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
@@ -248,7 +269,7 @@ async def il_mheg(ctx):
     embed.add_field(name="Forgiven Rebellion:", value="`X-13, Y-23`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
     embed.add_field(name="Map:", value="** **", inline=False)
-    embed.set_image(url="https://i.imgur.com/BIESOIl.png")
+    embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/mhegssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
 https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
@@ -260,10 +281,14 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="kholusia", aliases=["kh", "kho", "khol"])
 async def kholusia(ctx):
     """Sends the map for Kholusia's minions when invoked."""
-    if ctx.channel.id != 579740817896374284:
-        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
-        return
-    elif ctx.channel.id == 579740817896374284:
+    allowed_channels = [int("732488105981902858"), int("579740817896374284")]
+    if ctx.guild.id == 542602456132091904:
+        if ctx.channel.id in allowed_channels:
+            pass
+        elif ctx.channel.id not in allowed_channels:
+            await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+            return
+    elif ctx.guild.id != 542602456132091904:
         pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
@@ -272,7 +297,7 @@ async def kholusia(ctx):
     embed.add_field(name="Forgiven Rebellion:", value="`X-24, Y-37`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
     embed.add_field(name="Map:", value="** **", inline=False)
-    embed.set_image(url="https://i.imgur.com/iF07Wus.png")
+    embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/kholusiassfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
 https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
@@ -284,10 +309,14 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="lakeland", aliases=["ll", "lake"])
 async def lakeland(ctx):
     """Sends the map for Lakeland's minions when invoked."""
-    if ctx.channel.id != 579740817896374284:
-        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
-        return
-    elif ctx.channel.id == 579740817896374284:
+    allowed_channels = [int("732488105981902858"), int("579740817896374284")]
+    if ctx.guild.id == 542602456132091904:
+        if ctx.channel.id in allowed_channels:
+            pass
+        elif ctx.channel.id not in allowed_channels:
+            await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+            return
+    elif ctx.guild.id != 542602456132091904:
         pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
@@ -296,7 +325,7 @@ async def lakeland(ctx):
     embed.add_field(name="Forgiven Rebellion:", value="`X-23, Y-22`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
     embed.add_field(name="Map:", value="** **", inline=False)
-    embed.set_image(url="https://i.imgur.com/3aJ9REZ.png")
+    embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/lakelandssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
 https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
@@ -308,10 +337,14 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="rak'tika", aliases=["rt", "rak"])
 async def rak_tika(ctx):
     """Sends the map for Rak'Tika's minions when invoked."""
-    if ctx.channel.id != 579740817896374284:
-        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
-        return
-    elif ctx.channel.id == 579740817896374284:
+    allowed_channels = [int("732488105981902858"), int("579740817896374284")]
+    if ctx.guild.id == 542602456132091904:
+        if ctx.channel.id in allowed_channels:
+            pass
+        elif ctx.channel.id not in allowed_channels:
+            await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+            return
+    elif ctx.guild.id != 542602456132091904:
         pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
@@ -320,7 +353,7 @@ async def rak_tika(ctx):
     embed.add_field(name="Forgiven Rebellion:", value="`X-24, Y-37`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
     embed.add_field(name="Map:", value="** **", inline=False)
-    embed.set_image(url="https://i.imgur.com/BPvstTP.png")
+    embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/greatwoodssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
 https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
@@ -332,10 +365,14 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="tempest", aliases=["tm", "tmp"])
 async def tempest(ctx):
     """Sends the map for Tempest's minions when invoked."""
-    if ctx.channel.id != 579740817896374284:
-        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
-        return
-    elif ctx.channel.id == 579740817896374284:
+    allowed_channels = [int("732488105981902858"), int("579740817896374284")]
+    if ctx.guild.id == 542602456132091904:
+        if ctx.channel.id in allowed_channels:
+            pass
+        elif ctx.channel.id not in allowed_channels:
+            await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+            return
+    elif ctx.guild.id != 542602456132091904:
         pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
@@ -344,7 +381,7 @@ async def tempest(ctx):
     embed.add_field(name="Forgiven Rebellion:", value="`X-13, Y-22`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
     embed.add_field(name="Map:", value="** **", inline=False)
-    embed.set_image(url="https://i.imgur.com/ZMoxOiz.png")
+    embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/tempestssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
 https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
     embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
