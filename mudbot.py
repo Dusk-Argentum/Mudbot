@@ -42,7 +42,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.2"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.3b"  # Defines the version number, for use in internal tracking.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -147,6 +147,9 @@ async def help_(ctx):
         random_color = random.randint(1, 16777215)  # Generates a random color.
         embed = discord.Embed(title="Mudbot Commands", color=discord.Color(int(random_color)))  # Defines the beginning
         # of the embed, as well as setting its color to the random color generated above.
+        embed.add_field(name="Hunting", value="""`+minions [area]`
+Sends the map for `area`'s minions when invoked.""", inline=False)  # Lists all of the Hunting module's commands and
+        # their invocation examples.
         embed.add_field(name="Verification", value="""`+info`
 Shows your character information. Mention another user to view theirs.
 
@@ -171,6 +174,9 @@ async def pm(ctx):  # Everything else is the same.
     """PMs the help message to the invoker."""
     random_color = random.randint(1, 16777215)
     embed = discord.Embed(title="Mudbot Commands", color=discord.Color(int(random_color)))
+    embed.add_field(name="Hunting", value="""`+minions [area]`
+Sends the map for `area`'s minions when invoked.""", inline=False)  # Lists all of the Hunting module's commands and
+    # their invocation examples.
     embed.add_field(name="Verification", value="""`+info`
 Shows your character information. Mention another user to view theirs.
 
@@ -187,7 +193,137 @@ Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # S
     return
 
 
-# OWNER ONLY | These commands can only be run by Dusk Argentum#6530. These functions are used in the administration
+# HUNT COMMANDS: These commands help generally facilitate The Hunt.
+
+
+@bot.group(pass_context=True, name="minions", aliases=["m"])
+async def minions(ctx):
+    """Sends the map for `area`'s minions when invoked."""
+    if ctx.invoked_subcommand is None:
+        await ctx.send("""Please enter a valid area! Valid areas: `Amh Araeng` (`AA`), `Il Mheg` (`IL`),
+`Kholusia` (`KH`), `Lakeland` (`LL`),
+`Rak'Tika` (`RT`), `Tempest` (`TM`)""")
+        return
+    else:
+        return
+
+
+@minions.command(pass_context=True, name="amh araeng", aliases=["aa", "amharaeng"])
+async def amh_araeng(ctx):
+    """Sends the map for Amh Araeng's minions when invoked."""
+    embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
+                          color=discord.Color(0xd93070))
+    embed.add_field(name="Minions:", value="""`X-14, Y-32` | `X-13, Y-12`
+`X-30, Y-10` | `X-30, Y-25`""", inline=False)
+    embed.add_field(name="Forgiven Rebellion:", value="`X-27, Y-35`", inline=False)
+    embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
+    embed.add_field(name="Map:",
+                    value="** **", inline=False)
+    embed.set_image(url="https://i.imgur.com/G9vPWcw.png")
+    embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
+https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
+    await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
+<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
+    return
+
+
+@minions.command(pass_context=True, name="il mheg", aliases=["il", "ilmheg"])
+async def il_mheg(ctx):
+    """Sends the map for Il Mheg's minions when invoked."""
+    embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
+                          color=discord.Color(0xd93070))
+    embed.add_field(name="Minions:", value="""`X-06, Y-30` | `X-32, Y-11`
+`X-25, Y-22` | `X-24, Y-37`""", inline=False)
+    embed.add_field(name="Forgiven Rebellion:", value="`X-13, Y-23`", inline=False)
+    embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
+    embed.add_field(name="Map:", value="** **", inline=False)
+    embed.set_image(url="https://i.imgur.com/BIESOIl.png")
+    embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
+https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
+    await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
+<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
+    return
+
+
+@minions.command(pass_context=True, name="kholusia", aliases=["kh", "kho", "khol"])
+async def kholusia(ctx):
+    """Sends the map for Kholusia's minions when invoked."""
+    embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
+                          color=discord.Color(0xd93070))
+    embed.add_field(name="Minions:", value="""`X-08, Y-29` | `X-12, Y-15`
+`X-23, Y-15` | `X-33, Y-32`""", inline=False)
+    embed.add_field(name="Forgiven Rebellion:", value="`X-24, Y-37`", inline=False)
+    embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
+    embed.add_field(name="Map:", value="** **", inline=False)
+    embed.set_image(url="https://i.imgur.com/iF07Wus.png")
+    embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
+https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
+    await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
+<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
+    return
+
+
+@minions.command(pass_context=True, name="lakeland", aliases=["ll", "lake"])
+async def lakeland(ctx):
+    """Sends the map for Lakeland's minions when invoked."""
+    embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
+                          color=discord.Color(0xd93070))
+    embed.add_field(name="Minions:", value="""`X-10, Y-25` | `X-13, Y-10`
+`X-33, Y-12` | `X-30, Y-36`""", inline=False)
+    embed.add_field(name="Forgiven Rebellion:", value="`X-23, Y-22`", inline=False)
+    embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
+    embed.add_field(name="Map:", value="** **", inline=False)
+    embed.set_image(url="https://i.imgur.com/3aJ9REZ.png")
+    embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
+https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
+    await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
+<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
+    return
+
+
+@minions.command(pass_context=True, name="rak'tika", aliases=["rt", "rak"])
+async def rak_tika(ctx):
+    """Sends the map for Rak'Tika's minions when invoked."""
+    embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
+                          color=discord.Color(0xd93070))
+    embed.add_field(name="Minions:", value="""`X-15, Y-36` | `X-08, Y-22`
+`X-19, Y-22` | `X-30, Y-13`""", inline=False)
+    embed.add_field(name="Forgiven Rebellion:", value="`X-24, Y-37`", inline=False)
+    embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
+    embed.add_field(name="Map:", value="** **", inline=False)
+    embed.set_image(url="https://i.imgur.com/BPvstTP.png")
+    embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
+https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
+    await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
+<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
+    return
+
+
+@minions.command(pass_context=True, name="tempest", aliases=["tm", "tmp"])
+async def tempest(ctx):
+    """Sends the map for Tempest's minions when invoked."""
+    embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
+                          color=discord.Color(0xd93070))
+    embed.add_field(name="Minions:", value="""`X-08, Y-07` | `X-26, Y-09`
+`X-38, Y-14` | `X-34, Y-30`""", inline=False)
+    embed.add_field(name="Forgiven Rebellion:", value="`X-13, Y-22`", inline=False)
+    embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
+    embed.add_field(name="Map:", value="** **", inline=False)
+    embed.set_image(url="https://i.imgur.com/ZMoxOiz.png")
+    embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
+https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png")
+    await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
+<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
+    return
+
+
+# OWNER ONLY: These commands can only be run by Dusk Argentum#6530. These functions are used in the administration
 # of the bot itself.
 
 
