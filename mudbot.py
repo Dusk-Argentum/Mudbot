@@ -42,7 +42,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.3b"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.3c"  # Defines the version number, for use in internal tracking.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -211,6 +211,11 @@ async def minions(ctx):
 @minions.command(pass_context=True, name="amh araeng", aliases=["aa", "amharaeng"])
 async def amh_araeng(ctx):
     """Sends the map for Amh Araeng's minions when invoked."""
+    if ctx.channel.id != 579740817896374284:
+        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+        return
+    elif ctx.channel.id == 579740817896374284:
+        pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
     embed.add_field(name="Minions:", value="""`X-14, Y-32` | `X-13, Y-12`
@@ -231,6 +236,11 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="il mheg", aliases=["il", "ilmheg"])
 async def il_mheg(ctx):
     """Sends the map for Il Mheg's minions when invoked."""
+    if ctx.channel.id != 579740817896374284:
+        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+        return
+    elif ctx.channel.id == 579740817896374284:
+        pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
     embed.add_field(name="Minions:", value="""`X-06, Y-30` | `X-32, Y-11`
@@ -250,6 +260,11 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="kholusia", aliases=["kh", "kho", "khol"])
 async def kholusia(ctx):
     """Sends the map for Kholusia's minions when invoked."""
+    if ctx.channel.id != 579740817896374284:
+        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+        return
+    elif ctx.channel.id == 579740817896374284:
+        pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
     embed.add_field(name="Minions:", value="""`X-08, Y-29` | `X-12, Y-15`
@@ -269,6 +284,11 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="lakeland", aliases=["ll", "lake"])
 async def lakeland(ctx):
     """Sends the map for Lakeland's minions when invoked."""
+    if ctx.channel.id != 579740817896374284:
+        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+        return
+    elif ctx.channel.id == 579740817896374284:
+        pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
     embed.add_field(name="Minions:", value="""`X-10, Y-25` | `X-13, Y-10`
@@ -288,6 +308,11 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="rak'tika", aliases=["rt", "rak"])
 async def rak_tika(ctx):
     """Sends the map for Rak'Tika's minions when invoked."""
+    if ctx.channel.id != 579740817896374284:
+        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+        return
+    elif ctx.channel.id == 579740817896374284:
+        pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
     embed.add_field(name="Minions:", value="""`X-15, Y-36` | `X-08, Y-22`
@@ -307,6 +332,11 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
 @minions.command(pass_context=True, name="tempest", aliases=["tm", "tmp"])
 async def tempest(ctx):
     """Sends the map for Tempest's minions when invoked."""
+    if ctx.channel.id != 579740817896374284:
+        await ctx.send("This command cannot be invoked here! Please invoke it in <#579740817896374284>.")
+        return
+    elif ctx.channel.id == 579740817896374284:
+        pass
     embed = discord.Embed(title="The minions of an extraordinarily powerful mark are on the hunt for prey.",
                           color=discord.Color(0xd93070))
     embed.add_field(name="Minions:", value="""`X-08, Y-07` | `X-26, Y-09`
