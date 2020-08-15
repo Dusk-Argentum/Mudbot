@@ -42,7 +42,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.3e"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.4"  # Defines the version number, for use in internal tracking.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -237,7 +237,7 @@ async def amh_araeng(ctx):  # Functions in this block execute if the invoked sub
 `X-30, Y-10` | `X-30, Y-25`""", inline=False)
     embed.add_field(name="Forgiven Rebellion:", value="`X-27, Y-35`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
-    embed.add_field(name="World:", value="Please see previous post for world name.")
+    embed.add_field(name="World:", value="Please see previous post for world name.", inline=False)
     embed.add_field(name="Map:",
                     value="** **", inline=False)
     embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/ahmssfull.jpg")
@@ -269,7 +269,7 @@ async def il_mheg(ctx):
 `X-25, Y-22` | `X-24, Y-37`""", inline=False)
     embed.add_field(name="Forgiven Rebellion:", value="`X-13, Y-23`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
-    embed.add_field(name="World:", value="Please see previous post for world name.")
+    embed.add_field(name="World:", value="Please see previous post for world name.", inline=False)
     embed.add_field(name="Map:", value="** **", inline=False)
     embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/mhegssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
@@ -298,7 +298,7 @@ async def kholusia(ctx):
 `X-23, Y-15` | `X-33, Y-32`""", inline=False)
     embed.add_field(name="Forgiven Rebellion:", value="`X-24, Y-37`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
-    embed.add_field(name="World:", value="Please see previous post for world name.")
+    embed.add_field(name="World:", value="Please see previous post for world name.", inline=False)
     embed.add_field(name="Map:", value="** **", inline=False)
     embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/kholusiassfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
@@ -327,7 +327,7 @@ async def lakeland(ctx):
 `X-33, Y-12` | `X-30, Y-36`""", inline=False)
     embed.add_field(name="Forgiven Rebellion:", value="`X-23, Y-22`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
-    embed.add_field(name="World:", value="Please see previous post for world name.")
+    embed.add_field(name="World:", value="Please see previous post for world name.", inline=False)
     embed.add_field(name="Map:", value="** **", inline=False)
     embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/lakelandssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
@@ -356,7 +356,7 @@ async def rak_tika(ctx):
 `X-19, Y-22` | `X-30, Y-13`""", inline=False)
     embed.add_field(name="Forgiven Rebellion:", value="`X-24, Y-37`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
-    embed.add_field(name="World:", value="Please see previous post for world name.")
+    embed.add_field(name="World:", value="Please see previous post for world name.", inline=False)
     embed.add_field(name="Map:", value="** **", inline=False)
     embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/greatwoodssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
@@ -385,7 +385,7 @@ async def tempest(ctx):
 `X-38, Y-14` | `X-34, Y-30`""", inline=False)
     embed.add_field(name="Forgiven Rebellion:", value="`X-13, Y-22`", inline=False)
     embed.add_field(name="Called By:", value=f"{ctx.author.mention}")
-    embed.add_field(name="World:", value="Please see previous post for world name.")
+    embed.add_field(name="World:", value="Please see previous post for world name.", inline=False)
     embed.add_field(name="Map:", value="** **", inline=False)
     embed.set_image(url="https://www.retahgaming.com/ffxiv/images/shfull/tempestssfull.jpg")
     embed.set_footer(text="""Map courtesy of: Retah Sosshaa of Midgardsormr
@@ -748,6 +748,23 @@ Please wait and retry the command.""")
                             # The following lines get their respective roles so they can be added.
                             dc_role = discord.utils.get(ctx.guild.roles, name=f"{character_dc_name}")
                             licensed_hunter_role = discord.utils.get(ctx.guild.roles, name="Licensed Hunter")
+                            check_for_deprecated_world = re.search(r"""(\'Adamantoise\'|\'Aegis\'|\'Alexander\'|
+\'Anima\'|\'Asura\'|\'Bahamut\'|\'Balmung\'|\'Behemoth\'|\'Belias\'|\'Brynhildr\'|\'Cactuar\'|\'Carbuncle\'|
+\'Cerberus\'|\'Chocobo\'|\'Coeurl\'|\'Diabolos\'|\'Durandal\'|\'Excalibur\'|Exodus\'|\'Faerie\'|\'Famfrit\'|\'Fenrir\'|
+\'Garuda\'|\'Gilgamesh\'|\'Goblin\'|\'Gungnir\'|\'Hades\'|\'Hyperion\'|\'Ifrit\'|\'Ixion\'|\'Jenova\'|\'Kujata\'|
+\'Lamia\'|\'Leviathan\'|\'Lich\'|\'Louisoix\'|\'Malboro\'|\'Mandragora\'|\'Mateus\'|\'Masamune\'|\'Midgardsormr\'|
+\'Moogle\'|\'Odin\'|\'Omega\'|\'Pandaemonium\'|\'Phoenix\'|\'Ragnarok\'|\'Ramuh\'|\'Ridill\'|\'Sargatanas\'|\'Shinryu\'|
+\'Shiva\'|\'Siren\'|\'Spriggan\'|\'Tiamat\'|\'Titan\'|\'Tonberry\'|\'Twintania\'|\'Typhon\'|\'Ultima\'|\'Ultros\'|
+\'Unicorn\'|\'Valefor\'|\'Yojimbo\'|\'Zalera\'|\'Zeromus\'|\'Zodiark\')""", str(ctx.author.roles), re.IGNORECASE)
+                            if check_for_deprecated_world is not None:
+                                deprecated_world = str(check_for_deprecated_world.group(1))
+                                deprecated_world_name = deprecated_world.strip("'")
+                                deprecated_world_role = discord.utils.get(ctx.guild.roles,
+                                                                          name=f"{deprecated_world_name}")
+                                await ctx.author.remove_roles(deprecated_world_role)
+                                pass
+                            elif check_for_deprecated_world is None:
+                                pass
                             await ctx.author.add_roles(world_role)  # Adds the character's world role to the
                             # command invoker.
                             await ctx.author.add_roles(dc_role)  # Adds the character's DC role to the command invoker.
@@ -881,6 +898,23 @@ unable to change your name.""")
                             await ctx.author.remove_roles(former_world_role)  # The following functions change roles
                             # around, removing the old world/DC roles and adding the new ones.
                             await ctx.author.remove_roles(former_dc_role)
+                            check_for_deprecated_world = re.search(r"""(\'Adamantoise\'|\'Aegis\'|\'Alexander\'|
+\'Anima\'|\'Asura\'|\'Bahamut\'|\'Balmung\'|\'Behemoth\'|\'Belias\'|\'Brynhildr\'|\'Cactuar\'|\'Carbuncle\'|
+\'Cerberus\'|\'Chocobo\'|\'Coeurl\'|\'Diabolos\'|\'Durandal\'|\'Excalibur\'|Exodus\'|\'Faerie\'|\'Famfrit\'|\'Fenrir\'|
+\'Garuda\'|\'Gilgamesh\'|\'Goblin\'|\'Gungnir\'|\'Hades\'|\'Hyperion\'|\'Ifrit\'|\'Ixion\'|\'Jenova\'|\'Kujata\'|
+\'Lamia\'|\'Leviathan\'|\'Lich\'|\'Louisoix\'|\'Malboro\'|\'Mandragora\'|\'Mateus\'|\'Masamune\'|\'Midgardsormr\'|
+\'Moogle\'|\'Odin\'|\'Omega\'|\'Pandaemonium\'|\'Phoenix\'|\'Ragnarok\'|\'Ramuh\'|\'Ridill\'|\'Sargatanas\'|\'Shinryu\'|
+\'Shiva\'|\'Siren\'|\'Spriggan\'|\'Tiamat\'|\'Titan\'|\'Tonberry\'|\'Twintania\'|\'Typhon\'|\'Ultima\'|\'Ultros\'|
+\'Unicorn\'|\'Valefor\'|\'Yojimbo\'|\'Zalera\'|\'Zeromus\'|\'Zodiark\')""", str(ctx.author.roles), re.IGNORECASE)
+                            if check_for_deprecated_world is not None:
+                                deprecated_world = str(check_for_deprecated_world.group(1))
+                                deprecated_world_name = deprecated_world.strip("'")
+                                deprecated_world_role = discord.utils.get(ctx.guild.roles,
+                                                                          name=f"{deprecated_world_name}")
+                                await ctx.author.remove_roles(deprecated_world_role)
+                                pass
+                            elif check_for_deprecated_world is None:
+                                pass
                             await ctx.author.add_roles(character_updated_world_role)
                             await ctx.author.add_roles(character_updated_dc_role)
                             if ctx.author.id == ctx.guild.owner.id:
