@@ -42,7 +42,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.4"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.5"  # Defines the version number, for use in internal tracking.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -96,16 +96,18 @@ async def on_member_join(ctx):  # Functions in this block execute upon a member'
         await general_channel.send(f"Ohai, {ctx.mention}.")  # Sends a less formal welcome to the general channel.
         await ctx.add_roles(tester_role)  # Adds the previously-defined Tester role to the user.
         return  # Stops processing. Saves resource space. I think?
-    if ctx.guild.id == 542602456132091904:  # Functions in this block execute upon joining the Aether Hunts server.
-        tz_utc = pytz.timezone("UTC")  # The following functions are all identical to the above block's.
-        current_utc_time = datetime.now(tz_utc)
-        join_log_channel = bot.get_channel(573601933219332096)
-        embed = discord.Embed(title="Join Logged:", color=discord.Color(0x32a852))
-        embed.add_field(name="User:", value=f"<@!{ctx.id}>\n{ctx.name}#{ctx.discriminator}\n({ctx.id})")
-        embed.add_field(name="Time:", value=f"""{current_utc_time.strftime("%m/%d/%Y @ %I:%M:%S %p %Z")}""")
-        embed.set_thumbnail(url=ctx.avatar_url)
-        await join_log_channel.send(embed=embed)
-        return
+    # if ctx.guild.id == 542602456132091904:  # Functions in this block execute upon joining the Aether Hunts server.
+    #     tz_utc = pytz.timezone("UTC")  # The following functions are all identical to the above block's.
+    #     current_utc_time = datetime.now(tz_utc)
+    #     join_log_channel = bot.get_channel(573601933219332096)
+    #     embed = discord.Embed(title="Join Logged:", color=discord.Color(0x32a852))
+    #     embed.add_field(name="User:", value=f"<@!{ctx.id}>\n{ctx.name}#{ctx.discriminator}\n({ctx.id})")
+    #     embed.add_field(name="Time:", value=f"""{current_utc_time.strftime("%m/%d/%Y @ %I:%M:%S %p %Z")}""")
+    #     embed.set_thumbnail(url=ctx.avatar_url)
+    #     await join_log_channel.send(embed=embed)
+    #     return
+    # This went unused anyway, and I saw no reason to ask for Mudbot to gain perms for join log cuz we already have one
+    # that does that.
 
 
 # ! BACKGROUND TASKS:  These tasks execute in the background constantly.
@@ -147,19 +149,22 @@ async def help_(ctx):
         random_color = random.randint(1, 16777215)  # Generates a random color.
         embed = discord.Embed(title="Mudbot Commands", color=discord.Color(int(random_color)))  # Defines the beginning
         # of the embed, as well as setting its color to the random color generated above.
-        embed.add_field(name="Hunting", value="""`+minions [area]`
+        embed.add_field(name="Hunting", value="""`+minions [area]` [Alias: `+m`]
 Sends the map for `area`'s minions when invoked.""", inline=False)  # Lists all of the Hunting module's commands and
         # their invocation examples.
-        embed.add_field(name="Verification", value="""`+info`
+        embed.add_field(name="Verification", value="""`+id_link` [Alias: `+id`]
+Links, via ID, your FFXIV character to your Discord name. This process may take up to one minute.
+
+`+info` [Alias: `+i`]
 Shows your character information. Mention another user to view theirs.
 
-`+link [first_name] [last_name] [world_name]`
+`+link [first_name] [last_name] [world_name]` [Alias: `+l`]
 Links your FFXIV character to your Discord name. This process may take up to one minute.
 
-`+unlink`
+`+unlink` [Alias: `+ul`]
 Deletes the current user's character information from the database.""", inline=False)  # Lists all of the Verification
         # module's commands and their invocation examples.
-        embed.set_footer(text=f"""To have the bot's help PM'd to you, put -pm after the command (eg. +help link -pm) |
+        embed.set_footer(text=f"""To have the bot's help PM'd to you, put -pm after the command (eg. +help -pm) |
 Current version: {VERSION} |
 Made by Dusk Argentum#6530. |
 Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # Sets the footer.
@@ -174,18 +179,21 @@ async def pm(ctx):  # Everything else is the same.
     """PMs the help message to the invoker."""
     random_color = random.randint(1, 16777215)
     embed = discord.Embed(title="Mudbot Commands", color=discord.Color(int(random_color)))
-    embed.add_field(name="Hunting", value="""`+minions [area]`
+    embed.add_field(name="Hunting", value="""`+minions [area]` [Alias: `+m`]
 Sends the map for `area`'s minions when invoked.""", inline=False)  # Lists all of the Hunting module's commands and
     # their invocation examples.
-    embed.add_field(name="Verification", value="""`+info`
+    embed.add_field(name="Verification", value="""`+id_link` [Alias: `+id`]
+Links, via ID, your FFXIV character to your Discord name. This process may take up to one minute.
+
+`+info` [Alias: `+i`]
 Shows your character information. Mention another user to view theirs.
 
-`+link [first_name] [last_name] [world_name]`
+`+link [first_name] [last_name] [world_name]` [Alias: `+l`]
 Links your FFXIV character to your Discord name. This process may take up to one minute.
 
-`+unlink`
+`+unlink` [Alias: `+ul`]
 Deletes the current user's character information from the database.""", inline=False)
-    embed.set_footer(text=f"""To have the bot's help PM'd to you, put -pm after the command (eg. +help link -pm) |
+    embed.set_footer(text=f"""To have the bot's help PM'd to you, put -pm after the command (eg. +help -pm) |
 Current version: {VERSION} |
 Made by Dusk Argentum#6530. |
 Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # Sets the footer.
@@ -489,6 +497,465 @@ async def server_list(ctx):
 # VERIFICATION:
 
 
+@bot.command(pass_context=True, name="id_link", aliases=["id", "link2", "l2"])  # A more specific linking command,
+# for ensuring, ABSOLUTELY, that the character that the user intends to link is the character that is linked.
+async def id_link(ctx, character_id: int = None):  # Many of the comments that would be in this command are identical
+    # to the comments that are in the linking command. Just view those. If there's any differences, I will note.
+    """Links, via ID, your FFXIV character to your Discord name. This process may take up to one minute."""
+    if_is_admin = re.search(r"name='Admin'", str(ctx.author.roles), re.IGNORECASE)
+    if ctx.guild is None:
+        await ctx.author.send("This command cannot be run in a DM! Please run it in the server.")
+        return
+    elif ctx.guild is not None:
+        pass
+    if character_id is None:
+        await ctx.send("""Could not complete operation! \
+One or more arguments were missing, incomplete, or incorrect.
+Proper use: `+id_link character_id_number`, ex. `+id_link 22568447`.
+You can find your character's ID by searching for your character on the Lodestone!""")  # I'm hoping this is descriptive
+        # enough to help people find their characters' IDs...
+        return
+    else:
+        async with aiohttp.ClientSession(timeout=120) as session:
+            session = aiohttp.ClientSession()
+            wait = await ctx.send("""Please wait while I search for your character... This could take up to one \
+full minute, if either Discord or the Lodestone are having issues.""")
+            client = pyxivapi.XIVAPIClient(session=session, api_key=XIVAPI_TOKEN)
+            is_search_finished = 0
+            character_search = []
+            try:
+                async with ctx.typing():
+                    character_search = await client.character_by_id(lodestone_id=character_id,
+                                                                    extended=False,
+                                                                    include_freecompany=False)  # Searches the
+                    # lodestone for a character with the given ID. Extra information is not included; it is not
+                    # necessary for verification.
+            except XIVAPIForbidden:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI FORBIDDEN`""")
+                return
+            except XIVAPIBadRequest:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI BAD REQUEST`""")
+                return
+            except XIVAPINotFound:
+                await ctx.send("""I could not find that character. Please make sure you are using the correct ID!
+You can find your character's ID by searching for them on the Lodestone and opening their profile, or by visiting
+https://na.finalfantasyxiv.com/lodestone/my/ and clicking your character's name near the top, in the blue banner.
+If you believe you've seen this message in error, please feel free to try again.""")  # This error message is different
+                # because this is the exception that is thrown when an invalid character ID is used. Apparently.
+                return
+            except XIVAPIServiceUnavailable:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI SERVICE UNAVAILABLE`""")
+                return
+            except XIVAPIInvalidLanguage:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI INVALID LANGUAGE`""")
+                return
+            except XIVAPIInvalidIndex:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI INVALID INDEX`""")
+                return
+            except XIVAPIInvalidColumns:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI INVALID COLUMNS`""")
+                return
+            except XIVAPIInvalidFilter:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI INVALID FILTER`""")
+                return
+            except XIVAPIInvalidWorlds:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI INVALID WORLDS`""")
+                return
+            except XIVAPIInvalidDatacenter:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI INVALID DATACENTER`""")
+                return
+            except XIVAPIError:
+                await ctx.send("""Sorry! I ran into an error. Please try again. If you keep seeing this, report it!
+Debug information:
+`ERROR: XIVAPI GENERAL ERROR`""")
+                return
+            finally:
+                await session.close()
+                character_id_search = re.search(r"(\'ID\': )(\d{7,10})", str(character_search), re.IGNORECASE)
+                # The Regex here is a little different, because, apparently, every piece of gear worn by the character
+                # needs to have its own unique ID. Silly game developers. Minimum of 7 digits SHOULD prevent any overlap
+                # while still including any characters that have weirdly low IDs, for some reason. If those even exist.
+                character_name_search = re.search(r"""(\'Name\': ['\"])([a-z\-\']{1,15})\s([a-z\-\']{1,15})(['\"])""",
+                                                  str(character_search), re.IGNORECASE)
+                character_world_search = re.search(r"(\'Server\': \')([a-z]{4,12})", str(character_search),
+                                                   re.IGNORECASE)
+                character_dc_search = re.search(r"(\'DC\': \')([a-z]{4,9})(\')", str(character_search), re.IGNORECASE)
+                # The Regex here is a little different, because the search_by_id function returns a sensible output for
+                # the DC information.
+                character_avatar_search = re.search(r"(\'Avatar\': \')(\S{20,})(\')",
+                                                    str(character_search), re.IGNORECASE)  # Same for this.
+                character_id = int(character_id_search.group(2))
+                character_first_name = str(character_name_search.group(2))
+                character_last_name = str(character_name_search.group(3))
+                character_world_name = str(character_world_search.group(2))
+                character_dc_name = str(character_dc_search.group(2))
+                character_avatar_url = str(character_avatar_search.group(2))
+                if character_world_name not in str(ctx.guild.roles):
+                    await ctx.guild.create_role(name=f"{character_world_name}")
+                    pass
+                elif character_world_name in str(ctx.guild.roles):
+                    pass
+                if character_dc_name not in str(ctx.guild.roles):
+                    await ctx.guild.create_role(name=f"{character_dc_name}")
+                    pass
+                elif character_dc_name in str(ctx.guild.roles):
+                    pass
+                with open("characters.json", "r+") as character_database:
+                    data = json.load(character_database)
+                    is_in_database = re.search(rf"{ctx.author.id}", str(data))
+                    if is_in_database is None:
+                        character = {
+                            f"{ctx.author.id}": {
+                                "character_id": f"{character_id}",
+                                "character_first_name": f"{character_first_name}",
+                                "character_last_name": f"{character_last_name}",
+                                "character_world_name": f"{character_world_name}",
+                                "character_dc_name": f"{character_dc_name}",
+                                "character_avatar_url": f"{character_avatar_url}"
+                            }
+                        }
+                        with open("characters.json", "r+") as character__database:
+                            await wait.delete()
+                            data_ = json.load(character__database)
+                            data_["character_info"].update(character)
+                            character__database.seek(0)
+                            json.dump(data_, character__database, indent=2)
+                            character__database.close()
+                            world_role = discord.utils.get(ctx.guild.roles, name=f"{character_world_name}")
+                            dc_role = discord.utils.get(ctx.guild.roles, name=f"{character_dc_name}")
+                            licensed_hunter_role = discord.utils.get(ctx.guild.roles, name="Licensed Hunter")
+                            check_for_deprecated_world = re.search(r"""(\'Adamantoise\'|\'Aegis\'|\'Alexander\'|
+\'Anima\'|\'Asura\'|\'Bahamut\'|\'Balmung\'|\'Behemoth\'|\'Belias\'|\'Brynhildr\'|\'Cactuar\'|\'Carbuncle\'|
+\'Cerberus\'|\'Chocobo\'|\'Coeurl\'|\'Diabolos\'|\'Durandal\'|\'Excalibur\'|Exodus\'|\'Faerie\'|\'Famfrit\'|\'Fenrir\'|
+\'Garuda\'|\'Gilgamesh\'|\'Goblin\'|\'Gungnir\'|\'Hades\'|\'Hyperion\'|\'Ifrit\'|\'Ixion\'|\'Jenova\'|\'Kujata\'|
+\'Lamia\'|\'Leviathan\'|\'Lich\'|\'Louisoix\'|\'Malboro\'|\'Mandragora\'|\'Mateus\'|\'Masamune\'|\'Midgardsormr\'|
+\'Moogle\'|\'Odin\'|\'Omega\'|\'Pandaemonium\'|\'Phoenix\'|\'Ragnarok\'|\'Ramuh\'|\'Ridill\'|\'Sargatanas\'|\'Shinryu\'|
+\'Shiva\'|\'Siren\'|\'Spriggan\'|\'Tiamat\'|\'Titan\'|\'Tonberry\'|\'Twintania\'|\'Typhon\'|\'Ultima\'|\'Ultros\'|
+\'Unicorn\'|\'Valefor\'|\'Yojimbo\'|\'Zalera\'|\'Zeromus\'|\'Zodiark\')""", str(ctx.author.roles),
+                                                                   re.IGNORECASE)
+                            if check_for_deprecated_world is not None:
+                                deprecated_world = str(check_for_deprecated_world.group(1))
+                                deprecated_world_name = deprecated_world.strip("'")
+                                deprecated_world_role = discord.utils.get(ctx.guild.roles,
+                                                                          name=f"{deprecated_world_name}")
+                                await ctx.author.remove_roles(deprecated_world_role)
+                                pass
+                            elif check_for_deprecated_world is None:
+                                pass
+                            await ctx.author.add_roles(world_role)
+                            await ctx.author.add_roles(dc_role)
+                            if character_dc_name == "Aether":
+                                await ctx.author.add_roles(licensed_hunter_role)
+                                pass
+                            else:
+                                pass
+                            if ctx.author.id == ctx.guild.owner.id:
+                                pass
+                            elif ctx.author.id != ctx.guild.owner.id:
+                                if if_is_admin is not None:
+                                    pass
+                                else:
+                                    await ctx.author.edit(nick=f"{character_first_name} {character_last_name}")
+                                    pass
+                            if character_dc_name == "Aether":
+                                embed = discord.Embed(title="Verification complete!", description="""Please feel free \
+to peruse the React Roles category and pick up roles for anything you are interested in. Welcome to Aether Hunts!""",
+                                                      color=discord.Color(0x00cc00))
+                                embed.add_field(name="Roles Granted:",
+                                                value=f"""<@&{licensed_hunter_role.id}>
+<@&{world_role.id}>\n<@&{dc_role.id}>""")
+                                pass
+                            elif character_dc_name == "Crystal":
+                                embed = discord.Embed(title="Verification complete!", description="""Unfortunately, \
+you have registered a character not from Aether, making our Discord useless to you. Please re-attempt \
+the linking process with a character from Aether, or consider joining the Crystal Hunts Discord, which caters to \
+players from the Crystal Datacenter!""",
+                                                      color=discord.Color(0xcf7602))
+                                embed.add_field(name="Crystal Hunts Discord Link:", value="https://discord.gg/S8fKQvh",
+                                                inline=False)
+                                embed.add_field(name="Roles Granted:", value=f"<@&{world_role.id}>\n<@&{dc_role.id}>")
+                                pass
+                            elif character_dc_name == "Light":
+                                embed = discord.Embed(title="Verification complete!", description="""Unfortunately, \
+you have registered a character not from Aether, making our Discord useless to you. Please re-attempt \
+the linking process with a character from Aether, or consider joining the Clan Centurio Discord, which caters to \
+players from the Light Datacenter!""",
+                                                      color=discord.Color(0xcf7602))
+                                embed.add_field(name="Clan Centurio Discord Link:", value="https://discord.gg/h52Uzm4",
+                                                inline=False)
+                                embed.add_field(name="Roles Granted:", value=f"<@&{world_role.id}>\n<@&{dc_role.id}>")
+                                pass
+                            elif character_dc_name == "Primal":
+                                embed = discord.Embed(title="Verification complete!", description="""Unfortunately, \
+you have registered a character not from Aether, making our Discord useless to you. Please re-attempt \
+the linking process with a character from Aether, or consider joining The Coeurl (Primal Hunts) Discord, which \
+caters to players from the Primal Datacenter!""",
+                                                      color=discord.Color(0xcf7602))
+                                embed.add_field(name="The Coeurl (Primal Hunts) Discord Link:",
+                                                value="https://discord.gg/k4ZzY9B", inline=False)
+                                embed.add_field(name="Roles Granted:", value=f"<@&{world_role.id}>\n<@&{dc_role.id}>")
+                                pass
+                            else:
+                                embed = discord.Embed(title="Verification complete!", description="""Unfortunately, \
+you have registered using a character not from Aether, making our Discord useless to you. Please re-attempt \
+the linking process with a character from Aether and the Discord will open up to you!""",
+                                                      color=discord.Color(0xcf7602))
+                                embed.add_field(name="Roles Granted:", value=f"<@&{world_role.id}>\n<@&{dc_role.id}>")
+                                pass
+                            if ctx.author.id == ctx.guild.owner.id:
+                                embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
+unable to change your name.""")
+                                pass
+                            elif if_is_admin is not None:
+                                embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
+unable to change your name.""")
+                                pass
+                            elif ctx.author.id != ctx.guild.owner.id:
+                                embed.add_field(name="Name Changed:",
+                                                value=f"{character_first_name} {character_last_name}")
+                                pass
+                            embed.set_thumbnail(url=character_avatar_url)
+                            await ctx.send(embed=embed)
+                            return
+                    elif is_in_database is not None:
+                        await wait.delete()
+                        with open("characters.json", "r+") as character__database:
+                            data = json.load(character__database)
+                            character_former_first_name = (data["character_info"]
+                                                           [f"{ctx.author.id}"]["character_first_name"])
+                            character_former_last_name = (data["character_info"]
+                                                          [f"{ctx.author.id}"]["character_last_name"])
+                            character_former_world_name = (data["character_info"]
+                                                           [f"{ctx.author.id}"]["character_world_name"])
+                            character_former_dc_name = (data["character_info"]
+                                                        [f"{ctx.author.id}"]["character_dc_name"])
+                            character_former_avatar_url = (data["character_info"]
+                                                           [f"{ctx.author.id}"]["character_avatar_url"])
+                            former_world_role = discord.utils.get(ctx.guild.roles,
+                                                                  name=f"{character_former_world_name}")
+                            former_dc_role = discord.utils.get(ctx.guild.roles,
+                                                               name=f"{character_former_dc_name}")
+                            character_updated_world_role = discord.utils.get(ctx.guild.roles,
+                                                                             name=f"{character_world_name}")
+                            character_updated_dc_role = discord.utils.get(ctx.guild.roles,
+                                                                          name=f"{character_dc_name}")
+                            character_update = {"character_id": f"{character_id}",
+                                                "character_first_name": f"{character_first_name}",
+                                                "character_last_name": f"{character_last_name}",
+                                                "character_world_name": f"{character_world_name}",
+                                                "character_dc_name": f"{character_dc_name}",
+                                                "character_avatar_url": f"{character_avatar_url}"}
+                            licensed_hunter_role = discord.utils.get(ctx.guild.roles, name="Licensed Hunter")
+                            if character_dc_name == "Aether":
+                                await ctx.author.add_roles(licensed_hunter_role)
+                                pass
+                            elif character_dc_name != "Aether":
+                                if licensed_hunter_role in ctx.author.roles:
+                                    await ctx.author.remove_roles(licensed_hunter_role)
+                                    pass
+                                else:
+                                    pass
+                            await ctx.author.remove_roles(former_world_role)
+                            await ctx.author.remove_roles(former_dc_role)
+                            check_for_deprecated_world = re.search(r"""(\'Adamantoise\'|\'Aegis\'|\'Alexander\'|
+\'Anima\'|\'Asura\'|\'Bahamut\'|\'Balmung\'|\'Behemoth\'|\'Belias\'|\'Brynhildr\'|\'Cactuar\'|\'Carbuncle\'|
+\'Cerberus\'|\'Chocobo\'|\'Coeurl\'|\'Diabolos\'|\'Durandal\'|\'Excalibur\'|Exodus\'|\'Faerie\'|\'Famfrit\'|\'Fenrir\'|
+\'Garuda\'|\'Gilgamesh\'|\'Goblin\'|\'Gungnir\'|\'Hades\'|\'Hyperion\'|\'Ifrit\'|\'Ixion\'|\'Jenova\'|\'Kujata\'|
+\'Lamia\'|\'Leviathan\'|\'Lich\'|\'Louisoix\'|\'Malboro\'|\'Mandragora\'|\'Mateus\'|\'Masamune\'|\'Midgardsormr\'|
+\'Moogle\'|\'Odin\'|\'Omega\'|\'Pandaemonium\'|\'Phoenix\'|\'Ragnarok\'|\'Ramuh\'|\'Ridill\'|\'Sargatanas\'|\'Shinryu\'|
+\'Shiva\'|\'Siren\'|\'Spriggan\'|\'Tiamat\'|\'Titan\'|\'Tonberry\'|\'Twintania\'|\'Typhon\'|\'Ultima\'|\'Ultros\'|
+\'Unicorn\'|\'Valefor\'|\'Yojimbo\'|\'Zalera\'|\'Zeromus\'|\'Zodiark\')""", str(ctx.author.roles),
+                                                                   re.IGNORECASE)
+                            if check_for_deprecated_world is not None:
+                                deprecated_world = str(check_for_deprecated_world.group(1))
+                                deprecated_world_name = deprecated_world.strip("'")
+                                deprecated_world_role = discord.utils.get(ctx.guild.roles,
+                                                                          name=f"{deprecated_world_name}")
+                                await ctx.author.remove_roles(deprecated_world_role)
+                                pass
+                            elif check_for_deprecated_world is None:
+                                pass
+                            await ctx.author.add_roles(character_updated_world_role)
+                            await ctx.author.add_roles(character_updated_dc_role)
+                            if ctx.author.id == ctx.guild.owner.id:
+                                pass
+                            elif ctx.author.id != ctx.guild.owner.id:
+                                if if_is_admin is not None:
+                                    pass
+                                else:
+                                    await ctx.author.edit(nick=f"{character_first_name} {character_last_name}")
+                                    pass
+                            world_roles_updated = []
+                            dc_roles_updated = []
+                            character_name_updated = 0
+                            world_roles_updated_state = 0
+                            dc_roles_updated_state = 0
+                            if former_world_role.id != character_updated_world_role.id:
+                                world_roles_updated = f"""- <@&{former_world_role.id}>
++ <@&{character_updated_world_role.id}>"""
+                                world_roles_updated_state = 1
+                                pass
+                            elif former_world_role.id == character_updated_world_role.id:
+                                world_roles_updated = "** **"
+                                world_roles_updated_state = 0
+                                pass
+                            if former_dc_role.id != character_updated_dc_role.id:
+                                dc_roles_updated = f"""- <@&{former_dc_role.id}>
++ <@&{character_updated_dc_role.id}>"""
+                                dc_roles_updated_state = 1
+                                pass
+                            elif former_dc_role.id == character_updated_dc_role.id:
+                                dc_roles_updated = "** **"
+                                dc_roles_updated_state = 0
+                                pass
+                            if character_former_first_name != character_first_name:
+                                character_name_updated = 1
+                                pass
+                            if character_former_last_name != character_last_name:
+                                character_name_updated = 1
+                                pass
+                            if licensed_hunter_role in ctx.author.roles:
+                                embed = discord.Embed(title="Update complete!", description="""Your \
+information has been updated!""", color=discord.Color(0x00cc00))
+                                if world_roles_updated_state == 0 and dc_roles_updated_state == 0:
+                                    embed.add_field(name="Roles Updated:", value="No update!")
+                                    pass
+                                elif world_roles_updated_state == 0 and dc_roles_updated_state == 1:
+                                    embed.add_field(name="Roles Updated:", value=f"{str(dc_roles_updated)}")
+                                    pass
+                                elif world_roles_updated_state == 1 and dc_roles_updated_state == 0:
+                                    embed.add_field(name="Roles Updated:", value=f"{str(world_roles_updated)}")
+                                    pass
+                                elif world_roles_updated_state == 1 and dc_roles_updated_state == 1:
+                                    embed.add_field(name="Roles Updated:",
+                                                    value=f"""{str(world_roles_updated)}
+{str(dc_roles_updated)}""")
+                                    pass
+                                else:
+                                    embed.add_field(name="ERROR:", value="Neither change state detected!!!")
+                                    pass
+                                if ctx.author.id == ctx.guild.owner.id:
+                                    embed.add_field(name="Unchangeable Name!", value="""Due to a Discord \
+limitation, I am unable to change your name.""")
+                                    pass
+                                elif if_is_admin is not None:
+                                    embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
+                                unable to change your name.""")
+                                    pass
+                                elif character_name_updated == 0:
+                                    embed.add_field(name="Name Updated:", value="No update!")
+                                    pass
+                                elif character_name_updated == 1:
+                                    embed.add_field(name="Name Updated:",
+                                                    value=f"""~~{character_former_first_name} \
+{character_former_last_name}~~
+{character_first_name} {character_last_name}""")
+                                    pass
+                                embed.set_thumbnail(url=character_avatar_url)
+                                await ctx.send(embed=embed)
+                                pass
+                            elif licensed_hunter_role not in ctx.author.roles:
+                                character_name_updated = 0
+                                world_roles_updated_state = 0
+                                dc_roles_updated_state = 0
+                                if former_world_role.id != character_updated_world_role.id:
+                                    world_roles_updated = f"""- {former_world_role}
++ {character_updated_world_role}"""
+                                    world_roles_updated_state = 1
+                                    pass
+                                elif former_world_role.id == character_updated_world_role.id:
+                                    world_roles_updated = "** **"
+                                    world_roles_updated_state = 0
+                                    pass
+                                if former_dc_role.id != character_updated_dc_role.id:
+                                    dc_roles_updated = f"""- {former_dc_role}
++ {character_updated_dc_role}"""
+                                    dc_roles_updated_state = 1
+                                    pass
+                                elif former_dc_role.id == character_updated_dc_role.id:
+                                    dc_roles_updated = "** **"
+                                    dc_roles_updated_state = 0
+                                    pass
+                                if character_former_first_name != character_first_name:
+                                    character_name_updated = 1
+                                    pass
+                                if character_former_last_name != character_last_name:
+                                    character_name_updated = 1
+                                    pass
+                                embed = discord.Embed(title="Update complete!", description="""Unfortunately, \
+however, when updating your information, it was found that your new character was not on the Aether data center. \
+Aether Hunts only caters to characters on Aether, and, as such, your permissions to view the Discord have been \
+limited. You are welcome to re-attempt verification with a character on Aether to regain these permissions.""",
+                                                      color=discord.Color(0x91002c))
+                                if world_roles_updated_state == 0 and dc_roles_updated_state == 0:
+                                    embed.add_field(name="Roles Updated:", value="No update!")
+                                    pass
+                                elif world_roles_updated_state == 0 and dc_roles_updated_state == 1:
+                                    embed.add_field(name="Roles Updated:",
+                                                    value=f"""- {licensed_hunter_role}
+{str(dc_roles_updated)}""")
+                                    pass
+                                elif world_roles_updated_state == 1 and dc_roles_updated_state == 0:
+                                    embed.add_field(name="Roles Updated:", value=f"{str(world_roles_updated)}")
+                                    pass
+                                elif world_roles_updated_state == 1 and dc_roles_updated_state == 1:
+                                    embed.add_field(name="Roles Updated:",
+                                                    value=f"""- {licensed_hunter_role}
+{str(world_roles_updated)}
+{str(dc_roles_updated)}""")
+                                    pass
+                                else:
+                                    embed.add_field(name="ERROR:", value="Neither change state detected!!!")
+                                    pass
+                                if ctx.author.id == ctx.guild.owner.id:
+                                    embed.add_field(name="Unchangeable Name!", value="""Due to a Discord \
+limitation, I am unable to change your name.""")
+                                    pass
+                                elif if_is_admin is not None:
+                                    embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
+                                unable to change your name.""")
+                                    pass
+                                elif character_name_updated == 0:
+                                    embed.add_field(name="Name Updated:", value="No update!")
+                                    pass
+                                elif character_name_updated == 1:
+                                    embed.add_field(name="Name Updated:",
+                                                    value=f"""~~{character_former_first_name} \
+{character_former_last_name}~~
+{character_first_name} {character_last_name}""")
+                                    pass
+                                embed.set_thumbnail(url=character_avatar_url)
+                                await ctx.send(embed=embed)
+                                pass
+                                await ctx.author.send(embed=embed)
+                                pass
+                            data["character_info"][f"{ctx.author.id}"].update(character_update)
+                            character__database.seek(0)
+                            json.dump(data, character__database, indent=2)
+                            character__database.truncate()
+                            character__database.close()
+                            return  # There's probably a better way to have handled this than copying the majority
+                        # of the normal linking command...
+
+
 @bot.command(pass_context=True, name="info", aliases=["i"])  # Defines the info command.
 async def info(ctx, user: discord.Member = None):
     """Shows your character information. Mention another user to view theirs."""
@@ -543,6 +1010,7 @@ To update, use the +link command.""")
 @bot.command(pass_context=True, name="link", aliases=["l"])  # Defines the linking command. Shit gets messy in here.
 async def link(ctx, first_name: str = None, last_name: str = None, world_name: str = None):
     """Links your FFXIV character to your Discord name. This process may take up to one minute."""
+    if_is_admin = re.search(r"name='Admin'", str(ctx.author.roles), re.IGNORECASE)
     if ctx.guild is None:  # Stops the command from executing if the command is run in a DM. The command would
         # error anyway. This saves the user time and effort.
         await ctx.author.send("This command cannot be run in a DM! Please run it in the server.")
@@ -681,7 +1149,7 @@ Please wait and retry the command.""")
                         return
                 character_id_search = re.search(r"(\'ID\': )(\d{1,10})", str(character_search), re.IGNORECASE)
                 # Searches for the character's id from the returned Lodestone information.
-                character_name_search = re.search(r"""(\'Name\': ['"])([a-z\-\']{1,15})\s([a-z\-\']{1,15})(['"])""",
+                character_name_search = re.search(r"""(\'Name\': ['\"])([a-z\-\']{1,15})\s([a-z\-\']{1,15})(['\"])""",
                                                   str(character_search), re.IGNORECASE)  # Searches for the character's
                 # full name from the returned Lodestone information.
                 character_world_search = re.search(r"(\'Server\': \')([a-z]{4,12})", str(character_search),
@@ -783,8 +1251,11 @@ Please wait and retry the command.""")
                             # This used to cause the bot to stop dead in its tracks, but does not anymore.
                             elif ctx.author.id != ctx.guild.owner.id:  # Changes the command invoker's name
                                 # to their character's name if they are not the server owner.
-                                await ctx.author.edit(nick=f"{character_first_name} {character_last_name}")
-                                pass
+                                if if_is_admin is not None:
+                                    pass
+                                else:
+                                    await ctx.author.edit(nick=f"{character_first_name} {character_last_name}")
+                                    pass
                             if character_dc_name == "Aether":  # The following block executes if the command invoker's
                                 # character's DC is Aether.
                                 embed = discord.Embed(title="Verification complete!", description="""Please feel free \
@@ -840,6 +1311,10 @@ the linking process with a character from Aether and the Discord will open up to
                                 # id is the same as the server owner's id.
                                 embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
 unable to change your name.""")
+                                pass
+                            elif if_is_admin is not None:
+                                embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
+                            unable to change your name.""")
                                 pass
                             elif ctx.author.id != ctx.guild.owner.id:  # Informs the command invoker that their Discord
                                 # name has changed and what it has been changed to.
@@ -921,8 +1396,11 @@ unable to change your name.""")
                                 pass
                             elif ctx.author.id != ctx.guild.owner.id:  # Changes the command invoker's name to match
                                 # their character's in game name.
-                                await ctx.author.edit(nick=f"{character_first_name} {character_last_name}")
-                                pass
+                                if if_is_admin is not None:
+                                    pass
+                                else:
+                                    await ctx.author.edit(nick=f"{character_first_name} {character_last_name}")
+                                    pass
                             world_roles_updated = []  # The following are empty/0 variables for use later.
                             dc_roles_updated = []
                             character_name_updated = 0
@@ -991,6 +1469,10 @@ information has been updated!""", color=discord.Color(0x00cc00))
                                     # Unchangeable message if the command invoker is the server's owner.
                                     embed.add_field(name="Unchangeable Name!", value="""Due to a Discord \
 limitation, I am unable to change your name.""")
+                                    pass
+                                elif if_is_admin is not None:
+                                    embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
+                                unable to change your name.""")
                                     pass
                                 elif character_name_updated == 0:  # Informs the command invoker that their name
                                     # needn't be changed.
@@ -1066,6 +1548,10 @@ limited. You are welcome to re-attempt verification with a character on Aether t
                                 if ctx.author.id == ctx.guild.owner.id:
                                     embed.add_field(name="Unchangeable Name!", value="""Due to a Discord \
 limitation, I am unable to change your name.""")
+                                    pass
+                                elif if_is_admin is not None:
+                                    embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
+                                unable to change your name.""")
                                     pass
                                 elif character_name_updated == 0:
                                     embed.add_field(name="Name Updated:", value="No update!")
