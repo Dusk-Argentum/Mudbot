@@ -1,7 +1,6 @@
 import os  # The os module. Used in Mudbot to call up environmental variables, which help obscure sensitive
 # information.
 
-
 import discord  # The Discord module. Used in Mudbot to do Discord things.
 from discord.ext import commands, tasks  # Imports the commands and tasks submodules, for use in commands and tasks.
 from discord.ext.commands import CommandInvokeError  # The following are error handling imports.
@@ -42,7 +41,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.5"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.6"  # Defines the version number, for use in internal tracking.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -137,8 +136,6 @@ async def before_status_rotation():
 
 
 # HELP COMMAND: This is the block where the help command is, which lists all commands and their arguments.
-# Later, when it becomes necessary, every command will have its own separate help command, eg. !help link would show
-# specific link command information
 
 
 @bot.group(pass_context=True, name="help_", aliases=["cmds", "commands", "h", "help"])  # Defines the help command group
@@ -667,9 +664,9 @@ Debug information:
                                 pass
                             else:
                                 pass
-                            if ctx.author.id == ctx.guild.owner.id:
+                            if ctx.author.id == ctx.guild.owner_id:
                                 pass
-                            elif ctx.author.id != ctx.guild.owner.id:
+                            elif ctx.author.id != ctx.guild.owner_id:
                                 if if_is_admin is not None:
                                     pass
                                 else:
@@ -720,7 +717,7 @@ the linking process with a character from Aether and the Discord will open up to
                                                       color=discord.Color(0xcf7602))
                                 embed.add_field(name="Roles Granted:", value=f"<@&{world_role.id}>\n<@&{dc_role.id}>")
                                 pass
-                            if ctx.author.id == ctx.guild.owner.id:
+                            if ctx.author.id == ctx.guild.owner_id:
                                 embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
 unable to change your name.""")
                                 pass
@@ -728,7 +725,7 @@ unable to change your name.""")
                                 embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
 unable to change your name.""")
                                 pass
-                            elif ctx.author.id != ctx.guild.owner.id:
+                            elif ctx.author.id != ctx.guild.owner_id:
                                 embed.add_field(name="Name Changed:",
                                                 value=f"{character_first_name} {character_last_name}")
                                 pass
@@ -795,9 +792,9 @@ unable to change your name.""")
                                 pass
                             await ctx.author.add_roles(character_updated_world_role)
                             await ctx.author.add_roles(character_updated_dc_role)
-                            if ctx.author.id == ctx.guild.owner.id:
+                            if ctx.author.id == ctx.guild.owner_id:
                                 pass
-                            elif ctx.author.id != ctx.guild.owner.id:
+                            elif ctx.author.id != ctx.guild.owner_id:
                                 if if_is_admin is not None:
                                     pass
                                 else:
@@ -852,7 +849,7 @@ information has been updated!""", color=discord.Color(0x00cc00))
                                 else:
                                     embed.add_field(name="ERROR:", value="Neither change state detected!!!")
                                     pass
-                                if ctx.author.id == ctx.guild.owner.id:
+                                if ctx.author.id == ctx.guild.owner_id:
                                     embed.add_field(name="Unchangeable Name!", value="""Due to a Discord \
 limitation, I am unable to change your name.""")
                                     pass
@@ -925,7 +922,7 @@ limited. You are welcome to re-attempt verification with a character on Aether t
                                 else:
                                     embed.add_field(name="ERROR:", value="Neither change state detected!!!")
                                     pass
-                                if ctx.author.id == ctx.guild.owner.id:
+                                if ctx.author.id == ctx.guild.owner_id:
                                     embed.add_field(name="Unchangeable Name!", value="""Due to a Discord \
 limitation, I am unable to change your name.""")
                                     pass
@@ -1244,12 +1241,12 @@ Please wait and retry the command.""")
                             else:  # If the command invoker's character's DC is not Aether, it passes on without
                                 # adding the Licensed Hunter role.
                                 pass
-                            if ctx.author.id == ctx.guild.owner.id:  # Checks to see if the command invoker's id
+                            if ctx.author.id == ctx.guild.owner_id:  # Checks to see if the command invoker's id
                                 # matches the server owner's id.
                                 pass  # And skips changing their name. This is due to a Discord limitation; NOTHING,
                             # including bots, can change a server owner's name, except for the server owner themself.
                             # This used to cause the bot to stop dead in its tracks, but does not anymore.
-                            elif ctx.author.id != ctx.guild.owner.id:  # Changes the command invoker's name
+                            elif ctx.author.id != ctx.guild.owner_id:  # Changes the command invoker's name
                                 # to their character's name if they are not the server owner.
                                 if if_is_admin is not None:
                                     pass
@@ -1307,7 +1304,7 @@ the linking process with a character from Aether and the Discord will open up to
                                                       color=discord.Color(0xcf7602))
                                 embed.add_field(name="Roles Granted:", value=f"<@&{world_role.id}>\n<@&{dc_role.id}>")
                                 pass
-                            if ctx.author.id == ctx.guild.owner.id:  # This name field is added if the command invoker's
+                            if ctx.author.id == ctx.guild.owner_id:  # This name field is added if the command invoker's
                                 # id is the same as the server owner's id.
                                 embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
 unable to change your name.""")
@@ -1316,7 +1313,7 @@ unable to change your name.""")
                                 embed.add_field(name="Unchangeable Name!", value="""Due to a Discord limitation, I am \
                             unable to change your name.""")
                                 pass
-                            elif ctx.author.id != ctx.guild.owner.id:  # Informs the command invoker that their Discord
+                            elif ctx.author.id != ctx.guild.owner_id:  # Informs the command invoker that their Discord
                                 # name has changed and what it has been changed to.
                                 embed.add_field(name="Name Changed:",
                                                 value=f"{character_first_name} {character_last_name}")
@@ -1392,9 +1389,9 @@ unable to change your name.""")
                                 pass
                             await ctx.author.add_roles(character_updated_world_role)
                             await ctx.author.add_roles(character_updated_dc_role)
-                            if ctx.author.id == ctx.guild.owner.id:
+                            if ctx.author.id == ctx.guild.owner_id:
                                 pass
-                            elif ctx.author.id != ctx.guild.owner.id:  # Changes the command invoker's name to match
+                            elif ctx.author.id != ctx.guild.owner_id:  # Changes the command invoker's name to match
                                 # their character's in game name.
                                 if if_is_admin is not None:
                                     pass
@@ -1465,7 +1462,7 @@ information has been updated!""", color=discord.Color(0x00cc00))
                                 else:  # This should never execute, but is handled if it does.
                                     embed.add_field(name="ERROR:", value="Neither change state detected!!!")
                                     pass
-                                if ctx.author.id == ctx.guild.owner.id:  # Sets the name changed embed field to the
+                                if ctx.author.id == ctx.guild.owner_id:  # Sets the name changed embed field to the
                                     # Unchangeable message if the command invoker is the server's owner.
                                     embed.add_field(name="Unchangeable Name!", value="""Due to a Discord \
 limitation, I am unable to change your name.""")
@@ -1545,7 +1542,7 @@ limited. You are welcome to re-attempt verification with a character on Aether t
                                 else:
                                     embed.add_field(name="ERROR:", value="Neither change state detected!!!")
                                     pass
-                                if ctx.author.id == ctx.guild.owner.id:
+                                if ctx.author.id == ctx.guild.owner_id:
                                     embed.add_field(name="Unchangeable Name!", value="""Due to a Discord \
 limitation, I am unable to change your name.""")
                                     pass
