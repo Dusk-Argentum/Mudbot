@@ -41,7 +41,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.6a"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.7"  # Defines the version number, for use in internal tracking.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -590,7 +590,7 @@ Debug information:
                 # The Regex here is a little different, because, apparently, every piece of gear worn by the character
                 # needs to have its own unique ID. Silly game developers. Minimum of 7 digits SHOULD prevent any overlap
                 # while still including any characters that have weirdly low IDs, for some reason. If those even exist.
-                character_name_search = re.search(r"""(\'Name\': ['\"])([a-z\-\']{1,15})\s([a-z\-\']{1,15})(['\"])""",
+                character_name_search = re.search(r"""(\'Name\': ['\"])([a-z\-\']{1,15})\s([a-z\-\']{1,15})(['\"], \'Nameday\')""",
                                                   str(character_search), re.IGNORECASE)
                 character_world_search = re.search(r"(\'Server\': \')([a-z]{4,12})", str(character_search),
                                                    re.IGNORECASE)
@@ -605,6 +605,13 @@ Debug information:
                 character_world_name = str(character_world_search.group(2))
                 character_dc_name = str(character_dc_search.group(2))
                 character_avatar_url = str(character_avatar_search.group(2))
+                # print(str(character_search))
+                # print(str(character_id))
+                # print(str(character_first_name))
+                # print(str(character_last_name))
+                # print(str(character_world_name))
+                # print(str(character_dc_name))
+                # print(str(character_avatar_url))
                 if character_world_name not in str(ctx.guild.roles):
                     await ctx.guild.create_role(name=f"{character_world_name}")
                     pass
@@ -1169,6 +1176,13 @@ Please wait and retry the command.""")
                 # from the character_dc_search.
                 character_avatar_url = str(character_avatar_search.group(2))  # Specifically extracts the character's
                 # avatar url from the character_avatar_search.
+                # print(str(character_search))
+                # print(str(character_id))
+                # print(str(character_first_name))
+                # print(str(character_last_name))
+                # print(str(character_world_name))
+                # print(str(character_dc_name))
+                # print(str(character_avatar_url))
                 if character_world_name not in str(ctx.guild.roles):  # Checks if the character's world has a role on the
                     # server the command is invoked on and adds the role if it doesn't exist.
                     await ctx.guild.create_role(name=f"{character_world_name}")
