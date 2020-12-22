@@ -41,11 +41,17 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.7"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.8"  # Defines the version number, for use in internal tracking.
+
+
+intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
+intents.members = True  # Gives the bot explicit permission to use the Members "privileged Intent", which grants
+# the bot the ability to view the member list, for use in stuff like `on_member_join`, in case that ever ends up
+# being a thing. Mostly this is just here to future proof so I don't have to worry about it.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
-                   case_insensitive=True)  # Defines the bot as a bot.
+                   case_insensitive=True, intents=intents)  # Defines the bot as a bot.
 
 
 bot.remove_command("help")  # Removes the in-built help command in favor of a custom one.
@@ -612,6 +618,7 @@ Debug information:
                 # print(str(character_world_name))
                 # print(str(character_dc_name))
                 # print(str(character_avatar_url))
+                # These are all commented out because I got tired of rewriting them when I needed to debug something.
                 if character_world_name not in str(ctx.guild.roles):
                     await ctx.guild.create_role(name=f"{character_world_name}")
                     pass
