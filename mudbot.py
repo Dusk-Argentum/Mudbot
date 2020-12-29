@@ -5,6 +5,7 @@ import discord  # The Discord module. Used in Mudbot to do Discord things.
 from discord.ext import commands, tasks  # Imports the commands and tasks submodules, for use in commands and tasks.
 from discord.ext.commands import CommandInvokeError  # The following are error handling imports.
 from discord.ext.commands import CommandNotFound
+from discord.ext.commands import MemberNotFound
 
 
 import random  # The random module. Used in Mudbot to generate random numbers when need be.
@@ -41,7 +42,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.8"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.9"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -76,6 +77,11 @@ async def on_command_error(ctx, error):  # This is a general error-handling bloc
         # where a command cannot finish executing properly and there is no specific handling for the error the command
         # invokes.
         error = "Incorrect invocation. Please re-examine the command in `+help`."
+    elif isinstance(error, MemberNotFound):  # This executes if `+info` is being used improperly.
+        error = f"""Member not found.
+Correct usage: `+info member_mention`, eg. `+info <@!97153790897045504>`.
+To grab a member's Discord ID, be sure to enable Developer Mode in your Discord settings, then simply right-click \
+them and click "Copy ID"."""
     await ctx.message.channel.send(f"Error: {error}")  # Sends the error message in the channel where the command was
     # invoked.
 
