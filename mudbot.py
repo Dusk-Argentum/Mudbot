@@ -3,9 +3,8 @@ import os  # The os module. Used in Mudbot to call up environmental variables, w
 
 import discord  # The Discord module. Used in Mudbot to do Discord things.
 from discord.ext import commands, tasks  # Imports the commands and tasks submodules, for use in commands and tasks.
-from discord.ext.commands import CommandInvokeError  # The following are error handling imports.
-from discord.ext.commands import CommandNotFound
-from discord.ext.commands import MemberNotFound
+from discord.ext.commands import CheckFailure, CommandInvokeError, CommandNotFound, MemberNotFound  # Error handling imports.
+from discord.ext.commands import guild_only, NoPrivateMessage, has_role, MissingRole, UserNotFound
 
 
 import random  # The random module. Used in Mudbot to generate random numbers when need be.
@@ -28,11 +27,11 @@ import aiohttp  # A web handler. Useful in grabbing information from the interne
 import json  # Json is used to keep track of imported character information and the like.
 
 
-from datetime import datetime  # For use in getting times.
+from datetime import datetime, timezone  # For use in getting times.
 import pytz  # A timezone module.
 
 
-PREFIX = "+"  # This defines the prefix for Mudbot. Commands MUST start with this character to be processed and run.
+PREFIX = "-"  # This defines the prefix for Mudbot. Commands MUST start with this character to be processed and run.
 DESCRIPTION = "A bot for use in the Aether Hunts Discord server. Made by Dusk Argentum#6530."
 # This defines Mudbot's description.
 TOKEN = os.environ.get("Mudbot_TOKEN")  # This defines the unique token used by Mudbot to log in to Discord.
@@ -42,7 +41,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.9"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.10"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -147,6 +146,9 @@ async def before_status_rotation():
         pass
 
 
+# ! TESTING GROUND: Any commands here are in-progress and being tested. Use is forbidden.
+
+
 # HELP COMMAND: This is the block where the help command is, which lists all commands and their arguments.
 
 
@@ -211,6 +213,102 @@ Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # S
 
 
 # HUNT COMMANDS: These commands help generally facilitate The Hunt.
+
+
+@bot.command(name=f"early_pull", aliases=[f"ep", f"early"])  # This defines the `early_pull` command.
+@guild_only()  # This command can only be run within a guild.
+@has_role(569959138583511082)  # This command can only be run by members who have this role.
+async def early_pull(ctx):  # This command was requested by the Aether Hunts mod team in response to the vast
+    # number of complaints about early pullers following patch 5.5.
+    with open("complaint_log.json", "r+") as complaint_log:  # Opens the complaint log.
+        current_time = datetime.now(timezone.utc)  # Defines the current time.
+        data = json.load(complaint_log)  # Loads the complaint log.
+        last_complaint_raw = data["complaint_log"]["last_complaint"]  # Gets the string of the time of the last
+        # complaint.
+        last_complaint_delta = datetime.strptime(last_complaint_raw, "%Y-%m-%d %H:%M:%S%z")  # Transforms the time
+        # string into a usable datetime object for difference calculation.
+        longest_duration_raw = data["complaint_log"]["longest_duration"]  # Gets the string of the longest duration.
+        # The longest duration is stored in seconds for reasons.
+        current_duration_raw = (current_time - last_complaint_delta)  # Finds the difference between the current time
+        # and the last complaint time in order to find out the duration of the time between the two.
+        current_duration_in_seconds_raw = current_duration_raw.total_seconds()  # Converts the above duration into
+        # seconds.
+        current_duration_in_seconds_cut = (str(current_duration_in_seconds_raw).split(".")[0])  # We don't need
+        # milliseconds or microseconds or whatever the fuck those are in this house.
+        if int(current_duration_in_seconds_cut) > int(longest_duration_raw):  # Functions in this block execute
+            # if the current duration is longer than the stored longest duration.
+            longest_duration_raw = str(current_duration_in_seconds_cut)  # Sets the longest duration to the current
+            # duration.
+            longest_duration_update = {"longest_duration": f"{longest_duration_raw}"}  # Defines the JSON object
+            # to commit to the complaint log JSON.
+            data["complaint_log"].update(longest_duration_update)  # Updates the JSON object.
+            complaint_log.seek(0)
+            json.dump(data, complaint_log, indent=2)  # Writes the update to the complaint log.
+        elif int(current_duration_in_seconds_cut) < int(longest_duration_raw):  # Functions in this block execute if
+            # the current duration is shorter than the stored longest duration.
+            pass
+        last_complaint_update = ({"last_complaint": f"""{datetime.now(timezone.utc).strftime(
+        "%Y-%m-%d %H:%M:%S%z")}"""})  # Defines the update of the JSON object of the last complaint time to the current
+        # time in a specific format because reasons.
+        data["complaint_log"].update(last_complaint_update)  # Updates the JSON object.
+        complaint_log.seek(0)
+        json.dump(data, complaint_log, indent=2)  # Writes the update to the complaint log.
+        complaint_log.close()  # Closes the complaint log.
+    longest_duration_days_total = divmod(int(longest_duration_raw), 86400)[0]  # Gets the total amount of days that
+    # the amount of seconds in the longest duration has by dividing the amount of seconds by the amount of seconds
+    # in a day.
+    longest_duration_days_remainder = divmod(int(longest_duration_raw), 86400)[1]  # Does the same thing as the above
+    # except this is the remainder amount, needed for calculating the smaller time fragments.
+    longest_duration_hours_total = divmod(int(longest_duration_days_remainder), 3600)[0]  # Same as for days.
+    longest_duration_hours_remainder = divmod(int(longest_duration_days_remainder), 3600)[1]  # Same as for days.
+    longest_duration_minutes_total = divmod(int(longest_duration_hours_remainder), 60)[0]
+    longest_duration_minutes_remainder = divmod(int(longest_duration_hours_remainder), 60)[1]
+    longest_duration_seconds_total = divmod(int(longest_duration_minutes_remainder), 1)[0]  # Seconds remainder
+    # is not required because fuck milliseconds.
+    current_duration_days_search = re.search(r"(\d{1,9}) day", str(current_duration_raw), re.IGNORECASE)  # Searches
+    # the raw current duration for an amount of days.
+    if current_duration_days_search is not None:  # Functions in this block execute if the current duration is over a
+        # day, because of the way the difference was returned when finding the difference between the current time
+        # and the last complaint time.
+        current_duration_days = str(current_duration_days_search.group(1))
+        pass
+    else:
+        current_duration_days = "0"  # Sets the current duration days to 0 because things break if I don't do this.
+        pass
+    current_duration_hours_search = re.search(r"(\d{1,2}):", str(current_duration_raw), re.IGNORECASE)  # Same as
+    # days but for hours.
+    current_duration_hours = str(current_duration_hours_search.group(1))
+    current_duration_minutes_search = re.search(r":(\d{2}):", str(current_duration_raw), re.IGNORECASE)
+    current_duration_minutes = str(current_duration_minutes_search.group(1))
+    current_duration_seconds_search = re.search(r":(\d{2})\.", str(current_duration_raw), re.IGNORECASE)
+    current_duration_seconds = str(current_duration_seconds_search.group(1))
+    embed = discord.Embed(title="Early pull complaint detected!", color=discord.Color(0x2bcc96),
+                          description="""Please remember that Aether Hunts cannot control whether people pull \
+marks early. Sometimes it is done by accident, and sometimes it is done by users beyond the Aether Hunts mod team's \
+jurisdiction. Regardless, please be advised that there will be additional S Rank marks in the future.""")  # Defines
+    # the embed for sending and some of its attributes.
+    embed.add_field(name="Durations:", value=f"""We have gone \
+{str(current_duration_days)} \
+{"days" if int(current_duration_days) > 1 or int(current_duration_days) == 0 else "day"}, \
+{str(current_duration_hours)} \
+{"hours" if int(current_duration_hours) > 1 or int(current_duration_hours) == 0 else "hour"}, \
+{str(current_duration_minutes)} \
+{"minutes" if int(current_duration_minutes) > 1 or int(current_duration_minutes) == 0 else "minute"}, and \
+{str(current_duration_seconds)} \
+{"seconds" if int(current_duration_seconds) > 1 or int(current_duration_seconds) == 0 else "seconds"} \
+without any logged complaints about early pullers.
+The longest we have ever gone without any logged complaints about early pullers is \
+{str(longest_duration_days_total)} \
+{"days" if int(longest_duration_days_total) > 1 or int(longest_duration_days_total) == 0 else "day"}, \
+{str(longest_duration_hours_total)} \
+{"hours" if int(longest_duration_hours_total) > 1 or int(longest_duration_hours_total) == 0 else "hour"}, \
+{str(longest_duration_minutes_total)} \
+{"minutes" if int(longest_duration_minutes_total) > 1 or int(longest_duration_minutes_total) == 0 else "minute"}, \
+and {str(longest_duration_seconds_total)} \
+{"seconds" if int(longest_duration_seconds_total) > 1 or int(longest_duration_seconds_total) == 0 else "second"}.""")
+    # This is so much more jank and longer than it needs to be probably, but I like descriptive variables and am
+    # super dumb.
+    await ctx.send(embed=embed)  # Sends it.
 
 
 @bot.group(pass_context=True, name="minions", aliases=["m"])  # This defines a group of commands, so that subcommands
