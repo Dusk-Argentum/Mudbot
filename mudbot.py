@@ -4,7 +4,7 @@ import os  # The os module. Used in Mudbot to call up environmental variables, w
 import discord  # The Discord module. Used in Mudbot to do Discord things.
 from discord.ext import commands, tasks  # Imports the commands and tasks submodules, for use in commands and tasks.
 from discord.ext.commands import CheckFailure, CommandInvokeError, CommandNotFound, MemberNotFound  # Error handling imports.
-from discord.ext.commands import guild_only, NoPrivateMessage, has_role, MissingRole, UserNotFound
+from discord.ext.commands import guild_only, NoPrivateMessage, has_role, has_any_role, MissingRole, UserNotFound
 
 
 import random  # The random module. Used in Mudbot to generate random numbers when need be.
@@ -31,7 +31,7 @@ from datetime import datetime, timezone  # For use in getting times.
 import pytz  # A timezone module.
 
 
-PREFIX = "-"  # This defines the prefix for Mudbot. Commands MUST start with this character to be processed and run.
+PREFIX = "+"  # This defines the prefix for Mudbot. Commands MUST start with this character to be processed and run.
 DESCRIPTION = "A bot for use in the Aether Hunts Discord server. Made by Dusk Argentum#6530."
 # This defines Mudbot's description.
 TOKEN = os.environ.get("Mudbot_TOKEN")  # This defines the unique token used by Mudbot to log in to Discord.
@@ -41,7 +41,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.10"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.10d"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -217,7 +217,7 @@ Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # S
 
 @bot.command(name=f"early_pull", aliases=[f"ep", f"early"])  # This defines the `early_pull` command.
 @guild_only()  # This command can only be run within a guild.
-@has_role(569959138583511082)  # This command can only be run by members who have this role.
+@has_any_role(569959138583511082, 551977968503881748)  # This command can only be run by members who have this role.
 async def early_pull(ctx):  # This command was requested by the Aether Hunts mod team in response to the vast
     # number of complaints about early pullers following patch 5.5.
     with open("complaint_log.json", "r+") as complaint_log:  # Opens the complaint log.
