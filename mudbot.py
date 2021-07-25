@@ -41,7 +41,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.10d"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.11"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -757,6 +757,7 @@ Debug information:
                             world_role = discord.utils.get(ctx.guild.roles, name=f"{character_world_name}")
                             dc_role = discord.utils.get(ctx.guild.roles, name=f"{character_dc_name}")
                             licensed_hunter_role = discord.utils.get(ctx.guild.roles, name="Licensed Hunter")
+                            licensed_viewer_role = discord.utils.get(ctx.guild.roles, name="Licensed Viewer")
                             check_for_deprecated_world = re.search(r"""(\'Adamantoise\'|\'Aegis\'|\'Alexander\'|
 \'Anima\'|\'Asura\'|\'Bahamut\'|\'Balmung\'|\'Behemoth\'|\'Belias\'|\'Brynhildr\'|\'Cactuar\'|\'Carbuncle\'|
 \'Cerberus\'|\'Chocobo\'|\'Coeurl\'|\'Diabolos\'|\'Durandal\'|\'Excalibur\'|Exodus\'|\'Faerie\'|\'Famfrit\'|\'Fenrir\'|
@@ -792,8 +793,8 @@ Debug information:
                                     pass
                             if character_dc_name == "Aether":
                                 embed = discord.Embed(title="Verification complete!", description="""Please feel free \
-to peruse the React Roles category and pick up roles for anything you are interested in. Welcome to Aether Hunts!""",
-                                                      color=discord.Color(0x00cc00))
+to peruse the React Roles category and use <#865129809452728351> to pick up roles for anything you are interested in. \
+Welcome to Aether Hunts!""", color=discord.Color(0x00cc00))
                                 embed.add_field(name="Roles Granted:",
                                                 value=f"""<@&{licensed_hunter_role.id}>
 <@&{world_role.id}>\n<@&{dc_role.id}>""")
@@ -849,6 +850,9 @@ unable to change your name.""")
                                 pass
                             embed.set_thumbnail(url=character_avatar_url)
                             await ctx.send(embed=embed)
+                            await ctx.author.add_roles(licensed_viewer_role)
+                            await asyncio.sleep(300)
+                            await ctx.author.remove_roles(licensed_viewer_role)
                             return
                     elif is_in_database is not None:
                         await wait.delete()
@@ -1338,6 +1342,7 @@ Please wait and retry the command.""")
                             # The following lines get their respective roles so they can be added.
                             dc_role = discord.utils.get(ctx.guild.roles, name=f"{character_dc_name}")
                             licensed_hunter_role = discord.utils.get(ctx.guild.roles, name="Licensed Hunter")
+                            licensed_viewer_role = discord.utils.get(ctx.guild.roles, name="Licensed Viewer")
                             check_for_deprecated_world = re.search(r"""(\'Adamantoise\'|\'Aegis\'|\'Alexander\'|
 \'Anima\'|\'Asura\'|\'Bahamut\'|\'Balmung\'|\'Behemoth\'|\'Belias\'|\'Brynhildr\'|\'Cactuar\'|\'Carbuncle\'|
 \'Cerberus\'|\'Chocobo\'|\'Coeurl\'|\'Diabolos\'|\'Durandal\'|\'Excalibur\'|Exodus\'|\'Faerie\'|\'Famfrit\'|\'Fenrir\'|
@@ -1381,9 +1386,8 @@ Please wait and retry the command.""")
                             if character_dc_name == "Aether":  # The following block executes if the command invoker's
                                 # character's DC is Aether.
                                 embed = discord.Embed(title="Verification complete!", description="""Please feel free \
-to peruse the React Roles category and pick up roles for anything you are interested in. Welcome to Aether Hunts!""",
-                                                      color=discord.Color(0x00cc00))  # Defines the embed and sets
-                                # some content.
+to peruse the React Roles category and use <#865129809452728351> to pick up roles for anything you are interested in. \
+Welcome to Aether Hunts!""", color=discord.Color(0x00cc00))
                                 embed.add_field(name="Roles Granted:",
                                                 value=f"""<@&{licensed_hunter_role.id}>
 <@&{world_role.id}>\n<@&{dc_role.id}>""")  # Informs the command invoker that their Licensed Hunter, world, and DC
@@ -1445,6 +1449,9 @@ unable to change your name.""")
                                 pass
                             embed.set_thumbnail(url=character_avatar_url)
                             await ctx.send(embed=embed)
+                            await ctx.author.add_roles(licensed_viewer_role)
+                            await asyncio.sleep(300)
+                            await ctx.author.remove_roles(licensed_viewer_role)
                             return
                     elif is_in_database is not None:  # The following block executes if the command invoker DOES
                         # have a character in the database.
@@ -1701,7 +1708,7 @@ limitation, I am unable to change your name.""")
                             return
 
 
-@bot.command(pass_context=True, name="unlink", aliases=["un"])  # Defines the unlink command.
+@bot.command(pass_context=True, name="unlink", aliases=["ul"])  # Defines the unlink command.
 async def unlink(ctx):
     """Deletes the current user's character information from the database."""
     if ctx.guild is None:  # Prevents the command from being run in a DM. The command would error anyway.
