@@ -41,7 +41,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.11"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.12"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -827,6 +827,16 @@ caters to players from the Primal Datacenter!""",
                                                       color=discord.Color(0xcf7602))
                                 embed.add_field(name="The Coeurl (Primal Hunts) Discord Link:",
                                                 value="https://discord.gg/k4xNWdV", inline=False)
+                                embed.add_field(name="Roles Granted:", value=f"<@&{world_role.id}>\n<@&{dc_role.id}>")
+                                pass
+                            elif character_dc_name == "Elemental":
+                                embed = discord.Embed(title="Verification complete!", description="""Unfortunately, \
+you have registered with a character not from Aether, making our Discord useless to you. Please re-attempt \
+the linking process with a character from Aether, or consider joining Faloop! - FFXIV The Hunt Discord, which \
+caters to players from the Elemental Datacenter!""",
+                                                      color=discord.Color(0xcf7602))
+                                embed.add_field(name="Faloop! - FFXIV The Hunt Discord Link:",
+                                                value="https://discord.gg/kQT4NfsemN", inline=False)
                                 embed.add_field(name="Roles Granted:", value=f"<@&{world_role.id}>\n<@&{dc_role.id}>")
                                 pass
                             else:
