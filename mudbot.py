@@ -1403,7 +1403,7 @@ Please wait and retry the command.""")
                         embed = discord.Embed(title="Whoops!", description="""Please be sure to read the verification \
 instructions more clearly. You have attempted to verify as the example character.
 Proper usage:
-`+link CHARACTER_FIRST_NAME CHARACTER_LAST_NAME WoRLD_NAME`""", color=discord.Color(0xff0000))
+`+link CHARACTER_FIRST_NAME CHARACTER_LAST_NAME WORLD_NAME`""", color=discord.Color(0xff0000))
                         await ctx.send(embed=embed)
                         await wait.delete()
                         return
