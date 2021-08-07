@@ -5,6 +5,7 @@ import discord  # The Discord module. Used in Mudbot to do Discord things.
 from discord.ext import commands, tasks  # Imports the commands and tasks submodules, for use in commands and tasks.
 from discord.ext.commands import CheckFailure, CommandInvokeError, CommandNotFound, MemberNotFound  # Error handling imports.
 from discord.ext.commands import guild_only, NoPrivateMessage, has_role, has_any_role, MissingRole, UserNotFound
+from discord import HTTPException, Forbidden, NotFound
 
 
 import random  # The random module. Used in Mudbot to generate random numbers when need be.
@@ -39,9 +40,10 @@ TOKEN = os.environ.get("Mudbot_TOKEN")  # This defines the unique token used by 
 XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token used by Mudbot to log in to XIVAPI.
 
 
+SHOULD_AUTOKICK_UNVERIFIED = 1
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.12"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.14"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -64,6 +66,7 @@ bot.remove_command("help")  # Removes the in-built help command in favor of a cu
 async def on_ready():  # Functions in this block execute upon startup.
     await bot.change_presence(status=discord.Status.online, activity=discord.Game("w/ hunters! | +help"))
     # The above changes the bot's presence (status) to the specified "game" when starting up.
+    autokick_unverified.start()  # This sets the autokick_unverified background task in motion.
     status_rotation.start()  # This sets the status_rotation background task in motion.
     print("Mudbot online. Awaiting commands!")  # Prints to the console that the bot is ready to be used.
 
@@ -123,6 +126,48 @@ async def on_member_join(ctx):  # Functions in this block execute upon a member'
 # ! BACKGROUND TASKS:  These tasks execute in the background constantly.
 
 
+@tasks.loop(seconds=300.0)
+async def autokick_unverified():
+    while SHOULD_AUTOKICK_UNVERIFIED == 1:
+        guild = bot.get_guild(542602456132091904)
+        channel = bot.get_channel(738670827490377800)
+        owner = bot.get_user(97153790897045504)
+        for member in channel.members:
+            member_duration_raw = datetime.now() - member.joined_at
+            member_duration_seconds_raw = member_duration_raw.total_seconds()
+            member_duration_seconds = (str(member_duration_seconds_raw).split(".")[0])
+            # print(str(member))
+            # print(str(member_duration_seconds))
+            # print(len(member.roles))
+            if len(member.roles) == 1 and int(member_duration_seconds) > 604800:
+                reason = """You were kicked from the Aether Hunts Discord for failing to verify your character within \
+one week of joining.
+You are welcome to join again! Be sure to follow the directions at the top of the #get-registered-here channel.
+http://discord.gg/aetherhunts"""
+                try:
+                    await member.send(f"{reason}")
+                except Forbidden:
+                    pass
+                except HTTPException:
+                    pass
+                try:
+                    await guild.kick(member, reason=reason)
+                except Forbidden:
+                    await owner.send(f"""I failed an automatic unverified kick! I attempted to kick {member} \
+({member.id}) and failed. Error: FORBIDDEN.""")
+                    return
+                except HTTPException:
+                    await owner.send(f"""I failed an automatic unverified kick! I attempted to kick {member} \
+({member.id}) and failed. Error: HTTPException.""")
+                    return
+                continue
+            elif len(member.roles) == 1 and int(member_duration_seconds) < 604800:
+                continue
+            elif len(member.roles) > 1:
+                continue
+        return
+
+
 @tasks.loop(seconds=150.0)  # Defines a task which loops (or is supposed to...) every 150 seconds (2 1/2 minutes).
 async def status_rotation():  # Defines the status_rotation event.
     while SHOULD_STATUS_CHANGE == 1:  # Functions in this block loop by default (as the SHOULD_STATUS_CHANGE global
@@ -147,6 +192,38 @@ async def before_status_rotation():
 
 
 # ! TESTING GROUND: Any commands here are in-progress and being tested. Use is forbidden.
+
+
+# ADMIN ONLY: These commands can only be run by members with the Admin role.
+
+
+@bot.group(name="autokick", aliases=["ak", "auto"])
+@has_role(551968333008732169)
+async def autokick(ctx):
+    """Toggles whether or not unverified members are automatically kicked."""
+    if ctx.invoked_subcommand is None:
+        await ctx.send("No argument specified. Acceptable arguments: `on`, `off`")
+        return
+    else:
+        pass
+
+
+@autokick.command(name="on", aliases=["y", "1"])
+@has_role(551968333008732169)
+async def on(ctx):
+    global SHOULD_AUTOKICK_UNVERIFIED
+    SHOULD_AUTOKICK_UNVERIFIED = 1
+    await ctx.send("Autokick enabled.")
+    return
+
+
+@autokick.command(name="off", aliases=["n", "0"])
+@has_role(551968333008732169)
+async def off(ctx):
+    global SHOULD_AUTOKICK_UNVERIFIED
+    SHOULD_AUTOKICK_UNVERIFIED = 0
+    await ctx.send("Autokick disabled. Note that this change only lasts until the bot restarts.")
+    return
 
 
 # HELP COMMAND: This is the block where the help command is, which lists all commands and their arguments.
@@ -723,6 +800,19 @@ Debug information:
                 # print(str(character_dc_name))
                 # print(str(character_avatar_url))
                 # These are all commented out because I got tired of rewriting them when I needed to debug something.
+                if character_first_name == "Dusk" and character_last_name == "Argentum":
+                    if ctx.author.id != 97153790897045504 and ctx.author.id != 218530229730148352:
+                        embed = discord.Embed(title="Whoops!", description="""Please be sure to read the verification \
+instructions more clearly. You have attempted to verify as the example character.
+Proper usage:
+`+id_link YOUR_ID_HERE`
+Your character ID can be found by visiting https://na.finalfantasyxiv.com/lodestone/my/ and clicking your character's \
+name near the top, in the blue banner.""", color=discord.Color(0xff0000))
+                        await ctx.send(embed=embed)
+                        await wait.delete()
+                        return
+                    else:
+                        pass
                 if character_world_name not in str(ctx.guild.roles):
                     await ctx.guild.create_role(name=f"{character_world_name}")
                     pass
@@ -1308,6 +1398,17 @@ Please wait and retry the command.""")
                 # print(str(character_world_name))
                 # print(str(character_dc_name))
                 # print(str(character_avatar_url))
+                if character_first_name == "Dusk" and character_last_name == "Argentum":
+                    if ctx.author.id != 97153790897045504 and ctx.author.id != 218530229730148352:
+                        embed = discord.Embed(title="Whoops!", description="""Please be sure to read the verification \
+instructions more clearly. You have attempted to verify as the example character.
+Proper usage:
+`+link CHARACTER_FIRST_NAME CHARACTER_LAST_NAME WoRLD_NAME`""", color=discord.Color(0xff0000))
+                        await ctx.send(embed=embed)
+                        await wait.delete()
+                        return
+                    else:
+                        pass
                 if character_world_name not in str(ctx.guild.roles):  # Checks if the character's world has a role on the
                     # server the command is invoked on and adds the role if it doesn't exist.
                     await ctx.guild.create_role(name=f"{character_world_name}")
