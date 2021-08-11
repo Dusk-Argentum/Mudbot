@@ -2,10 +2,10 @@ import os  # The os module. Used in Mudbot to call up environmental variables, w
 # information.
 
 import discord  # The Discord module. Used in Mudbot to do Discord things.
+from discord import HTTPException, Forbidden, NotFound  # Error handling imports.
 from discord.ext import commands, tasks  # Imports the commands and tasks submodules, for use in commands and tasks.
 from discord.ext.commands import CheckFailure, CommandInvokeError, CommandNotFound, MemberNotFound  # Error handling imports.
 from discord.ext.commands import guild_only, NoPrivateMessage, has_role, has_any_role, MissingRole, UserNotFound
-from discord import HTTPException, Forbidden, NotFound
 
 
 import random  # The random module. Used in Mudbot to generate random numbers when need be.
@@ -40,10 +40,11 @@ TOKEN = os.environ.get("Mudbot_TOKEN")  # This defines the unique token used by 
 XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token used by Mudbot to log in to XIVAPI.
 
 
-SHOULD_AUTOKICK_UNVERIFIED = 1
+SHOULD_AUTOKICK_UNVERIFIED = 1  # A global variable that defines whether or not the bot should autokick people who
+# have not verified and joined more than one week ago.
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.14"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.15"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -126,33 +127,43 @@ async def on_member_join(ctx):  # Functions in this block execute upon a member'
 # ! BACKGROUND TASKS:  These tasks execute in the background constantly.
 
 
-@tasks.loop(seconds=300.0)
-async def autokick_unverified():
-    while SHOULD_AUTOKICK_UNVERIFIED == 1:
-        guild = bot.get_guild(542602456132091904)
-        channel = bot.get_channel(738670827490377800)
-        owner = bot.get_user(97153790897045504)
-        for member in channel.members:
-            member_duration_raw = datetime.now() - member.joined_at
-            member_duration_seconds_raw = member_duration_raw.total_seconds()
-            member_duration_seconds = (str(member_duration_seconds_raw).split(".")[0])
-            # print(str(member))
-            # print(str(member_duration_seconds))
-            # print(len(member.roles))
-            if len(member.roles) == 1 and int(member_duration_seconds) > 604800:
+@tasks.loop(seconds=300.0)  # Sets the task to loop every 300 seconds, or 5 minutes.
+async def autokick_unverified():  # Defines the autokick_unverified task.
+    while SHOULD_AUTOKICK_UNVERIFIED == 1:  # Functions in this block only execute while the SHOULD_AUTOKICK_UNVERIFIED
+        # global variable is 1.
+        guild = bot.get_guild(542602456132091904)  # Defines Aether Hunts.
+        channel = bot.get_channel(738670827490377800)  # Defines the get_registered_here channel.
+        owner = bot.get_user(97153790897045504)  # Hehe, that's me! That's Dusk!
+        for member in channel.members:  # Functions in this block execute for every member in the get_registered_here
+            # channel.
+            member_duration_raw = datetime.now() - member.joined_at  # Gets the raw amount of time a member has been
+            # on the server.
+            member_duration_seconds_raw = member_duration_raw.total_seconds()  # Turns the raw amount of time into
+            # seconds.
+            member_duration_seconds = (str(member_duration_seconds_raw).split(".")[0])  # Gets the final product of how
+            # long a member has been on the server for comparison as a number by removing microseconds.
+            if len(member.roles) == 1 and int(member_duration_seconds) > 604800:  # Functions in this block only
+                # execute if a member has no roles (a member with 0 roles has 1 role, apparently) and they
+                # have been on the server for more than 604800 seconds, which is one week.
                 reason = """You were kicked from the Aether Hunts Discord for failing to verify your character within \
 one week of joining.
 You are welcome to join again! Be sure to follow the directions at the top of the #get-registered-here channel.
-http://discord.gg/aetherhunts"""
-                try:
-                    await member.send(f"{reason}")
-                except Forbidden:
+http://discord.gg/aetherhunts"""  # Defines the reason for kicking, which is logged and also sent to the receiving
+                # user so they know why they were kicked and how to rejoin.
+                try:  # Functions in this block are attempted to execute...
+                    await member.send(f"{reason}")  # Sends the reason for the kick to the user.
+                except Forbidden:  # If, for some reason, the user cannot receive any messages from Mudbot,
+                    # either this exception or the next will catch, but they both pass on anyway. This is not the case
+                    # further on.
                     pass
                 except HTTPException:
                     pass
                 try:
-                    await guild.kick(member, reason=reason)
-                except Forbidden:
+                    await guild.kick(member, reason=reason)  # Kicks the user, giving the reason which is set in the
+                    # audit log.
+                except Forbidden:  # If, for some reason, the user cannot be kicked, functions in this block or the
+                    # next execute, letting the owner know. This should never happen. I don't know why I made it a
+                    # try-except block.
                     await owner.send(f"""I failed an automatic unverified kick! I attempted to kick {member} \
 ({member.id}) and failed. Error: FORBIDDEN.""")
                     return
@@ -160,12 +171,16 @@ http://discord.gg/aetherhunts"""
                     await owner.send(f"""I failed an automatic unverified kick! I attempted to kick {member} \
 ({member.id}) and failed. Error: HTTPException.""")
                     return
+                continue  # Loops back to the top of the "these functions happen to every member in the channel" loop.
+            elif len(member.roles) == 1 and int(member_duration_seconds) < 604800:  # Functions in this block
+                # execute if a member in the channel has no roles but has been here for less than a week.
                 continue
-            elif len(member.roles) == 1 and int(member_duration_seconds) < 604800:
+            elif len(member.roles) > 1:  # Functions in this block execute if a member has more than zero roles
+                # in the channel. Fun fact: I initially tried this with "elif roles greater than or equal to two", but
+                # it didn't work. "greater than or equal to two" and "greater than one" mean the same fucking thing.
                 continue
-            elif len(member.roles) > 1:
-                continue
-        return
+        return  # Once the function has looped for every member of the channel, stops doing the loop until the task is
+    # called again in 5 minutes.
 
 
 @tasks.loop(seconds=150.0)  # Defines a task which loops (or is supposed to...) every 150 seconds (2 1/2 minutes).
@@ -197,7 +212,8 @@ async def before_status_rotation():
 # ADMIN ONLY: These commands can only be run by members with the Admin role.
 
 
-@bot.group(name="autokick", aliases=["ak", "auto"])
+@bot.group(name="autokick", aliases=["ak", "auto"])  # Defines the autokick command, which is just an admin toggle
+# just in case the autokick function needs to be turned off, for some reason. I don't know why I put it in either.
 @has_role(551968333008732169)
 async def autokick(ctx):
     """Toggles whether or not unverified members are automatically kicked."""
@@ -211,8 +227,8 @@ async def autokick(ctx):
 @autokick.command(name="on", aliases=["y", "1"])
 @has_role(551968333008732169)
 async def on(ctx):
-    global SHOULD_AUTOKICK_UNVERIFIED
-    SHOULD_AUTOKICK_UNVERIFIED = 1
+    global SHOULD_AUTOKICK_UNVERIFIED  # Imports the SHOULD_AUTOKICK_UNVERIFIED global variable for editing.
+    SHOULD_AUTOKICK_UNVERIFIED = 1  # Sets the global variable to 1.
     await ctx.send("Autokick enabled.")
     return
 
@@ -221,8 +237,9 @@ async def on(ctx):
 @has_role(551968333008732169)
 async def off(ctx):
     global SHOULD_AUTOKICK_UNVERIFIED
-    SHOULD_AUTOKICK_UNVERIFIED = 0
-    await ctx.send("Autokick disabled. Note that this change only lasts until the bot restarts.")
+    SHOULD_AUTOKICK_UNVERIFIED = 0  # Sets the global variable to 0.
+    await ctx.send("Autokick disabled. Note that this change only lasts until the bot restarts.")  # There is no
+    # meaningful or necessary way to keep a global variable at the value it was set to persist between restarts.
     return
 
 
@@ -237,7 +254,10 @@ async def help_(ctx):
         random_color = random.randint(1, 16777215)  # Generates a random color.
         embed = discord.Embed(title="Mudbot Commands", color=discord.Color(int(random_color)))  # Defines the beginning
         # of the embed, as well as setting its color to the random color generated above.
-        embed.add_field(name="Hunting", value="""`+minions [area]` [Alias: `+m`]
+        embed.add_field(name="Hunting", value=f"""`{PREFIX}fate [fate]` [Alias: `{PREFIX}f`]
+Sends the information for the specified `fate` when invoked.
+
+`+minions [area]` [Alias: `+m`]
 Sends the map for `area`'s minions when invoked.""", inline=False)  # Lists all of the Hunting module's commands and
         # their invocation examples.
         embed.add_field(name="Verification", value="""`+id_link` [Alias: `+id`]
@@ -267,7 +287,10 @@ async def pm(ctx):  # Everything else is the same.
     """PMs the help message to the invoker."""
     random_color = random.randint(1, 16777215)
     embed = discord.Embed(title="Mudbot Commands", color=discord.Color(int(random_color)))
-    embed.add_field(name="Hunting", value="""`+minions [area]` [Alias: `+m`]
+    embed.add_field(name="Hunting", value=f"""`{PREFIX}fate [fate]` [Alias: `{PREFIX}f`]
+Sends the information for the specified `fate` when invoked.
+
+`+minions [area]` [Alias: `+m`]
 Sends the map for `area`'s minions when invoked.""", inline=False)  # Lists all of the Hunting module's commands and
     # their invocation examples.
     embed.add_field(name="Verification", value="""`+id_link` [Alias: `+id`]
@@ -386,6 +409,218 @@ and {str(longest_duration_seconds_total)} \
     # This is so much more jank and longer than it needs to be probably, but I like descriptive variables and am
     # super dumb.
     await ctx.send(embed=embed)  # Sends it.
+
+
+FATE_AUTHOR_ICON_URL = "http://ffxiv.gamerescape.com/w/images/1/11/Map65_Icon.png"  # Defines the URL for the
+# FATE icon for use in the set_author icon_url argument.
+FATE_COLOR = 0xff00fb  # Defines the color for the embed for use in the discord.Embed color argument.
+FATE_FOOTER_ICON_URL = "https://i.imgur.com/z2e4PYk.png"  # Defines the URL for the RetahGaming icon for use in the
+# set_footer icon_url argument.
+
+
+@bot.group(name="fate", aliases=["f"])  # Defines the fate command.
+async def fate(ctx):
+    """Sends the information for `fate` when invoked."""
+    if ctx.invoked_subcommand is None:
+        embed = discord.Embed(title=f"FATEs", description=f"""Whether it be a renowned beast from Final Fantasy's \
+lore, or a creature from myths and legends, Final Fantasy XIV is host to a number of FATEs that can be undertaken \
+by players of varying strengths and experience levels to achieve great rewards. These aforementioned FATEs are \
+listed below.
+For more information on a specific FATE, use `{PREFIX}fate`, followed by the name of the FATE or the creature \
+fought within, eg. `{PREFIX}fate ixion`.""", color=FATE_COLOR)  # The flavor
+        # is unnecessary, but I'm keeping it. My bot, my rules, I wrote it myself.
+        embed.set_author(name=f"FATE Information", icon_url=FATE_AUTHOR_ICON_URL)  # Sets the "author" and the icon
+        # of the author to be a custom name and icon.
+        embed.set_thumbnail(url=FATE_AUTHOR_ICON_URL)  # Sets the thumbnail to be a typical FATE icon.
+        embed.add_field(name=f"A Realm Reborn (2.0)", value=f"""[Behemoth](https://ffxiv.gamerescape.com/wiki/Behemoth) \
+| [He Taketh It With His Eyes](https://ffxiv.gamerescape.com/wiki/He_Taketh_It_with_His_Eyes) \
+| `{PREFIX}fate behemoth`
+[Odin](https://ffxiv.gamerescape.com/wiki/Odin) \
+| [Steel Reign](https://ffxiv.gamerescape.com/wiki/Steel_Reign) \
+| `{PREFIX}fate odin`""", inline=False)  # Defines the field of ARR FATEs.
+        embed.add_field(name=f"Heavensward (3.0)", value=f"""[Coeurlregina](https://ffxiv.gamerescape.com/wiki/Coeurlregina) \
+| [Coeurls Chase Boys Chase Coeurls](https://ffxiv.gamerescape.com/wiki/Coeurls_Chase_Boys_Chase_Coeurls) \
+| `{PREFIX}fate coeurl`
+[Proto Ultima](https://ffxiv.gamerescape.com/wiki/Prey_Online) \
+| [Prey Online](https://ffxiv.gamerescape.com/wiki/Prey_Online) \
+| `{PREFIX}fate ultima`""", inline=False)  # Defines the field of HW FATEs.
+        embed.add_field(name=f"Stormblood (4.0)", value=f"""[Tamamo Gozen](https://ffxiv.gamerescape.com/wiki/Tamamo_Gozen) \
+| [Foxy Lady](https://ffxiv.gamerescape.com/wiki/Foxy_Lady) \
+| `{PREFIX}fate foxy`
+[Ixion](https://ffxiv.gamerescape.com/wiki/Ixion) \
+| [A Horse Outside](https://ffxiv.gamerescape.com/wiki/A_Horse_Outside) \
+| `{PREFIX}fate ixion`""", inline=False)  # Defines the field of SB FATEs.
+        embed.add_field(name=f"Shadowbringers (5.0)", value=f"""[Archaeotania](https://ffxiv.gamerescape.com/wiki/Archaeotania) \
+| [The Head, The Tail, The Whole Damned Thing](https://ffxiv.gamerescape.com/wiki/The_Head,_the_Tail,_the_Whole_Damned_Thing) \
+| `{PREFIX}fate arch`
+[Formidable](https://ffxiv.gamerescape.com/wiki/Formidable) \
+| [A Finale Most Formidable](https://ffxiv.gamerescape.com/wiki/A_Finale_Most_Formidable) \
+| `{PREFIX}fate formidable`""", inline=False)  # Defines the field of ShB FATEs.
+        embed.set_footer(text=f"Maps courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)  # Sets the footer
+        # crediting Retah and using their site icon.
+        await ctx.send(embed=embed)
+        return
+    else:
+        pass
+
+
+@fate.command(name=f"archaeotania", aliases=[f"arch", f"archae"])
+# A lot of the comments for the embeds would be the same, so I'm not doing them. Just read the fate command's comments.
+async def archaeotania(ctx):
+    embed = discord.Embed(title=f"The Tempest | Level 80 FATE", description=f"""Drawn by the scent of sanguine \
+coral, Archaeotania finally shows itself. The time has come to end its reign of terror once and for all.""",
+                          color=FATE_COLOR)
+    embed.set_author(name=f"The Head, The Tail, The Whole Damned Thing", icon_url=FATE_AUTHOR_ICON_URL)
+    embed.set_thumbnail(url=f"https://i.imgur.com/H5jaoaf.png")
+    embed.add_field(name=f"Spawn Timer", value=f"Every 24-48 Hours", inline=True)
+    embed.add_field(name=f"Rewards", value=f"""**Gold** | 6x [Archaeotania's Horn](https://ffxiv.gamerescape.com/wiki/Archaeotania%27s_Horn)
+**Silver** | 4x [Archaeotania's Horn](https://ffxiv.gamerescape.com/wiki/Archaeotania%27s_Horn)
+**Bronze** | 2x [Archaeotania's Horn](https://ffxiv.gamerescape.com/wiki/Archaeotania%27s_Horn)""", inline=True)
+    embed.add_field(name=f"Preceding FATEs", value=f"""**Stage 1** | [Where Has the Dagon](https://ffxiv.gamerescape.com/wiki/Where_Has_the_Dagon)
+**Stage 2** | [Ondo of Blood](https://ffxiv.gamerescape.com/wiki/Ondo_of_Blood)
+**Stage 3** | [Lookin' Back on the Track](https://ffxiv.gamerescape.com/wiki/Lookin%27_Back_on_the_Track)
+**Stage 4** | [Coral Support](https://ffxiv.gamerescape.com/wiki/Coral_Support)
+**Stage 5** | [Low Coral Fiber](https://ffxiv.gamerescape.com/wiki/Low_Coral_Fiber)
+**Stage 6** | [Nothing Like a Trappin' Life](https://ffxiv.gamerescape.com/wiki/Nothing_Like_a_Trappin%27_Life)""",
+                    inline=False)
+    embed.set_image(url=f"https://www.retahgaming.com/ffxiv/images/shfull/archaeotania.gif")
+    embed.set_footer(text=f"Map courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)
+    await ctx.send(embed=embed)
+    return
+
+
+@fate.group(name=f"behemoth", aliases=[f"behe"])
+async def behemoth(ctx):
+    embed = discord.Embed(title=f"Coerthas Central Highlands | Level 50 FATE", description=f"""The behemoth has \
+taken flight back to its dominion. Make chase and finish the legendary beast once and for all.""", color=FATE_COLOR)
+    embed.set_author(name=f"He Taketh It With His Eyes", icon_url=FATE_AUTHOR_ICON_URL)
+    embed.set_thumbnail(url=f"https://i.imgur.com/avNA34m.png")
+    embed.add_field(name=f"Spawn Timer", value=f"Every 24-72 Hours", inline=True)
+    embed.add_field(name=f"Rewards", value=f"""**Gold** | 5x [Behemoth Horn](https://ffxiv.gamerescape.com/wiki/Behemoth_Horn)
+**Silver** | 1x [Behemoth Horn](https://ffxiv.gamerescape.com/wiki/Behemoth_Horn)""", inline=True)
+    embed.add_field(name=f"Preceding FATE", value=f"[Behold Now Behemoth](https://ffxiv.gamerescape.com/wiki/Behold_Now_Behemoth)",
+                    inline=False)
+    embed.set_image(url=f"https://www.retahgaming.com/ffxiv/images/arrfull/behemoth.gif")
+    embed.set_footer(text=f"Map courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)
+    await ctx.send(embed=embed)
+    return
+
+
+@fate.group(name=f"coeurlregina", aliases=[f"coeurl"])
+async def coeurlregina(ctx):
+    embed = discord.Embed(title=f"The Dravanian Forelands | Level 60 FATE", description=f"""Her main offensive a \
+tactical failure, Coeurlregina has sounded the retreat. However, if allowed the luxury of escape, it will only be a \
+matter of time before the wicked beast is conspiring another assault. Make chase, and end the queen's reign here and \
+now.""", color=FATE_COLOR)
+    embed.set_author(name=f"Coeurls Chase Boys Chase Coeurls", icon_url=FATE_AUTHOR_ICON_URL)
+    embed.set_thumbnail(url="https://i.imgur.com/hAxM2wM.png")
+    embed.add_field(name=f"Spawn Timer", value=f"""**Stage 1** | 24-48 Hours after Stage 3 (or failure)
+**Stage 2** | 2-12 Hours after Stage 1
+**Stage 3** | 4 Hours after Stage 2""", inline=True)
+    embed.add_field(name=f"Rewards", value=f"""**Stage 1** | 1x [Coeurlregina Horn](https://ffxiv.gamerescape.com/wiki/Coeurlregina_Horn)
+**Stage 2** | 3x [Coeurlregina Horn](https://ffxiv.gamerescape.com/wiki/Coeurlregina_Horn)
+**Stage 3** | 5x [Coeurlregina Horn](https://ffxiv.gamerescape.com/wiki/Coeurlregina_Horn)""", inline=True)
+    embed.add_field(name=f"Weather", value=f"<:RoyalLevin:873825058718625833> Royal Levin", inline=True)
+    embed.add_field(name=f"Preceding FATEs", value=f"""**Stage 1** | [Long Live the Coeurl](https://ffxiv.gamerescape.com/wiki/Long_Live_the_Coeurl)
+**Stage 2** | [Coeurls Chase Boys](https://ffxiv.gamerescape.com/wiki/Coeurls_Chase_Boys)""", inline=False)
+    embed.set_image(url=f"https://www.retahgaming.com/ffxiv/images/hwfull/coeurlregina.gif")
+    embed.set_footer(text=f"Map courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)
+    await ctx.send(embed=embed)
+    return
+
+
+@fate.group(name=f"formidable", aliases=[f"formid", f"form"])
+async def formidable(ctx):
+    embed = discord.Embed(title=f"Kholusia | Level 80 FATE", description=f"""It appears that the Goggs have been \
+secretly engineering a massive new automaton capable of thwacking and throttling on a scale heretofore unheard of. Put \
+an end to the malevolent machina by doing a little thwacking and/or throttling of your own.""", color=FATE_COLOR)
+    embed.set_author(name=f"A Finale Most Formidable", icon_url=FATE_AUTHOR_ICON_URL)
+    embed.set_thumbnail(url=f"https://i.imgur.com/3l2iaGB.png")
+    embed.add_field(name=f"Spawn Timer", value=f"Every 24-48 Hours", inline=True)
+    embed.add_field(name=f"Rewards", value=f"""**Gold** | 6x [Formidable Cog](https://ffxiv.gamerescape.com/wiki/Formidable_Cog)
+**Silver** | 4x [Formidable Cog](https://ffxiv.gamerescape.com/wiki/Formidable_Cog)
+**Bronze** | 2x [Formidable Cog](https://ffxiv.gamerescape.com/wiki/Formidable_Cog)""", inline=True)
+    embed.add_field(name=f"Preceding FATEs", value=f"""**Stage 1a** | [Ironbeard Builders - Resist](https://ffxiv.gamerescape.com/wiki/Ironbeard_Builders_-_Resist)
+**└►Stage 1b** | [Ironbeard Builders - Revolt](https://ffxiv.gamerescape.com/wiki/Ironbeard_Builders_-_Revolt)
+**└►Stage 1c** | [Ironbeard Builders - Rebuilt](https://ffxiv.gamerescape.com/wiki/Ironbeard_Builders_-_Rebuilt)
+**Stage 2a** | [Foes Most Formidable](https://ffxiv.gamerescape.com/wiki/Foes_Most_Formidable)
+**└►Stage 2b** | [A Family Most Formidable](https://ffxiv.gamerescape.com/wiki/A_Family_Most_Formidable)""",
+                    inline=False)
+    embed.set_image(url=f"https://www.retahgaming.com/ffxiv/images/shfull/formidable.gif")
+    embed.set_footer(text=f"Map courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)
+    await ctx.send(embed=embed)
+    return
+
+
+@fate.command(name=f"foxy", aliases=[f"foxylady", f"tamamogozen"])
+async def foxy(ctx):
+    embed = discord.Embed(title=f"Yanxia | Level 70 FATE", description=f"""Upon capture by a wicked Hingan onmyoji, \
+the nine-tailed fox spirit slumbering deep within the young maiden Mikuzume awakens. Now, the only way to stop the \
+legendary Tamamo Gozen is with an excessive display of force.""", color=FATE_COLOR)
+    embed.set_author(name=f"Foxy Lady", icon_url=FATE_AUTHOR_ICON_URL)
+    embed.set_thumbnail(url="https://i.imgur.com/2c2f5hm.png")
+    embed.add_field(name=f"Spawn Timer", value=f"Every 12-48 Hours", inline=True)
+    embed.add_field(name=f"Rewards", value=f"""**Gold** | 15 [Sassho-seki Fragment](https://ffxiv.gamerescape.com/wiki/Sassho-seki_Fragment)
+**Silver** | 6x [Sassho-seki Fragment](https://ffxiv.gamerescape.com/wiki/Sassho-seki_Fragment)""", inline=True)
+    embed.add_field(name=f"Preceding FATEs", value=f"""**Stage 1a** | [More to Offer](https://ffxiv.gamerescape.com/wiki/More_to_Offer)
+**└►Stage 1b** | [Freedom Flies](https://ffxiv.gamerescape.com/wiki/Freedom_Flies)
+**Stage 2** | [Outfoxed](https://ffxiv.gamerescape.com/wiki/Outfoxed)""", inline=False)
+    embed.set_image(url=f"https://www.retahgaming.com/ffxiv/images/sbfull/foxylady.gif")
+    embed.set_footer(text="Map courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)
+    await ctx.send(embed=embed)
+    return
+
+
+@fate.command(name=f"ixion", aliases=[f"ix"])
+async def ixion(ctx):
+    embed = discord.Embed(title=f"The Lochs | Level 70 FATE", description=f"""It is said on a mighty levinbolt \
+doth the warsteed Ixion ride─thunder, the rumbling of his hooves as they pound the very heavens. Ware the coming \
+storm, for hell descendeth.""", color=FATE_COLOR)
+    embed.set_author(name=f"A Horse Outside", icon_url=FATE_AUTHOR_ICON_URL)
+    embed.set_thumbnail(url=f"https://i.imgur.com/E6gPeQF.png")
+    embed.add_field(name=f"Spawn Timer", value=f"Every 18-36 Hours", inline=True)
+    embed.add_field(name=f"Rewards", value=f"""**Gold** | 6x [Ixion Horn](https://ffxiv.gamerescape.com/wiki/Ixion_Horn)
+**Silver** | 3x [Ixion Horn](https://ffxiv.gamerescape.com/wiki/Ixion_Horn)""", inline=True)
+    embed.add_field(name=f"Weather", value=f"<:Quicklevin:873820437254135838> Quicklevin", inline=True)
+    embed.set_image(url=f"https://www.retahgaming.com/ffxiv/images/sbfull/ixion.gif")
+    embed.set_footer(text=f"Map courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)
+    await ctx.send(embed=embed)
+    return
+
+
+@fate.command(name=f"odin", aliases=[f"od"])
+async def odin(ctx):
+    embed = discord.Embed(title=f"The Black Shroud | Level 50 FATE", description=f"""Atop his mighty steed, clad in \
+armor darker than the void, the elder primal Odin has returned to Eorzea to exact his brutal judgment upon the \
+realm.""", color=FATE_COLOR)
+    embed.set_author(name=f"Steel Reign", icon_url=FATE_AUTHOR_ICON_URL)
+    embed.set_thumbnail(url=f"https://i.imgur.com/bRTLdKO.png")
+    embed.add_field(name=f"Spawn Timer", value=f"Every 24-72 Hours", inline=True)
+    embed.add_field(name=f"Rewards", value=f"""**Gold** | 5x [Odin's Mantle](https://ffxiv.gamerescape.com/wiki/Odin%27s_Mantle)
+**Silver** | 1x [Odin's Mantle](https://ffxiv.gamerescape.com/wiki/Odin%27s_Mantle)""", inline=True)
+    embed.add_field(name=f"Weather", value=f"""<:Tension:873826604063813633> Tension""", inline=True)
+    embed.set_image(url=f"https://www.retahgaming.com/ffxiv/images/arrfull/odin.gif")
+    embed.set_footer(text=f"Map courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)
+    await ctx.send(embed=embed)
+    return
+
+
+@fate.command(name=f"ultima", aliases=[f"proto-ultima"])
+async def ultima(ctx):
+    embed = discord.Embed(title=f"Azys Lla | Level 59 FATE", description=f"""After five millennia offline, Proto \
+Ultima has restored auxiliary power and begun a full systems check. To recharge its main power cells, the Allagan \
+killing machine has deployed several aether collectors guarded by some of the most frightening of the fallen \
+empire's godless creations.""", color=FATE_COLOR)
+    embed.set_author(name=f"Prey Online", icon_url=FATE_AUTHOR_ICON_URL)
+    embed.add_field(name=f"Spawn Timer", value=f"Every 34-48 Hours", inline=True)
+    embed.add_field(name=f"Rewards", value=f"""**Gold** | 3x [Proto Ultima Exoplating](https://ffxiv.gamerescape.com/wiki/Proto_Ultima_Exoplating)
+**Silver** | 2x [Proto Ultima Exoplating](https://ffxiv.gamerescape.com/wiki/Proto_Ultima_Exoplating)
+**Bronze** | 1x [Proto Ultima Exoplating](https://ffxiv.gamerescape.com/wiki/Proto_Ultima_Exoplating)""", inline=True)
+    embed.add_field(name=f"Weather", value=f"<:Hyperelectricity:873819536477028372> Hyperelectricity", inline=True)
+    embed.set_image(url=f"https://www.retahgaming.com/ffxiv/images/hwfull/preyonline.gif")
+    embed.set_footer(text=f"Map courtesy of RetahGaming.com", icon_url=FATE_FOOTER_ICON_URL)
+    await ctx.send(embed=embed)
+    return
 
 
 @bot.group(pass_context=True, name="minions", aliases=["m"])  # This defines a group of commands, so that subcommands
