@@ -44,7 +44,7 @@ SHOULD_AUTOKICK_UNVERIFIED = 1  # A global variable that defines whether or not 
 # have not verified and joined more than one week ago.
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.15"  # Defines the version number, for use in internal tracking.
+VERSION = "1.0.16"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -212,7 +212,7 @@ async def before_status_rotation():
 # ADMIN ONLY: These commands can only be run by members with the Admin role.
 
 
-@bot.group(name="autokick", aliases=["ak", "auto"])  # Defines the autokick command, which is just an admin toggle
+@bot.group(name="autokick", aliases=["ak", "auto"], case_insensitive=True)  # Defines the autokick command, which is just an admin toggle
 # just in case the autokick function needs to be turned off, for some reason. I don't know why I put it in either.
 @has_role(551968333008732169)
 async def autokick(ctx):
@@ -246,8 +246,8 @@ async def off(ctx):
 # HELP COMMAND: This is the block where the help command is, which lists all commands and their arguments.
 
 
-@bot.group(pass_context=True, name="help_", aliases=["cmds", "commands", "h", "help"])  # Defines the help command group
-# and any of its aliases.
+@bot.group(pass_context=True, name="help_", aliases=["cmds", "commands", "h", "help"], case_insensitive=True)  # Defines
+# the help command group and any of its aliases.
 async def help_(ctx):
     """Shows a list of all commands, and whether or not a command has subcommands."""
     if ctx.invoked_subcommand is None:  # Functions in this block execute if no subcommands are invoked, eg. !help
@@ -418,7 +418,7 @@ FATE_FOOTER_ICON_URL = "https://i.imgur.com/z2e4PYk.png"  # Defines the URL for 
 # set_footer icon_url argument.
 
 
-@bot.group(name="fate", aliases=["f"])  # Defines the fate command.
+@bot.group(name=f"fate", aliases=[f"f"], case_insensitive=True)  # Defines the fate command.
 async def fate(ctx):
     """Sends the information for `fate` when invoked."""
     if ctx.invoked_subcommand is None:
@@ -426,8 +426,8 @@ async def fate(ctx):
 lore, or a creature from myths and legends, Final Fantasy XIV is host to a number of FATEs that can be undertaken \
 by players of varying strengths and experience levels to achieve great rewards. These aforementioned FATEs are \
 listed below.
-For more information on a specific FATE, use `{PREFIX}fate`, followed by the name of the FATE or the creature \
-fought within, eg. `{PREFIX}fate ixion`.""", color=FATE_COLOR)  # The flavor
+For more information on a specific FATE, use `{PREFIX}fate`, followed by the name of the creature fought within, eg. \
+`{PREFIX}fate ixion`.""", color=FATE_COLOR)  # The flavor
         # is unnecessary, but I'm keeping it. My bot, my rules, I wrote it myself.
         embed.set_author(name=f"FATE Information", icon_url=FATE_AUTHOR_ICON_URL)  # Sets the "author" and the icon
         # of the author to be a custom name and icon.
@@ -623,7 +623,7 @@ empire's godless creations.""", color=FATE_COLOR)
     return
 
 
-@bot.group(pass_context=True, name="minions", aliases=["m"])  # This defines a group of commands, so that subcommands
+@bot.group(pass_context=True, name="minions", aliases=["m"], case_insensitive=True)  # This defines a group of commands, so that subcommands
 # can be used.
 async def minions(ctx):
     """Sends the map for `area`'s minions when invoked."""
