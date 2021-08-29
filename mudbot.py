@@ -107,7 +107,7 @@ async def on_member_ban(guild, user):  # This event executes when the bot hears 
         channel = bot.get_channel(881170467292082196)  # Re-defines the channel that the bot will send the log to
         # to the auto actions log.
         autoban = 1  # Defines the ban as an automated ban.
-    timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())  # Defines the amount
+    timestamp = int((entry.created_at - datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())  # Defines the amount
     # of seconds that have passed since epoch.
     embed = discord.Embed(title=f"""{"Member banned." if autoban == 0 else "Member automatically banned."}""",
                           color=discord.Color(0xf02a07))  # Defines an embed and its basic parameters. The title will be
@@ -227,7 +227,7 @@ async def on_member_remove(member):  # This event triggers when the bot hears th
         channel = bot.get_channel(881170467292082196)  # Re-defines the channel as the channel the channel that the bot
         # logs automated actions in.
         autokick = 1  # Defines the kick as an automated kick.
-    timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())  # Defines the amount
+    timestamp = int((entry.created_at - datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())  # Defines the amount
     # of seconds since epoch.
     embed = discord.Embed(title=f"""{"Member kicked." if autokick == 0 else "Member automatically kicked."}""",
                           color=discord.Color(0xf59a38))  # Defines the embed and some of its parameters. The title will
@@ -260,7 +260,7 @@ async def on_member_unban(guild, user):  # This event triggers when the bot hear
         return entry.target.id == user.id and entry.action == discord.AuditLogAction.unban
 
     entry = await guild.audit_logs().find(predicate)
-    timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())
+    timestamp = int((entry.created_at - datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
     embed = discord.Embed(title="User unbanned.", color=discord.Color(0xebaba0))
     embed.set_author(name=f"{entry.user.name}", icon_url=f"{entry.user.avatar_url}")
     embed.set_thumbnail(url=f"{entry.target.avatar_url}")
@@ -299,7 +299,7 @@ async def on_member_update(before, after):  # This event triggers when the bot h
     if muted_search in str(before.roles) and muted_search not in str(after.roles):  # Functions in this block execute if
         # a user no longer has the muted role. This prevents the event from triggering if the Muted role is in both the
         # before state and after state.
-        timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())
+        timestamp = int((entry.created_at - datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
         embed = discord.Embed(title="Member unmuted.", color=discord.Color(0xb8dbc2))
         embed.set_author(name=f"{entry.user.name}", icon_url=f"{entry.user.avatar_url}")
         embed.set_thumbnail(url=f"{entry.target.avatar_url}")
@@ -317,7 +317,7 @@ async def on_member_update(before, after):  # This event triggers when the bot h
         await channel.send(embed=embed)
         return
     elif muted_search in str(after.roles) and muted_search not in str(before.roles):  # The inverse of the above block.
-        timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())
+        timestamp = int((entry.created_at - datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
         embed = discord.Embed(title=f"Member muted.", color=discord.Color(0x69727a))
         embed.set_author(name=f"{entry.user.name}", icon_url=f"{entry.user.avatar_url}")
         embed.set_thumbnail(url=f"{entry.target.avatar_url}")
