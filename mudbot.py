@@ -43,7 +43,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 SHOULD_NOTIFY_MILESTONE = 1
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.1.0BETA"  # Defines the version number, for use in internal tracking.
+VERSION = "1.1.0"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
