@@ -1,17 +1,18 @@
 import os  # The os module. Used in Mudbot to call up environmental variables, which help obscure sensitive
 # information.
 
-import discord  # The Discord module. Used in Mudbot to do Discord things.
+import discord  # The Discord module. Used in Mudbot to do Discord things. Rest in peace.
 from discord import HTTPException, Forbidden, NotFound  # Error handling imports.
 from discord.ext import commands, tasks  # Imports the commands and tasks submodules, for use in commands and tasks.
 from discord.ext.commands import CheckFailure, CommandInvokeError, CommandNotFound, MemberNotFound  # Error handling imports.
 from discord.ext.commands import guild_only, NoPrivateMessage, has_role, has_any_role, MissingRole, UserNotFound
+from discord.ext.commands import MissingAnyRole
 
 
 import random  # The random module. Used in Mudbot to generate random numbers when need be.
 
 
-import re  # The re (regex) module. Extremely useful in gathering and paring down information from documents
+import re  # The regex module. Extremely useful in gathering and paring down information from documents
 # and other text strings.
 
 
@@ -29,7 +30,6 @@ import json  # Json is used to keep track of imported character information and 
 
 
 from datetime import datetime, timezone  # For use in getting times.
-import pytz  # A timezone module.
 
 
 PREFIX = "+"  # This defines the prefix for Mudbot. Commands MUST start with this character to be processed and run.
@@ -40,17 +40,16 @@ TOKEN = os.environ.get("Mudbot_TOKEN")  # This defines the unique token used by 
 XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token used by Mudbot to log in to XIVAPI.
 
 
-SHOULD_AUTOKICK_UNVERIFIED = 1  # A global variable that defines whether or not the bot should autokick people who
-# have not verified and joined more than one week ago.
+SHOULD_NOTIFY_MILESTONE = 1
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.0.16"  # Defines the version number, for use in internal tracking.
+VERSION = "1.1.0BETA"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
 intents.members = True  # Gives the bot explicit permission to use the Members "privileged Intent", which grants
-# the bot the ability to view the member list, for use in stuff like `on_member_join`, in case that ever ends up
-# being a thing. Mostly this is just here to future proof so I don't have to worry about it.
+# the bot the ability to view the member list.
+intents.bans = True  # Gives the bot explicit permission to receive information on ban and unban events.
 
 
 bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), description=DESCRIPTION, pm_help=False,
@@ -60,126 +59,382 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), descriptio
 bot.remove_command("help")  # Removes the in-built help command in favor of a custom one.
 
 
-# ! EVENTS: These execute at varying times depending on their conditions.
+# ^ EVENTS: These execute at varying times depending on their conditions.
 
 
-@bot.event  # Defines the event to the bot.
-async def on_ready():  # Functions in this block execute upon startup.
-    await bot.change_presence(status=discord.Status.online, activity=discord.Game("w/ hunters! | +help"))
+@bot.event  # This defines an event, which listens for the condition specified, and then executes.
+async def on_command_error(ctx, error):  # This event executes when the bot hears that specified exceptions are caught.
+    if isinstance(error, CommandNotFound):  # This executes if a command is not found.
+        error = f"Command not found. View `+help` for valid commands."
+    elif isinstance(error, CommandInvokeError):  # This executes if a command is used incorrectly, or in circumstances
+        # where a command cannot finish executing properly and there is no specific handling for the error the command
+        # invokes.
+        error = f"Incorrect invocation. Please re-examine the command in `+help`."
+    elif isinstance(error, MemberNotFound):
+        if ctx.invoked_with == "info":  # Functions in this block execute if `info` is being used improperly.
+            error = f"""Member not found.
+Correct usage: `+info member_mention`, eg. `+info <@!97153790897045504>`.
+To grab a member's Discord ID, be sure to enable Developer Mode in your Discord settings, then simply right-click \
+them and click "Copy ID"."""
+        else:  # Functions in this block execute if the command being invoked is not `info`.
+            return  # Stops processing the event.
+    elif isinstance(error, MissingAnyRole):  # This executes if a command is being used by someone who does not have
+        # the roles required to run it.
+        error = "You don't have any of the roles required to run this command."
+    await ctx.message.channel.send(f"Error: {error}")  # Sends the error message in the channel where the command was
+    # invoked.
+    return
+
+
+@bot.event
+async def on_member_ban(guild, user):  # This event executes when the bot hears a ban.
+    autoban = 0  # Defines whether or not the ban heard was an autoban or not.
+    channel = bot.get_channel(654603610134675456)  # Defines the channel that the bot will send the log to.
+    if guild.id != channel.guild.id:  # Functions in this block will execute if the ID of the guild heard from the event
+        # and the guild of the defined channel are not the same.
+        return  # Stops processing the event. Essentially, this means that Mudbot will not log bans from servers
+    # that are not Aether Hunts.
+
+    def predicate(entry):  # Defines the predicate to search for, and what the variable that the information returned
+        # will be defined as.
+        return entry.target.id == user.id and entry.action == discord.AuditLogAction.ban  # Defines the conditions
+    # that the information returned must meet before being able to be returned.
+
+    entry = await guild.audit_logs().find(predicate)  # Searches the audit log for the first entry that meets the
+    # conditions defined in the predicate.
+    if entry.user.id == 204255221017214977 and "Your account is too new" in entry.reason:  # Functions in this block
+        # will execute if the creator of the ban is Mudbot and the string "Your account is too new" in the ban reason.
+        channel = bot.get_channel(881170467292082196)  # Re-defines the channel that the bot will send the log to
+        # to the auto actions log.
+        autoban = 1  # Defines the ban as an automated ban.
+    timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())  # Defines the amount
+    # of seconds that have passed since epoch.
+    embed = discord.Embed(title=f"""{"Member banned." if autoban == 0 else "Member automatically banned."}""",
+                          color=discord.Color(0xf02a07))  # Defines an embed and its basic parameters. The title will be
+    # different depending on whether or not the ban heard was an autoban or not.
+    embed.set_author(name=f"{entry.user.name}", icon_url=f"{entry.user.avatar_url}")  # Sets the embed's author as
+    # the person who initiated the ban.
+    embed.set_thumbnail(url=f"{entry.target.avatar_url}")  # Sets the embed's thumbnail as the same as the avatar of
+    # the banned user.
+    embed.add_field(name="Responsible Nutty Moderator:", value=f"""{entry.user.mention}
+{entry.user}
+({entry.user.id})""", inline=True)  # Sets a field informing who initiated the ban.
+    embed.add_field(name="Action Taken On:", value=f"""{entry.target.mention}
+{entry.target}
+({entry.target.id})""", inline=True)  # Sets a field informing who was the target of the ban.
+    embed.add_field(name="Time of Action:", value=f"<t:{str(timestamp)}>", inline=False)  # Sets a field giving
+    # a timestamp mention to the time of the action.
+    embed.add_field(name="Reason:",
+                    value=f"""{entry.reason if entry.reason is not None else "No reason specified."}""",
+                    inline=False)  # Sets a field informing the reason for the ban, or saying "No reason specified."
+    # if no reason was given.
+    embed.set_footer(text=f"{guild.name}", icon_url=f"{bot.user.avatar_url}")
+    await channel.send(embed=embed)
+    return
+
+
+@bot.event
+async def on_member_join(member):  # This event executes when the bot hears a join.
+    channel = bot.get_channel(881170467292082196)
+    guild = member.guild
+    if guild.id != channel.guild.id:
+        return
+    with open("auto_punish_info.json", "r") as auto_punish_info:  # Opens the auto_punish_info json, for use in
+        # determining whether the autoban is on or off and the age threshold new accounts must meet.
+        data = json.load(auto_punish_info)  # Loads the json's data as a json.
+        should_auto_punish = data["auto_punish_info"]["ban"]["enabled"]  # Loads the data from the auto_punish_info
+        # json on whether the autoban is on or off.
+        account_age_threshold = data["auto_punish_info"]["ban"]["threshold"]  # Loads the data from the auto_punish_info
+        # json on what the account age threshold is.
+        auto_punish_info.close()  # Closes the json.
+    if should_auto_punish != "true":  # Functions in this block execute if should_auto_punish is anything but "true".
+        return
+    account_age_threshold = re.search(r"(^\d{1,2})(m$|h$|d$)", str(account_age_threshold), re.IGNORECASE)  # Searches
+    # the account_age_threshold for the age threshold.
+    account_age_threshold_number = int(account_age_threshold.group(1))  # Defines the account_age_threshold number
+    # as the first group collected during the regex search above.
+    account_age_threshold_letter = str(account_age_threshold.group(2))  # Defines the account_age_threshold letter as
+    # the second group collected during the regex search above.
+    if account_age_threshold_letter == "m":  # Functions in this block execute if the letter is "m" for minutes.
+        account_age_threshold = account_age_threshold_number * 60  # Multiplies the number by the amount of seconds in
+        # one minute.
+    elif account_age_threshold_letter == "h":  # Functions in this block execute if the letter is "h" for hours.
+        account_age_threshold = account_age_threshold_number * 3600  # Multiplies the number by the amount of seconds in
+        # one hour.
+    elif account_age_threshold_letter == "d":  # Functions in this block execute if the letter is "d" for days.
+        account_age_threshold = account_age_threshold_number * 86400  # Multiplies the number by the amount of seconds
+        # in one day.
+    account_creation_time = datetime.strptime(str(member.created_at).partition(".")[0], "%Y-%m-%d %H:%M:%S")  # Gets
+    # the date and time that the member who joined was created at, removes milliseconds, and converts the result
+    # into a datetime object for use later.
+    account_age = (str((datetime.strptime(str(datetime.now(timezone.utc)).partition(".")[0],
+                   "%Y-%m-%d %H:%M:%S") - account_creation_time).total_seconds()).partition(".")[0])  # Subtracts
+    # the above account creation time from the current date and time, removing milliseconds and timezone information
+    # (the account creation time Discord returns is UTC by default) from the current date and time, for a definitive
+    # account age in seconds.
+    if int(account_age) < account_age_threshold:  # Functions in this block execute if the account's age in seconds is
+        # less than the account age threshold, which is also in seconds.
+
+        def predicate(entry):  # This is similar to the predicate from on_member_ban, except it searches for an unban.
+            return member.id == entry.target.id and entry.action == discord.AuditLogAction.unban
+
+        entry = await member.guild.audit_logs().find(predicate)
+        if entry is None:  # Functions in this block execute if there are no unbans found for this member.
+            # Used to prevent the bot from autobanning people who successfully appealed and try to rejoin with an
+            # account under the age threshold.
+            embed = discord.Embed(title=f"Sorry, you're too new!", description="""Your account is too new to join \
+this Discord! Please DM <@67089121339777024> (Satori#0240) or visit \
+[our ban appeal page](https://unban.aetherhunts.net/) to appeal.""", color=discord.Color(0xf02a07))
+            embed.set_author(name=f"{guild.name}", icon_url=f"{guild.icon_url}")
+            embed.set_thumbnail(url=f"{guild.banner_url}")
+            embed.set_footer(text=f"{guild.name}", icon_url=f"{bot.user.avatar_url}")
+            await member.send(embed=embed)
+            await member.guild.ban(member, reason=f"""Your account is too new to join this Discord! Please DM
+<@67089121339777024> (Satori#0240) or visit [our ban appeal page](https://unban.aetherhunts.net/) to appeal.""")  # Bans
+            # the member.
+            return
+        return  # This second return is here to stop processing if there is an entry found.
+
+
+@bot.event
+async def on_member_remove(member):  # This event triggers when the bot hears that a member left a server. Since there
+    # is no defined "on_member_kick" event, this is the one we use.
+    autokick = 0  # This defines the default value for whether the kick was an autokick or not.
+    channel = bot.get_channel(654603610134675456)
+    guild = member.guild
+    if guild.id != channel.guild.id:
+        return
+
+    def predicate(entry):  # Similar to previous predicates, this one instead searches the audit log for kicks.
+        return entry.target.id == member.id and entry.action == discord.AuditLogAction.kick
+
+    entry = await guild.audit_logs().find(predicate)
+    if entry is None:  # Functions in this block execute if there is no kick entry found for that member ever.
+        return
+    entry_creation_time = datetime.strptime(str(entry.created_at).partition(".")[0], "%Y-%m-%d %H:%M:%S")  # Similarly
+    # to the defining of the member's account creation time from on_member_join, this instead uses the creation time of
+    # the audit log entry.
+    entry_age = str((datetime.strptime(str(datetime.now(timezone.utc)).partition(".")[0],
+                                       "%Y-%m-%d %H:%M:%S") - entry_creation_time).total_seconds()).partition(".")[0]
+    # Similarly to the calculation of the member's account age from on_member_join, this instead calculates the age of
+    # the audit log entry!
+    if int(entry_age) > 2:  # Functions in this block execute if the entry's age is greater than 2 seconds. This is
+        # mainly used to prevent members who had been kicked before from falsely triggering a kick log entry.
+        return
+    if entry.user.id == 732151283947012187 and "failing to verify your character" in entry.reason:  # Functions in this
+        # block execute if Mudbot was the one who kicked the member before, and "failing to verify your character" is
+        # in their kick reason.
+        channel = bot.get_channel(881170467292082196)  # Re-defines the channel as the channel the channel that the bot
+        # logs automated actions in.
+        autokick = 1  # Defines the kick as an automated kick.
+    timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())  # Defines the amount
+    # of seconds since epoch.
+    embed = discord.Embed(title=f"""{"Member kicked." if autokick == 0 else "Member automatically kicked."}""",
+                          color=discord.Color(0xf59a38))  # Defines the embed and some of its parameters. The title will
+    # be different depending on if the kick was automated or not.
+    embed.set_author(name=f"{entry.user.name}", icon_url=f"{entry.user.avatar_url}")
+    embed.set_thumbnail(url=f"{entry.target.avatar_url}")
+    embed.add_field(name=f"Responsible Nutty Moderator:", value=f"""{entry.user.mention}
+{entry.user}
+({entry.user.id})""", inline=True)
+    embed.add_field(name=f"Action Taken On:", value=f"""{entry.target.mention}
+{entry.target}
+({entry.target.id})""", inline=True)
+    embed.add_field(name=f"Time of Action:", value=f"""<t:{str(timestamp)}>""", inline=False)
+    embed.add_field(name=f"Reason:",
+                    value=f"""{entry.reason if entry.reason is not None else "No reason specified."}""",
+                    inline=False)
+    embed.set_footer(text=f"{guild.name}", icon_url=f"{bot.user.avatar_url}")
+    await channel.send(embed=embed)
+    return
+
+
+@bot.event
+async def on_member_unban(guild, user):  # This event triggers when the bot hears an unban.
+    channel = bot.get_channel(654603610134675456)  # Much of this is similar to earlier events, so will not be commented
+    # unless there is something majorly different.
+    if guild.id != channel.guild.id:
+        return
+
+    def predicate(entry):
+        return entry.target.id == user.id and entry.action == discord.AuditLogAction.unban
+
+    entry = await guild.audit_logs().find(predicate)
+    timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())
+    embed = discord.Embed(title="User unbanned.", color=discord.Color(0xebaba0))
+    embed.set_author(name=f"{entry.user.name}", icon_url=f"{entry.user.avatar_url}")
+    embed.set_thumbnail(url=f"{entry.target.avatar_url}")
+    embed.add_field(name="Responsible Nutty Moderator:", value=f"""{entry.user.mention}
+{entry.user}
+({entry.user.id})""", inline=True)
+    embed.add_field(name="Action Taken On:", value=f"""{entry.target.mention}
+{entry.target}
+({entry.target.id})""", inline=True)
+    embed.add_field(name="Time of Action:", value=f"""<t:{str(timestamp)}>""", inline=False)
+    embed.add_field(name="Reason:",
+                    value=f"""{entry.reason if entry.reason is not None else "No reason specified."}""",
+                    inline=False)
+    embed.set_footer(text=f"{guild.name}", icon_url=f"{bot.user.avatar_url}")
+    await channel.send(embed=embed)
+    return
+
+
+@bot.event
+async def on_member_update(before, after):  # This event triggers when the bot hears a status update, an activity
+    # update, a nickname update, or a role update. In this instance, we use it for roles.
+    channel = bot.get_channel(654603610134675456)
+    guild = before.guild
+    if guild.id != channel.guild.id:
+        return
+    muted_search = "<Role id=733203653585928232 name='Muted'>"  # Defines the text to search for in the update.
+    if muted_search not in str(before.roles) and muted_search not in str(after.roles):  # Functions in this block
+        # execute if the muted role is neither in the before state nor the after state of the update. This is used
+        # to prevent this event from processing any further for any events that are not related to the Muted role.
+        return
+
+    def predicate(entry):  # Similar to previous predicates, this one instead searches for a role update.
+        return before.id == after.id and entry.action == discord.AuditLogAction.member_role_update
+
+    entry = await before.guild.audit_logs().find(predicate)
+    if muted_search in str(before.roles) and muted_search not in str(after.roles):  # Functions in this block execute if
+        # a user no longer has the muted role. This prevents the event from triggering if the Muted role is in both the
+        # before state and after state.
+        timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())
+        embed = discord.Embed(title="Member unmuted.", color=discord.Color(0xb8dbc2))
+        embed.set_author(name=f"{entry.user.name}", icon_url=f"{entry.user.avatar_url}")
+        embed.set_thumbnail(url=f"{entry.target.avatar_url}")
+        embed.add_field(name="Responsible Nutty Moderator:", value=f"""{entry.user.mention}
+{entry.user}
+({entry.user.id})""", inline=True)
+        embed.add_field(name=f"Action Taken On:", value=f"""{entry.target.mention}
+{entry.target}
+({entry.target.id})""", inline=True)
+        embed.add_field(name=f"Time of Action:", value=f"""<t:{str(timestamp)}>""", inline=False)
+        embed.add_field(name=f"Reason:",
+                        value=f"""{entry.reason if entry.reason is not None else "No reason specified."}""",
+                        inline=False)
+        embed.set_footer(text=f"{guild.name}", icon_url=f"{bot.user.avatar_url}")
+        await channel.send(embed=embed)
+        return
+    elif muted_search in str(after.roles) and muted_search not in str(before.roles):  # The inverse of the above block.
+        timestamp = int((entry.created_at - datetime.fromisoformat("1970-01-01")).total_seconds())
+        embed = discord.Embed(title=f"Member muted.", color=discord.Color(0x69727a))
+        embed.set_author(name=f"{entry.user.name}", icon_url=f"{entry.user.avatar_url}")
+        embed.set_thumbnail(url=f"{entry.target.avatar_url}")
+        embed.add_field(name=f"Responsible Nutty Moderator:", value=f"""{entry.user.mention}
+{entry.user}
+({entry.user.id})""", inline=True)
+        embed.add_field(name=f"Action Taken On:", value=f"""{entry.target.mention}
+{entry.target}
+({entry.target.id})""", inline=True)
+        embed.add_field(name="Time of Action:", value=f"""<t:{str(timestamp)}>""", inline=False)
+        embed.add_field(name="Reason:",
+                        value=f"""{entry.reason if entry.reason is not None else "No reason specified."}""",
+                        inline=False)
+        embed.set_footer(text=f"{guild.name}", icon_url=f"{bot.user.avatar_url}")
+        await channel.send(embed=embed)
+        return
+
+
+@bot.event
+async def on_ready():  # This event executes when the bot hears a successful connection established. Essentially,
+    # this runs on bot startup.
+    await bot.change_presence(status=discord.Status.online, activity=discord.Game("w/ hunters! | +help"))  # The reason
+    # this is one of the few instances of + being used instead of PREFIX is mainly so I can test the bot on the Mudbot
+    # token without confusing people about the bot's prefix.
     # The above changes the bot's presence (status) to the specified "game" when starting up.
     autokick_unverified.start()  # This sets the autokick_unverified background task in motion.
     status_rotation.start()  # This sets the status_rotation background task in motion.
     print("Mudbot online. Awaiting commands!")  # Prints to the console that the bot is ready to be used.
+    return
 
 
-@bot.event
-async def on_command_error(ctx, error):  # This is a general error-handling block.
-    if isinstance(error, CommandNotFound):  # This executes if a command (or any message following the prefix) is used.
-        error = "Command not found. View `+help` for valid commands."
-    elif isinstance(error, CommandInvokeError):  # This executes if a command is used incorrectly, or in circumstances
-        # where a command cannot finish executing properly and there is no specific handling for the error the command
-        # invokes.
-        error = "Incorrect invocation. Please re-examine the command in `+help`."
-    elif isinstance(error, MemberNotFound):  # This executes if `+info` is being used improperly.
-        error = f"""Member not found.
-Correct usage: `+info member_mention`, eg. `+info <@!97153790897045504>`.
-To grab a member's Discord ID, be sure to enable Developer Mode in your Discord settings, then simply right-click \
-them and click "Copy ID"."""
-    await ctx.message.channel.send(f"Error: {error}")  # Sends the error message in the channel where the command was
-    # invoked.
+@bot.listen(name="on_member_update")  # This declares that the bot must listen for events of the specified type.
+# bot.listen is used because the on_member_update event is already being used, and multiple of those cannot exist.
+# This essentially serves the same function. This will likely be commented out or removed at a later date.
+async def milestone_listener(before, after):
+    channel = bot.get_channel(740603224826052608)
+    guild = before.guild
+    global SHOULD_NOTIFY_MILESTONE  # Imports the SHOULD_NOTIFY_MILESTONE global variable for reading and editing.
+    if guild.id != channel.guild.id:
+        return
+    licensed_hunter_role = discord.utils.get(guild.roles, name="Licensed Hunter")  # Defines the Licensed Hunter role.
+    licensed_hunter_role_count = len(licensed_hunter_role.members)  # Defines the length of the list of the people
+    # who have the Licensed Hunter role. Essentially, this counts the people who have that role.
+    if licensed_hunter_role_count == 33333 and\
+            str(licensed_hunter_role) not in str(before.roles) and str(licensed_hunter_role) in str(after.roles) and\
+            SHOULD_NOTIFY_MILESTONE == 1:  # Functions in this block execute if the amount of Licensed Hunters is 33333,
+        # the Licensed Hunter role is not in the before state's roles, the Licensed Hunter role is in the after state's
+        # roles, and the SHOULD_NOTIFY_MILESTONE global variable is 1.
+        await channel.send(f"""{after.mention} is our 33,333rd Licensed Hunter!
+<@97153790897045504> <@241067525771624448>""")  # Sends a message to the channel informing the people who are being
+        # pinged the name of the 33333rd, Licensed Hunter.
+        SHOULD_NOTIFY_MILESTONE = 0  # Sets the SHOULD_NOTIFY_MILESTONE global variable to 0 so no additional pings
+        # happen.
+        return
+    return
 
 
-@bot.event
-async def on_member_join(ctx):  # Functions in this block execute upon a member's joining.
-    if ctx.guild.id == 725517856581746758:  # Functions in this block execute upon joining the Mudbot Testing Server.
-        tz_utc = pytz.timezone("UTC")  # Defines the timezone to UTC.
-        current_utc_time = datetime.now(tz_utc)  # Gets and defines the current time in UTC.
-        join_log_channel = bot.get_channel(727920007690059936)  # Defines the join_log channel for join log messages.
-        general_channel = bot.get_channel(725517857160691790)  # Defines the general_channel for welcome messages.
-        tester_role = discord.utils.get(ctx.guild.roles, name="Tester")  # Defines the Tester role.
-        embed = discord.Embed(title="Join Logged:", color=discord.Color(0x32a852))  # Defines and sets base parameters
-        # for an embed.
-        embed.add_field(name="User:", value=f"<@!{ctx.id}>\n{ctx.name}#{ctx.discriminator}\n({ctx.id})")
-        # Defines the first field of the above embed with the title "User:" and the content as a mention of the joining
-        # user, the user's Discord name and discrimination (eg. #1234), and the user's unique Snowflake ID.
-        embed.add_field(name="Time:", value=f"""{current_utc_time.strftime("%m/%d/%Y @ %I:%M:%S %p %Z")}""")
-        # Defines the second field of the above embed with the title "Time:", and sets the content as the current time,
-        # with the format of month/day/year @ (at) hour:minute:second AM/PM UTC, eg. 07/19/20 @ 9:21:37 AM UTC.
-        embed.set_thumbnail(url=ctx.avatar_url)  # Sets the thumbnail of the embed as the joining user's avatar.
-        await join_log_channel.send(embed=embed)  # Sends the embed to the join log channel.
-        await general_channel.send(f"Ohai, {ctx.mention}.")  # Sends a less formal welcome to the general channel.
-        await ctx.add_roles(tester_role)  # Adds the previously-defined Tester role to the user.
-        return  # Stops processing. Saves resource space. I think?
-    # if ctx.guild.id == 542602456132091904:  # Functions in this block execute upon joining the Aether Hunts server.
-    #     tz_utc = pytz.timezone("UTC")  # The following functions are all identical to the above block's.
-    #     current_utc_time = datetime.now(tz_utc)
-    #     join_log_channel = bot.get_channel(573601933219332096)
-    #     embed = discord.Embed(title="Join Logged:", color=discord.Color(0x32a852))
-    #     embed.add_field(name="User:", value=f"<@!{ctx.id}>\n{ctx.name}#{ctx.discriminator}\n({ctx.id})")
-    #     embed.add_field(name="Time:", value=f"""{current_utc_time.strftime("%m/%d/%Y @ %I:%M:%S %p %Z")}""")
-    #     embed.set_thumbnail(url=ctx.avatar_url)
-    #     await join_log_channel.send(embed=embed)
-    #     return
-    # This went unused anyway, and I saw no reason to ask for Mudbot to gain perms for join log cuz we already have one
-    # that does that.
-
-
-# ! BACKGROUND TASKS:  These tasks execute in the background constantly.
+# ^ BACKGROUND TASKS:  These tasks execute in the background constantly.
 
 
 @tasks.loop(seconds=300.0)  # Sets the task to loop every 300 seconds, or 5 minutes.
 async def autokick_unverified():  # Defines the autokick_unverified task.
-    while SHOULD_AUTOKICK_UNVERIFIED == 1:  # Functions in this block only execute while the SHOULD_AUTOKICK_UNVERIFIED
-        # global variable is 1.
-        guild = bot.get_guild(542602456132091904)  # Defines Aether Hunts.
-        channel = bot.get_channel(738670827490377800)  # Defines the get_registered_here channel.
-        owner = bot.get_user(97153790897045504)  # Hehe, that's me! That's Dusk!
-        for member in channel.members:  # Functions in this block execute for every member in the get_registered_here
-            # channel.
-            member_duration_raw = datetime.now() - member.joined_at  # Gets the raw amount of time a member has been
-            # on the server.
-            member_duration_seconds_raw = member_duration_raw.total_seconds()  # Turns the raw amount of time into
-            # seconds.
-            member_duration_seconds = (str(member_duration_seconds_raw).split(".")[0])  # Gets the final product of how
-            # long a member has been on the server for comparison as a number by removing microseconds.
-            if len(member.roles) == 1 and int(member_duration_seconds) > 604800:  # Functions in this block only
-                # execute if a member has no roles (a member with 0 roles has 1 role, apparently) and they
-                # have been on the server for more than 604800 seconds, which is one week.
-                reason = """You were kicked from the Aether Hunts Discord for failing to verify your character within \
+    with open("auto_punish_info.json", "r") as auto_punish_info:  # Opens the auto_punish_info file.
+        data = json.load(auto_punish_info)  # Defines the data of the auto_punish_info json.
+        should_auto_punish = data["auto_punish_info"]["kick"]["enabled"]  # Reads the data of the specified key.
+        auto_punish_info.close()  # Closes the file.
+    if should_auto_punish != "true":  # Functions in this block execute if should_auto_punish is not true.
+        return
+    guild = bot.get_guild(542602456132091904)  # Defines Aether Hunts.
+    channel = bot.get_channel(738670827490377800)  # Defines the get_registered_here channel.
+    owner = bot.get_user(bot.owner_id)  # Hehe, that's me! That's Dusk!
+    for member in channel.members:  # Functions in this block execute for every member in the get_registered_here
+        # channel.
+        member_duration_raw = datetime.now() - member.joined_at  # Gets the raw amount of time a member has been
+        # on the server.
+        member_duration_seconds_raw = member_duration_raw.total_seconds()  # Turns the raw amount of time into
+        # seconds.
+        member_duration_seconds = (str(member_duration_seconds_raw).split(".")[0])  # Gets the final product of how
+        # long a member has been on the server for comparison as a number by removing microseconds.
+        if len(member.roles) == 1 and int(member_duration_seconds) > 604800:  # Functions in this block only
+            # execute if a member has no roles (a member with 0 roles has 1 role, apparently) and they
+            # have been on the server for more than 604800 seconds, which is one week.
+            reason = """You were kicked from the Aether Hunts Discord for failing to verify your character within \
 one week of joining.
 You are welcome to join again! Be sure to follow the directions at the top of the #get-registered-here channel.
 http://discord.gg/aetherhunts"""  # Defines the reason for kicking, which is logged and also sent to the receiving
-                # user so they know why they were kicked and how to rejoin.
-                try:  # Functions in this block are attempted to execute...
-                    await member.send(f"{reason}")  # Sends the reason for the kick to the user.
-                except Forbidden:  # If, for some reason, the user cannot receive any messages from Mudbot,
-                    # either this exception or the next will catch, but they both pass on anyway. This is not the case
-                    # further on.
-                    pass
-                except HTTPException:
-                    pass
-                try:
-                    await guild.kick(member, reason=reason)  # Kicks the user, giving the reason which is set in the
-                    # audit log.
-                except Forbidden:  # If, for some reason, the user cannot be kicked, functions in this block or the
-                    # next execute, letting the owner know. This should never happen. I don't know why I made it a
-                    # try-except block.
-                    await owner.send(f"""I failed an automatic unverified kick! I attempted to kick {member} \
+            # user so they know why they were kicked and how to rejoin.
+            try:  # Functions in this block are attempted to execute...
+                await member.send(f"{reason}")  # Sends the reason for the kick to the user.
+            except Forbidden:  # If, for some reason, the user cannot receive any messages from Mudbot,
+                # either this exception or the next will catch, but they both pass on anyway. This is not the case
+                # further on.
+                pass
+            except HTTPException:
+                pass
+            try:
+                await guild.kick(member, reason=reason)  # Kicks the user, giving the reason which is set in the
+                # audit log.
+            except Forbidden:  # If, for some reason, the user cannot be kicked, functions in this block or the
+                # next execute, letting the owner know. This should never happen. I don't know why I made it a
+                # try-except block.
+                await owner.send(f"""I failed an automatic unverified kick! I attempted to kick {member} \
 ({member.id}) and failed. Error: FORBIDDEN.""")
-                    return
-                except HTTPException:
-                    await owner.send(f"""I failed an automatic unverified kick! I attempted to kick {member} \
+                return
+            except HTTPException:
+                await owner.send(f"""I failed an automatic unverified kick! I attempted to kick {member} \
 ({member.id}) and failed. Error: HTTPException.""")
-                    return
-                continue  # Loops back to the top of the "these functions happen to every member in the channel" loop.
-            elif len(member.roles) == 1 and int(member_duration_seconds) < 604800:  # Functions in this block
-                # execute if a member in the channel has no roles but has been here for less than a week.
-                continue
-            elif len(member.roles) > 1:  # Functions in this block execute if a member has more than zero roles
-                # in the channel. Fun fact: I initially tried this with "elif roles greater than or equal to two", but
-                # it didn't work. "greater than or equal to two" and "greater than one" mean the same fucking thing.
-                continue
-        return  # Once the function has looped for every member of the channel, stops doing the loop until the task is
+                return
+            continue  # Loops back to the top of the "these functions happen to every member in the channel" loop.
+        elif len(member.roles) == 1 and int(member_duration_seconds) < 604800:  # Functions in this block
+            # execute if a member in the channel has no roles but has been here for less than a week.
+            continue
+        elif len(member.roles) > 1:  # Functions in this block execute if a member has more than zero roles
+            # in the channel. Fun fact: I initially tried this with "elif roles greater than or equal to two", but
+            # it didn't work. "greater than or equal to two" and "greater than one" mean the same fucking thing.
+            continue
+    return  # Once the function has looped for every member of the channel, stops doing the loop until the task is
     # called again in 5 minutes.
 
 
@@ -209,40 +464,6 @@ async def before_status_rotation():
 # ! TESTING GROUND: Any commands here are in-progress and being tested. Use is forbidden.
 
 
-# ADMIN ONLY: These commands can only be run by members with the Admin role.
-
-
-@bot.group(name="autokick", aliases=["ak", "auto"], case_insensitive=True)  # Defines the autokick command, which is just an admin toggle
-# just in case the autokick function needs to be turned off, for some reason. I don't know why I put it in either.
-@has_role(551968333008732169)
-async def autokick(ctx):
-    """Toggles whether or not unverified members are automatically kicked."""
-    if ctx.invoked_subcommand is None:
-        await ctx.send("No argument specified. Acceptable arguments: `on`, `off`")
-        return
-    else:
-        pass
-
-
-@autokick.command(name="on", aliases=["y", "1"])
-@has_role(551968333008732169)
-async def on(ctx):
-    global SHOULD_AUTOKICK_UNVERIFIED  # Imports the SHOULD_AUTOKICK_UNVERIFIED global variable for editing.
-    SHOULD_AUTOKICK_UNVERIFIED = 1  # Sets the global variable to 1.
-    await ctx.send("Autokick enabled.")
-    return
-
-
-@autokick.command(name="off", aliases=["n", "0"])
-@has_role(551968333008732169)
-async def off(ctx):
-    global SHOULD_AUTOKICK_UNVERIFIED
-    SHOULD_AUTOKICK_UNVERIFIED = 0  # Sets the global variable to 0.
-    await ctx.send("Autokick disabled. Note that this change only lasts until the bot restarts.")  # There is no
-    # meaningful or necessary way to keep a global variable at the value it was set to persist between restarts.
-    return
-
-
 # HELP COMMAND: This is the block where the help command is, which lists all commands and their arguments.
 
 
@@ -257,22 +478,22 @@ async def help_(ctx):
         embed.add_field(name="Hunting", value=f"""`{PREFIX}fate [fate]` [Alias: `{PREFIX}f`]
 Sends the information for the specified `fate` when invoked.
 
-`+minions [area]` [Alias: `+m`]
+`{PREFIX}minions [area]` [Alias: `{PREFIX}m`]
 Sends the map for `area`'s minions when invoked.""", inline=False)  # Lists all of the Hunting module's commands and
         # their invocation examples.
-        embed.add_field(name="Verification", value="""`+id_link` [Alias: `+id`]
+        embed.add_field(name="Verification", value=f"""`{PREFIX}id_link [lodestone_id]` [Alias: `{PREFIX}id`]
 Links, via ID, your FFXIV character to your Discord name. This process may take up to one minute.
 
-`+info` [Alias: `+i`]
+`{PREFIX}info` [Alias: `{PREFIX}i`]
 Shows your character information. Mention another user to view theirs.
 
-`+link [first_name] [last_name] [world_name]` [Alias: `+l`]
+`{PREFIX}link [first_name] [last_name] [world_name]` [Alias: `{PREFIX}l`]
 Links your FFXIV character to your Discord name. This process may take up to one minute.
 
-`+unlink` [Alias: `+ul`]
+`{PREFIX}unlink` [Alias: `{PREFIX}ul`]
 Deletes the current user's character information from the database.""", inline=False)  # Lists all of the Verification
         # module's commands and their invocation examples.
-        embed.set_footer(text=f"""To have the bot's help PM'd to you, put -pm after the command (eg. +help -pm) |
+        embed.set_footer(text=f"""To have the bot's help PM'd to you, put -pm after the command (eg. {PREFIX}help -pm) |
 Current version: {VERSION} |
 Made by Dusk Argentum#6530. |
 Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # Sets the footer.
@@ -290,21 +511,21 @@ async def pm(ctx):  # Everything else is the same.
     embed.add_field(name="Hunting", value=f"""`{PREFIX}fate [fate]` [Alias: `{PREFIX}f`]
 Sends the information for the specified `fate` when invoked.
 
-`+minions [area]` [Alias: `+m`]
+`{PREFIX}minions [area]` [Alias: `{PREFIX}m`]
 Sends the map for `area`'s minions when invoked.""", inline=False)  # Lists all of the Hunting module's commands and
     # their invocation examples.
-    embed.add_field(name="Verification", value="""`+id_link` [Alias: `+id`]
+    embed.add_field(name="Verification", value=f"""`{PREFIX}id_link [lodestone_id]` [Alias: `{PREFIX}id`]
 Links, via ID, your FFXIV character to your Discord name. This process may take up to one minute.
 
-`+info` [Alias: `+i`]
+`{PREFIX}info` [Alias: `{PREFIX}i`]
 Shows your character information. Mention another user to view theirs.
 
-`+link [first_name] [last_name] [world_name]` [Alias: `+l`]
+`{PREFIX}link [first_name] [last_name] [world_name]` [Alias: `{PREFIX}l`]
 Links your FFXIV character to your Discord name. This process may take up to one minute.
 
-`+unlink` [Alias: `+ul`]
+`{PREFIX}unlink` [Alias: `{PREFIX}ul`]
 Deletes the current user's character information from the database.""", inline=False)
-    embed.set_footer(text=f"""To have the bot's help PM'd to you, put -pm after the command (eg. +help -pm) |
+    embed.set_footer(text=f"""To have the bot's help PM'd to you, put -pm after the command (eg. {PREFIX}help -pm) |
 Current version: {VERSION} |
 Made by Dusk Argentum#6530. |
 Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # Sets the footer.
@@ -313,102 +534,6 @@ Profile picture by Toast! Find them at https://twitter.com/pixel__toast""")  # S
 
 
 # HUNT COMMANDS: These commands help generally facilitate The Hunt.
-
-
-@bot.command(name=f"early_pull", aliases=[f"ep", f"early"])  # This defines the `early_pull` command.
-@guild_only()  # This command can only be run within a guild.
-@has_any_role(569959138583511082, 551977968503881748)  # This command can only be run by members who have this role.
-async def early_pull(ctx):  # This command was requested by the Aether Hunts mod team in response to the vast
-    # number of complaints about early pullers following patch 5.5.
-    with open("complaint_log.json", "r+") as complaint_log:  # Opens the complaint log.
-        current_time = datetime.now(timezone.utc)  # Defines the current time.
-        data = json.load(complaint_log)  # Loads the complaint log.
-        last_complaint_raw = data["complaint_log"]["last_complaint"]  # Gets the string of the time of the last
-        # complaint.
-        last_complaint_delta = datetime.strptime(last_complaint_raw, "%Y-%m-%d %H:%M:%S%z")  # Transforms the time
-        # string into a usable datetime object for difference calculation.
-        longest_duration_raw = data["complaint_log"]["longest_duration"]  # Gets the string of the longest duration.
-        # The longest duration is stored in seconds for reasons.
-        current_duration_raw = (current_time - last_complaint_delta)  # Finds the difference between the current time
-        # and the last complaint time in order to find out the duration of the time between the two.
-        current_duration_in_seconds_raw = current_duration_raw.total_seconds()  # Converts the above duration into
-        # seconds.
-        current_duration_in_seconds_cut = (str(current_duration_in_seconds_raw).split(".")[0])  # We don't need
-        # milliseconds or microseconds or whatever the fuck those are in this house.
-        if int(current_duration_in_seconds_cut) > int(longest_duration_raw):  # Functions in this block execute
-            # if the current duration is longer than the stored longest duration.
-            longest_duration_raw = str(current_duration_in_seconds_cut)  # Sets the longest duration to the current
-            # duration.
-            longest_duration_update = {"longest_duration": f"{longest_duration_raw}"}  # Defines the JSON object
-            # to commit to the complaint log JSON.
-            data["complaint_log"].update(longest_duration_update)  # Updates the JSON object.
-            complaint_log.seek(0)
-            json.dump(data, complaint_log, indent=2)  # Writes the update to the complaint log.
-        elif int(current_duration_in_seconds_cut) < int(longest_duration_raw):  # Functions in this block execute if
-            # the current duration is shorter than the stored longest duration.
-            pass
-        last_complaint_update = ({"last_complaint": f"""{datetime.now(timezone.utc).strftime(
-        "%Y-%m-%d %H:%M:%S%z")}"""})  # Defines the update of the JSON object of the last complaint time to the current
-        # time in a specific format because reasons.
-        data["complaint_log"].update(last_complaint_update)  # Updates the JSON object.
-        complaint_log.seek(0)
-        json.dump(data, complaint_log, indent=2)  # Writes the update to the complaint log.
-        complaint_log.close()  # Closes the complaint log.
-    longest_duration_days_total = divmod(int(longest_duration_raw), 86400)[0]  # Gets the total amount of days that
-    # the amount of seconds in the longest duration has by dividing the amount of seconds by the amount of seconds
-    # in a day.
-    longest_duration_days_remainder = divmod(int(longest_duration_raw), 86400)[1]  # Does the same thing as the above
-    # except this is the remainder amount, needed for calculating the smaller time fragments.
-    longest_duration_hours_total = divmod(int(longest_duration_days_remainder), 3600)[0]  # Same as for days.
-    longest_duration_hours_remainder = divmod(int(longest_duration_days_remainder), 3600)[1]  # Same as for days.
-    longest_duration_minutes_total = divmod(int(longest_duration_hours_remainder), 60)[0]
-    longest_duration_minutes_remainder = divmod(int(longest_duration_hours_remainder), 60)[1]
-    longest_duration_seconds_total = divmod(int(longest_duration_minutes_remainder), 1)[0]  # Seconds remainder
-    # is not required because fuck milliseconds.
-    current_duration_days_search = re.search(r"(\d{1,9}) day", str(current_duration_raw), re.IGNORECASE)  # Searches
-    # the raw current duration for an amount of days.
-    if current_duration_days_search is not None:  # Functions in this block execute if the current duration is over a
-        # day, because of the way the difference was returned when finding the difference between the current time
-        # and the last complaint time.
-        current_duration_days = str(current_duration_days_search.group(1))
-        pass
-    else:
-        current_duration_days = "0"  # Sets the current duration days to 0 because things break if I don't do this.
-        pass
-    current_duration_hours_search = re.search(r"(\d{1,2}):", str(current_duration_raw), re.IGNORECASE)  # Same as
-    # days but for hours.
-    current_duration_hours = str(current_duration_hours_search.group(1))
-    current_duration_minutes_search = re.search(r":(\d{2}):", str(current_duration_raw), re.IGNORECASE)
-    current_duration_minutes = str(current_duration_minutes_search.group(1))
-    current_duration_seconds_search = re.search(r":(\d{2})\.", str(current_duration_raw), re.IGNORECASE)
-    current_duration_seconds = str(current_duration_seconds_search.group(1))
-    embed = discord.Embed(title="Early pull complaint detected!", color=discord.Color(0x2bcc96),
-                          description="""Please remember that Aether Hunts cannot control whether people pull \
-marks early. Sometimes it is done by accident, and sometimes it is done by users beyond the Aether Hunts mod team's \
-jurisdiction. Regardless, please be advised that there will be additional S Rank marks in the future.""")  # Defines
-    # the embed for sending and some of its attributes.
-    embed.add_field(name="Durations:", value=f"""We have gone \
-{str(current_duration_days)} \
-{"days" if int(current_duration_days) > 1 or int(current_duration_days) == 0 else "day"}, \
-{str(current_duration_hours)} \
-{"hours" if int(current_duration_hours) > 1 or int(current_duration_hours) == 0 else "hour"}, \
-{str(current_duration_minutes)} \
-{"minutes" if int(current_duration_minutes) > 1 or int(current_duration_minutes) == 0 else "minute"}, and \
-{str(current_duration_seconds)} \
-{"seconds" if int(current_duration_seconds) > 1 or int(current_duration_seconds) == 0 else "seconds"} \
-without any logged complaints about early pullers.
-The longest we have ever gone without any logged complaints about early pullers is \
-{str(longest_duration_days_total)} \
-{"days" if int(longest_duration_days_total) > 1 or int(longest_duration_days_total) == 0 else "day"}, \
-{str(longest_duration_hours_total)} \
-{"hours" if int(longest_duration_hours_total) > 1 or int(longest_duration_hours_total) == 0 else "hour"}, \
-{str(longest_duration_minutes_total)} \
-{"minutes" if int(longest_duration_minutes_total) > 1 or int(longest_duration_minutes_total) == 0 else "minute"}, \
-and {str(longest_duration_seconds_total)} \
-{"seconds" if int(longest_duration_seconds_total) > 1 or int(longest_duration_seconds_total) == 0 else "second"}.""")
-    # This is so much more jank and longer than it needs to be probably, but I like descriptive variables and am
-    # super dumb.
-    await ctx.send(embed=embed)  # Sends it.
 
 
 FATE_AUTHOR_ICON_URL = "http://ffxiv.gamerescape.com/w/images/1/11/Map65_Icon.png"  # Defines the URL for the
@@ -823,8 +948,11 @@ https://www.retahgaming.com/ffxiv/forgivenrebellion.html""")
     return
 
 
-# OWNER ONLY: These commands can only be run by Dusk Argentum#6530. These functions are used in the administration
-# of the bot itself.
+# ! GATED COMMANDS: These commands can only be run by specific people or people with specific roles.
+# Commands that apply to multiple roles are listed in the lowest required role.
+
+
+# OWNER ONLY:
 
 
 @bot.command(pass_context=True, name="delete_echo", aliases=["de"])  # Defines the delete_echo command.
@@ -913,6 +1041,246 @@ async def server_list(ctx):
     # beyond the server's name and id. No individual identifying information is sent.
 
 
+# ADMIN ONLY:
+
+
+@bot.group(name="autoban", aliases=["ab"], case_insensitive=True)  # This defines the autoban command group.
+@has_role(551968333008732169)
+async def autoban(ctx):
+    if ctx.invoked_subcommand is None:
+        await ctx.send("No argument specified. Acceptable arguments: `on`, `off`, `threshold`.")
+        return
+    else:
+        pass
+
+
+@autoban.command(name="on", aliases=["y", "1", "enabled", "true", "yes"])
+@has_role(551968333008732169)
+async def on(ctx):
+    with open("auto_punish_info.json", "r+") as auto_punish_info:  # Opens the auto_punish_info file.
+        data = json.load(auto_punish_info)  # Loads the json of the auto_punish_info file.
+        status_update = {"enabled": "true"}  # Updates the status.
+        data["auto_punish_info"]["ban"].update(status_update)  # Updates the JSON object.
+        auto_punish_info.seek(0)  # Goes back to the top of the file.
+        json.dump(data, auto_punish_info, indent=2)  # Writes the update to the auto_punish_info file.
+        auto_punish_info.truncate()  # Things break if this doesn't exist and the file contents have more or less
+        # characters than before.
+        auto_punish_info.close()  # Closes the auto_punish_info file.
+    await ctx.message.add_reaction("👍")
+    return
+
+
+@autoban.command(name="off", aliases=["n", "0", "disabled", "false", "no"])  # The rest of the autoban/autokick toggle
+# commands are essentially as the one above.
+@has_role(551968333008732169)
+async def off(ctx):
+    with open("auto_punish_info.json", "r+") as auto_punish_info:
+        data = json.load(auto_punish_info)
+        status_update = {"enabled": "false"}
+        data["auto_punish_info"]["ban"].update(status_update)
+        auto_punish_info.seek(0)
+        json.dump(data, auto_punish_info, indent=2)
+        auto_punish_info.truncate()
+        auto_punish_info.close()
+    await ctx.message.add_reaction("👍")
+    return
+
+
+@autoban.command(name="threshold", aliases=["age"])
+@has_role(551968333008732169)
+async def threshold(ctx, threshold: str = None):
+    threshold_check = re.search(r"(^\d{1,2})(m$|h$|d$)", threshold, re.IGNORECASE)
+    if threshold_check is None:
+        await ctx.send(f"""Invalid threshold. Please supply a threshold by putting an amount of minutes, hours, or days.
+Example: `{PREFIX}autoban threshold 12h` for 12 hours or `{PREFIX}autoban threshold 1d` for 1 day. \
+Supports up to two digits.""")
+        return
+    with open("auto_punish_info.json", "r+") as auto_punish_info:
+        data = json.load(auto_punish_info)
+        threshold_update = {"threshold": f"{threshold}"}
+        data["auto_punish_info"]["ban"].update(threshold_update)  # Updates the JSON object.
+        auto_punish_info.seek(0)
+        json.dump(data, auto_punish_info, indent=2)  # Writes the update to the complaint log.
+        auto_punish_info.truncate()
+        auto_punish_info.close()
+    await ctx.message.add_reaction("👍")
+    return
+
+
+@bot.group(name="autokick", aliases=["ak"], case_insensitive=True)
+@has_role(551968333008732169)
+async def autokick(ctx):
+    if ctx.invoked_subcommand is None:
+        await ctx.send("No argument specified. Acceptable arguments: `on`, `off`")
+        return
+    else:
+        pass
+
+
+@autokick.command(name="on", aliases=["y", "1", "enabled", "true", "yes"])
+@has_role(551968333008732169)
+async def on(ctx):
+    with open("auto_punish_info.json", "r+") as auto_punish_info:
+        data = json.load(auto_punish_info)
+        status_update = {"enabled": "true"}
+        data["auto_punish_info"]["kick"].update(status_update)  # Updates the JSON object.
+        auto_punish_info.seek(0)
+        json.dump(data, auto_punish_info, indent=2)  # Writes the update to the complaint log.
+        auto_punish_info.truncate()
+        auto_punish_info.close()
+    await ctx.message.add_reaction("👍")
+    return
+
+
+@autokick.command(name="off", aliases=["n", "0", "disabled", "false", "no"])
+@has_role(551968333008732169)
+async def off(ctx):
+    with open("auto_punish_info.json", "r+") as auto_punish_info:
+        data = json.load(auto_punish_info)
+        status_update = {"enabled": "false"}
+        data["auto_punish_info"]["kick"].update(status_update)  # Updates the JSON object.
+        auto_punish_info.seek(0)
+        json.dump(data, auto_punish_info, indent=2)  # Writes the update to the complaint log.
+        auto_punish_info.truncate()
+        auto_punish_info.close()
+    await ctx.message.add_reaction("👍")
+    return
+
+
+# MODERATOR ONLY:
+
+
+# REP ONLY:
+
+
+@bot.command(name="conductor", aliases=["con"])  # Defines the conductor command.
+@guild_only()  # Checks to ensure the command is only run in a guild.
+@has_any_role(569959138583511082, 551977968503881748)  # Checks to ensure the invoker has one of these roles.
+async def conductor(ctx, member: discord.Member = None):
+    if member is None:  # Functions in this block execute if the invoker fails to mention a member.
+        await ctx.send(f"""Command failed. Please mention the member you would like to give the Conductor role to.
+Example: `{PREFIX}conductor @Dusk Argentum#6530`""")
+        return
+    conductor_role = discord.utils.get(ctx.guild.roles, name="Conductor")  # Defines the conductor role.
+    await member.add_roles(conductor_role)  # Gives the member the conductor role.
+    await ctx.message.add_reaction("👍")
+    return
+
+
+@bot.command(name=f"early_pull", aliases=[f"ep", f"early"])  # This defines the `early_pull` command.
+@guild_only()  # This command can only be run within a guild.
+@has_any_role(569959138583511082, 551977968503881748)  # This command can only be run by members who have this role.
+async def early_pull(ctx):  # This command was requested by the Aether Hunts mod team in response to the vast
+    # number of complaints about early pullers following patch 5.5.
+    with open("complaint_log.json", "r+") as complaint_log:  # Opens the complaint log.
+        current_time = datetime.now(timezone.utc)  # Defines the current time.
+        data = json.load(complaint_log)  # Loads the complaint log.
+        last_complaint_raw = data["complaint_log"]["last_complaint"]  # Gets the string of the time of the last
+        # complaint.
+        last_complaint_delta = datetime.strptime(last_complaint_raw, "%Y-%m-%d %H:%M:%S%z")  # Transforms the time
+        # string into a usable datetime object for difference calculation.
+        longest_duration_raw = data["complaint_log"]["longest_duration"]  # Gets the string of the longest duration.
+        # The longest duration is stored in seconds for reasons.
+        current_duration_raw = (current_time - last_complaint_delta)  # Finds the difference between the current time
+        # and the last complaint time in order to find out the duration of the time between the two.
+        current_duration_in_seconds_raw = current_duration_raw.total_seconds()  # Converts the above duration into
+        # seconds.
+        current_duration_in_seconds_cut = (str(current_duration_in_seconds_raw).split(".")[0])  # We don't need
+        # milliseconds or microseconds or whatever the fuck those are in this house.
+        if int(current_duration_in_seconds_cut) > int(longest_duration_raw):  # Functions in this block execute
+            # if the current duration is longer than the stored longest duration.
+            longest_duration_raw = str(current_duration_in_seconds_cut)  # Sets the longest duration to the current
+            # duration.
+            longest_duration_update = {"longest_duration": f"{longest_duration_raw}"}  # Defines the JSON object
+            # to commit to the complaint log JSON.
+            data["complaint_log"].update(longest_duration_update)  # Updates the JSON object.
+            complaint_log.seek(0)
+            json.dump(data, complaint_log, indent=2)  # Writes the update to the complaint log.
+            complaint_log.truncate()
+        elif int(current_duration_in_seconds_cut) < int(longest_duration_raw):  # Functions in this block execute if
+            # the current duration is shorter than the stored longest duration.
+            pass
+        last_complaint_update = ({"last_complaint": f"""{datetime.now(timezone.utc).strftime(
+"%Y-%m-%d %H:%M:%S%z")}"""})  # Defines the update of the JSON object of the last complaint time to the current
+        # time in a specific format because reasons.
+        data["complaint_log"].update(last_complaint_update)  # Updates the JSON object.
+        complaint_log.seek(0)
+        json.dump(data, complaint_log, indent=2)  # Writes the update to the complaint log.
+        complaint_log.truncate()
+        complaint_log.close()  # Closes the complaint log.
+    longest_duration_days_total = divmod(int(longest_duration_raw), 86400)[0]  # Gets the total amount of days that
+    # the amount of seconds in the longest duration has by dividing the amount of seconds by the amount of seconds
+    # in a day.
+    longest_duration_days_remainder = divmod(int(longest_duration_raw), 86400)[1]  # Does the same thing as the above
+    # except this is the remainder amount, needed for calculating the smaller time fragments.
+    longest_duration_hours_total = divmod(int(longest_duration_days_remainder), 3600)[0]  # Same as for days.
+    longest_duration_hours_remainder = divmod(int(longest_duration_days_remainder), 3600)[1]  # Same as for days.
+    longest_duration_minutes_total = divmod(int(longest_duration_hours_remainder), 60)[0]
+    longest_duration_minutes_remainder = divmod(int(longest_duration_hours_remainder), 60)[1]
+    longest_duration_seconds_total = divmod(int(longest_duration_minutes_remainder), 1)[0]  # Seconds remainder
+    # is not required because fuck milliseconds.
+    current_duration_days_search = re.search(r"(\d{1,9}) day", str(current_duration_raw), re.IGNORECASE)  # Searches
+    # the raw current duration for an amount of days.
+    if current_duration_days_search is not None:  # Functions in this block execute if the current duration is over a
+        # day, because of the way the difference was returned when finding the difference between the current time
+        # and the last complaint time.
+        current_duration_days = str(current_duration_days_search.group(1))
+        pass
+    else:
+        current_duration_days = "0"  # Sets the current duration days to 0 because things break if I don't do this.
+        pass
+    current_duration_hours_search = re.search(r"(\d{1,2}):", str(current_duration_raw), re.IGNORECASE)  # Same as
+    # days but for hours.
+    current_duration_hours = str(current_duration_hours_search.group(1))
+    current_duration_minutes_search = re.search(r":(\d{2}):", str(current_duration_raw), re.IGNORECASE)
+    current_duration_minutes = str(current_duration_minutes_search.group(1))
+    current_duration_seconds_search = re.search(r":(\d{2})\.", str(current_duration_raw), re.IGNORECASE)
+    current_duration_seconds = str(current_duration_seconds_search.group(1))
+    embed = discord.Embed(title="Early pull complaint detected!", color=discord.Color(0x2bcc96),
+                          description="""Please remember that Aether Hunts cannot control whether people pull \
+marks early. Sometimes it is done by accident, and sometimes it is done by users beyond the Aether Hunts mod team's \
+jurisdiction. Regardless, please be advised that there will be additional S Rank marks in the future.""")  # Defines
+    # the embed for sending and some of its attributes.
+    embed.add_field(name="Durations:", value=f"""We have gone \
+{str(current_duration_days)} \
+{"days" if int(current_duration_days) > 1 or int(current_duration_days) == 0 else "day"}, \
+{str(current_duration_hours)} \
+{"hours" if int(current_duration_hours) > 1 or int(current_duration_hours) == 0 else "hour"}, \
+{str(current_duration_minutes)} \
+{"minutes" if int(current_duration_minutes) > 1 or int(current_duration_minutes) == 0 else "minute"}, and \
+{str(current_duration_seconds)} \
+{"seconds" if int(current_duration_seconds) > 1 or int(current_duration_seconds) == 0 else "seconds"} \
+without any logged complaints about early pullers.
+The longest we have ever gone without any logged complaints about early pullers is \
+{str(longest_duration_days_total)} \
+{"days" if int(longest_duration_days_total) > 1 or int(longest_duration_days_total) == 0 else "day"}, \
+{str(longest_duration_hours_total)} \
+{"hours" if int(longest_duration_hours_total) > 1 or int(longest_duration_hours_total) == 0 else "hour"}, \
+{str(longest_duration_minutes_total)} \
+{"minutes" if int(longest_duration_minutes_total) > 1 or int(longest_duration_minutes_total) == 0 else "minute"}, \
+and {str(longest_duration_seconds_total)} \
+{"seconds" if int(longest_duration_seconds_total) > 1 or int(longest_duration_seconds_total) == 0 else "second"}.""")
+    # This is so much more jank and longer than it needs to be probably, but I like descriptive variables and am
+    # super dumb.
+    await ctx.send(embed=embed)  # Sends it.
+    return
+
+
+@bot.command(name="spawner", aliases=["spawn"])  # This is essentially the same as conductor, so it will not be
+# commented.
+@guild_only()
+@has_any_role(569959138583511082, 551977968503881748)
+async def conductor(ctx, member: discord.Member = None):
+    if member is None:
+        await ctx.send(f"""Command failed. Please mention the member you would like to give the Spawner role to.
+Example: `{PREFIX}conductor @Dusk Argentum#6530`""")
+        return
+    spawner_role = discord.utils.get(ctx.guild.roles, name="Spawner")
+    await member.add_roles(spawner_role)
+    await ctx.message.add_reaction("👍")
+    return
+
+
 # VERIFICATION:
 
 
@@ -928,9 +1296,9 @@ async def id_link(ctx, character_id: int = None):  # Many of the comments that w
     elif ctx.guild is not None:
         pass
     if character_id is None:
-        await ctx.send("""Could not complete operation! \
+        await ctx.send(f"""Could not complete operation! \
 One or more arguments were missing, incomplete, or incorrect.
-Proper use: `+id_link character_id_number`, ex. `+id_link 22568447`.
+Proper use: `{PREFIX}id_link character_id_number`, ex. `{PREFIX}id_link 22568447`.
 You can find your character's ID by searching for your character on the Lodestone!""")  # I'm hoping this is descriptive
         # enough to help people find their characters' IDs...
         return
@@ -1037,10 +1405,10 @@ Debug information:
                 # These are all commented out because I got tired of rewriting them when I needed to debug something.
                 if character_first_name == "Dusk" and character_last_name == "Argentum":
                     if ctx.author.id != 97153790897045504 and ctx.author.id != 218530229730148352:
-                        embed = discord.Embed(title="Whoops!", description="""Please be sure to read the verification \
+                        embed = discord.Embed(title="Whoops!", description=f"""Please be sure to read the verification \
 instructions more clearly. You have attempted to verify as the example character.
 Proper usage:
-`+id_link YOUR_ID_HERE`
+`{PREFIX}id_link YOUR_ID_HERE`
 Your character ID can be found by visiting https://na.finalfantasyxiv.com/lodestone/my/ and clicking your character's \
 name near the top, in the blue banner.""", color=discord.Color(0xff0000))
                         await ctx.send(embed=embed)
@@ -1123,6 +1491,7 @@ Welcome to Aether Hunts!""", color=discord.Color(0x00cc00))
                                 embed.add_field(name="Roles Granted:",
                                                 value=f"""<@&{licensed_hunter_role.id}>
 <@&{world_role.id}>\n<@&{dc_role.id}>""")
+                                await ctx.author.add_roles(licensed_viewer_role)
                                 pass
                             elif character_dc_name == "Crystal":
                                 embed = discord.Embed(title="Verification complete!", description="""Unfortunately, \
@@ -1185,7 +1554,6 @@ unable to change your name.""")
                                 pass
                             embed.set_thumbnail(url=character_avatar_url)
                             await ctx.send(embed=embed)
-                            await ctx.author.add_roles(licensed_viewer_role)
                             await asyncio.sleep(300)
                             await ctx.author.remove_roles(licensed_viewer_role)
                             return
@@ -1455,8 +1823,8 @@ async def info(ctx, user: discord.Member = None):
 ({retrieved_dc_name})""")  # Sets the field's title and the content as the retrieved world and DC names.
                 embed.set_thumbnail(url=retrieved_avatar_url)  # Sets the thumbnail as the user's character's avatar
                 # url.
-                embed.set_footer(text="""This info may not be up to date if this user hasn't updated in a while. | \
-To update, use the +link command.""")
+                embed.set_footer(text=f"""This info may not be up to date if this user hasn't updated in a while. | \
+To update, use the {PREFIX}link command.""")
                 await ctx.send(embed=embed)
                 return
 
@@ -1480,19 +1848,19 @@ Unicorn, Valefor, Yojimbo, Zalera, Zeromus, Zodiark"""  # Defines the list of wo
     # if/when new worlds are updated.
     if first_name is None:  # The following blocks execute if an argument is missing, incomplete, or incorrect.
         # Usually missing.
-        await ctx.send("""Could not complete operation! \
+        await ctx.send(f"""Could not complete operation! \
 One or more arguments were missing, incomplete, or incorrect.
-Proper use: `+link first_name last_name world_name`, ex. `+link Dusk Argentum Gilgamesh`.""")
+Proper use: `{PREFIX}link first_name last_name world_name`, ex. `{PREFIX}link Dusk Argentum Gilgamesh`.""")
         return
     if last_name is None:
-        await ctx.send("""Could not complete operation! \
+        await ctx.send(f"""Could not complete operation! \
 One or more arguments were missing, incomplete, or incorrect.
-Proper use: `+link first_name last_name world_name`, ex. `+link Dusk Argentum Gilgamesh`.""")
+Proper use: `{PREFIX}link first_name last_name world_name`, ex. `{PREFIX}link Dusk Argentum Gilgamesh`.""")
         return
     if world_name is None:
-        await ctx.send("""Could not complete operation! \
+        await ctx.send(f"""Could not complete operation! \
 One or more arguments were missing, incomplete, or incorrect.
-Proper use: `+link first_name last_name world_name`, ex. `+link Dusk Argentum Gilgamesh`.""")
+Proper use: `{PREFIX}link first_name last_name world_name`, ex. `{PREFIX}link Dusk Argentum Gilgamesh`.""")
         return
     elif world_name.lower() not in world_list.lower():  # This block prevents the command from going any further
         # if the world name is not within the above list. Saves users who can't spell Midgardsormr and Sargatanas
@@ -1635,10 +2003,10 @@ Please wait and retry the command.""")
                 # print(str(character_avatar_url))
                 if character_first_name == "Dusk" and character_last_name == "Argentum":
                     if ctx.author.id != 97153790897045504 and ctx.author.id != 218530229730148352:
-                        embed = discord.Embed(title="Whoops!", description="""Please be sure to read the verification \
+                        embed = discord.Embed(title="Whoops!", description=f"""Please be sure to read the verification \
 instructions more clearly. You have attempted to verify as the example character.
 Proper usage:
-`+link CHARACTER_FIRST_NAME CHARACTER_LAST_NAME WORLD_NAME`""", color=discord.Color(0xff0000))
+`{PREFIX}link CHARACTER_FIRST_NAME CHARACTER_LAST_NAME WORLD_NAME`""", color=discord.Color(0xff0000))
                         await ctx.send(embed=embed)
                         await wait.delete()
                         return
@@ -1738,6 +2106,7 @@ Welcome to Aether Hunts!""", color=discord.Color(0x00cc00))
                                                 value=f"""<@&{licensed_hunter_role.id}>
 <@&{world_role.id}>\n<@&{dc_role.id}>""")  # Informs the command invoker that their Licensed Hunter, world, and DC
                                 # roles have been added.
+                                await ctx.author.add_roles(licensed_viewer_role)
                                 pass
                             elif character_dc_name == "Crystal":  # The following block executes if the command
                                 # invoker's character's DC is Crystal.
@@ -1795,7 +2164,6 @@ unable to change your name.""")
                                 pass
                             embed.set_thumbnail(url=character_avatar_url)
                             await ctx.send(embed=embed)
-                            await ctx.author.add_roles(licensed_viewer_role)
                             await asyncio.sleep(300)
                             await ctx.author.remove_roles(licensed_viewer_role)
                             return
@@ -2101,22 +2469,20 @@ keywords: `Unlink: No DC found!`""")
             character_database.seek(0)  # Seeks to the beginning.
             json.dump(data, character_database, indent=2)  # "Writes" the deletion to the database.
             character_database.truncate()  # Truncates length.
-            embed = discord.Embed(title="Character deleted.", description="""Your character has successfully been \
+            embed = discord.Embed(title="Character deleted.", description=f"""Your character has successfully been \
 removed from the database. The associated roles have also been removed from you. Please note that if these roles \
 contained the Licensed Hunter role, you will not be able to access the remainder of the Discord until you re-verify a \
-character on the Aether datacenter using `+link`.""", color=discord.Color(0x57051a))
+character on the Aether datacenter using `{PREFIX}link`.""", color=discord.Color(0x57051a))
             # Informs the command invoker about the successful running, as well as their permissions changing.
             await ctx.author.send(embed=embed)  # Sends the above embed directly to the user.
             return
 
 
-# TODO: Notes section.
-# TODO: Figure out how to make a command to manage role react from in-server.
-# TODO: For the above, make a command that makes the bot send a message with a defined name, and accepts arguments
-# within to populate the message.
-# TODO: Perhaps make a json with the different message IDs for later editing purposes?
-# TODO: Which involves: Making and recognizing non-static role messages,
-# TODO: Which involves: And making the bot add reactions autonomously to these new messages.
+# RIP to discord.py, you were a real one. I learned Python because of you and am only where I am today thanks to you.
+# Thank you to Danny and all discord.py contributors for your years of hard work. Discord is truly a better place
+# because of you.
+
+# I hope the future brings bright things.
 
 
 bot.run(TOKEN)
