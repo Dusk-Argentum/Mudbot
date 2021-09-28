@@ -29,7 +29,7 @@ import aiohttp  # A web handler. Useful in grabbing information from the interne
 import json  # Json is used to keep track of imported character information and the like.
 
 
-from datetime import datetime, timezone  # For use in getting times.
+from datetime import datetime, timedelta, timezone  # For use in getting times.
 
 
 PREFIX = "+"  # This defines the prefix for Mudbot. Commands MUST start with this character to be processed and run.
@@ -43,7 +43,7 @@ XIVAPI_TOKEN = os.environ.get("Mudbot_XIVAPI")  # This defines the unique token 
 SHOULD_NOTIFY_MILESTONE = 1
 SHOULD_STATUS_CHANGE = 1  # A global variable that defines whether or not the bot's "Playing" status should change
 # at any given time.
-VERSION = "1.1.0"  # Defines the version number, for use in internal tracking.
+VERSION = "1.2.0"  # Defines the version number, for use in internal tracking.
 
 
 intents = discord.Intents.default()  # Gives the bot the explicit permission to use the default intents.
@@ -97,6 +97,8 @@ async def on_member_ban(guild, user):  # This event executes when the bot hears 
 
     def predicate(entry):  # Defines the predicate to search for, and what the variable that the information returned
         # will be defined as.
+        if entry is None:  # Prevents the bot from freaking out when it can't find the audit log entry.
+            return  # I'm still not quite sure it works. We'll find out!
         return entry.target.id == user.id and entry.action == discord.AuditLogAction.ban  # Defines the conditions
     # that the information returned must meet before being able to be returned.
 
@@ -168,32 +170,30 @@ async def on_member_join(member):  # This event executes when the bot hears a jo
     # the date and time that the member who joined was created at, removes milliseconds, and converts the result
     # into a datetime object for use later.
     account_age = (str((datetime.strptime(str(datetime.now(timezone.utc)).partition(".")[0],
-                   "%Y-%m-%d %H:%M:%S") - account_creation_time).total_seconds()).partition(".")[0])  # Subtracts
+                                          "%Y-%m-%d %H:%M:%S") - account_creation_time).total_seconds()).partition(".")[
+        0])  # Subtracts
     # the above account creation time from the current date and time, removing milliseconds and timezone information
     # (the account creation time Discord returns is UTC by default) from the current date and time, for a definitive
     # account age in seconds.
+    time_filter_raw = datetime.now(timezone.utc) - timedelta(seconds=int(account_age_threshold))
+    time_filter = datetime.strptime(str(time_filter_raw).partition(".")[0], "%Y-%m-%d %H:%M:%S")
     if int(account_age) < account_age_threshold:  # Functions in this block execute if the account's age in seconds is
         # less than the account age threshold, which is also in seconds.
-
-        def predicate(entry):  # This is similar to the predicate from on_member_ban, except it searches for an unban.
-            return member.id == entry.target.id and entry.action == discord.AuditLogAction.unban
-
-        entry = await member.guild.audit_logs().find(predicate)
-        if entry is None:  # Functions in this block execute if there are no unbans found for this member.
-            # Used to prevent the bot from autobanning people who successfully appealed and try to rejoin with an
-            # account under the age threshold.
-            embed = discord.Embed(title=f"Sorry, you're too new!", description="""Your account is too new to join \
+        async for entry in member.guild.audit_logs(limit=None, before=time_filter):
+            if member.id == entry.target.id and entry.action == discord.AuditLogAction.unban:
+                return
+            else:
+                continue
+        embed = discord.Embed(title=f"Sorry, you're too new!", description="""Your account is too new to join \
 this Discord! Please DM <@67089121339777024> (Satori#0240) or visit \
 [our ban appeal page](https://unban.aetherhunts.net/) to appeal.""", color=discord.Color(0xf02a07))
-            embed.set_author(name=f"{guild.name}", icon_url=f"{guild.icon_url}")
-            embed.set_thumbnail(url=f"{guild.banner_url}")
-            embed.set_footer(text=f"{guild.name}", icon_url=f"{bot.user.avatar_url}")
-            await member.send(embed=embed)
-            await member.guild.ban(member, reason=f"""Your account is too new to join this Discord! Please DM
-<@67089121339777024> (Satori#0240) or visit [our ban appeal page](https://unban.aetherhunts.net/) to appeal.""")  # Bans
-            # the member.
-            return
-        return  # This second return is here to stop processing if there is an entry found.
+        embed.set_author(name=f"{guild.name}", icon_url=f"{guild.icon_url}")
+        embed.set_thumbnail(url=f"{guild.banner_url}")
+        embed.set_footer(text=f"{guild.name}", icon_url=f"{bot.user.avatar_url}")
+        await member.send(embed=embed)
+        await member.guild.ban(member, reason=f"""Your account is too new to join this Discord! Please DM
+<@67089121339777024> (Satori#0240) or visit [our ban appeal page](https://unban.aetherhunts.net/) to appeal.""")  # Bans # the member.
+        return
 
 
 @bot.event
@@ -206,11 +206,11 @@ async def on_member_remove(member):  # This event triggers when the bot hears th
         return
 
     def predicate(entry):  # Similar to previous predicates, this one instead searches the audit log for kicks.
+        if entry is None:
+            return
         return entry.target.id == member.id and entry.action == discord.AuditLogAction.kick
 
     entry = await guild.audit_logs().find(predicate)
-    if entry is None:  # Functions in this block execute if there is no kick entry found for that member ever.
-        return
     entry_creation_time = datetime.strptime(str(entry.created_at).partition(".")[0], "%Y-%m-%d %H:%M:%S")  # Similarly
     # to the defining of the member's account creation time from on_member_join, this instead uses the creation time of
     # the audit log entry.
@@ -257,6 +257,8 @@ async def on_member_unban(guild, user):  # This event triggers when the bot hear
         return
 
     def predicate(entry):
+        if entry is None:
+            return
         return entry.target.id == user.id and entry.action == discord.AuditLogAction.unban
 
     entry = await guild.audit_logs().find(predicate)
@@ -293,6 +295,8 @@ async def on_member_update(before, after):  # This event triggers when the bot h
         return
 
     def predicate(entry):  # Similar to previous predicates, this one instead searches for a role update.
+        if entry is None:
+            return
         return before.id == after.id and entry.action == discord.AuditLogAction.member_role_update
 
     entry = await before.guild.audit_logs().find(predicate)
@@ -1270,7 +1274,7 @@ and {str(longest_duration_seconds_total)} \
 # commented.
 @guild_only()
 @has_any_role(569959138583511082, 551977968503881748)
-async def conductor(ctx, member: discord.Member = None):
+async def spawner(ctx, member: discord.Member = None):
     if member is None:
         await ctx.send(f"""Command failed. Please mention the member you would like to give the Spawner role to.
 Example: `{PREFIX}conductor @Dusk Argentum#6530`""")
