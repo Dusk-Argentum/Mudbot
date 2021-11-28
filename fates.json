@@ -1,0 +1,124 @@
+{
+	"fates": {
+		"A Realm Reborn (2.0)": {
+			"Behemoth | He Taketh It With His Eyes | behemoth | behe": {
+				"description": "The behemoth has taken flight back to its dominion. Make chase and finish the legendary beast once and for all.",
+				"location": "Coerthas Central Highlands",
+				"level": "50",
+				"name": "He Taketh It With His Eyes",
+				"thumbnail": "https://i.imgur.com/avNA34m.png",
+				"timer": "Every 24-72 Hours",
+				"weather": "",
+				"rewards": "**Gold** | 5x [Behemoth Horn](https://ffxiv.gamerescape.com/wiki/Behemoth_Horn)\n**Silver** | 1x [Behemoth Horn](https://ffxiv.gamerescape.com/wiki/Behemoth_Horn)",
+				"process": "**Stage 1** | [Behold Now Behemoth](https://ffxiv.gamerescape.com/wiki/Behold_Now_Behemoth)",
+				"map": "https://www.retahgaming.com/ffxiv/images/arrfull/behemoth.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Behemoth",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/He_Taketh_It_with_His_Eyes"
+			},
+			"Odin | Steel Reign | odin": {
+				"description": "Atop his mighty steed, clad in armor darker than the void, the elder primal Odin has returned to Eorzea to exact his brutal judgment upon the realm.",
+				"location": "The Black Shroud",
+				"level": "50",
+				"name": "Steel Reign",
+				"thumbnail": "https://i.imgur.com/bRTLdKO.png",
+				"timer": "Every 24-72 Hours",
+				"weather": "<:Tension:873826604063813633> Tension",
+				"rewards": "**Gold** | 5x [Odin's Mantle](https://ffxiv.gamerescape.com/wiki/Odin%27s_Mantle)\n**Silver** | 1x [Odin's Mantle](https://ffxiv.gamerescape.com/wiki/Odin%27s_Mantle)",
+				"process": "",
+				"map": "https://www.retahgaming.com/ffxiv/images/arrfull/odin.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Odin",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/Steel_Reign"
+			}
+		},
+		"Heavensward (3.0)": {
+			"Coeurlregina | Coeurls Chase Boys Chase Coeurls | coeurl | couerl | courel | couerlregina": {
+				"description": "Her main offensive a tactical failure, Coeurlregina has sounded the retreat. However, if allowed the luxury of escape, it will only be a matter of time before the wicked beast is conspiring another assault. Make chase, and end the queen's reign here and now.",
+				"location": "The Dravanian Forelands",
+				"level": "60",
+				"name": "Coeurls Chase Boys Chase Coeurls",
+				"thumbnail": "https://i.imgur.com/hAxM2wM.png",
+				"timer": "**Stage 1** | 24-48 Hours after Stage 3 (or failure)\n**Stage 2** | 2-12 Hours after Stage 1\n**Stage 3** | 2-12 Hours after Stage 2",
+				"weather": "<:RoyalLevin:873825058718625833> Royal Levin",
+				"rewards": "**Stage 1** | 1x [Coeurlregina Horn](https://ffxiv.gamerescape.com/wiki/Coeurlregina_Horn)\n**Stage 2** | 3x [Coeurlregina Horn](https://ffxiv.gamerescape.com/wiki/Coeurlregina_Horn)\n**Stage 3** | 5x [Coeurlregina Horn](https://ffxiv.gamerescape.com/wiki/Coeurlregina_Horn)",
+				"process": "**Stage 1** | [Long Live the Coeurl](https://ffxiv.gamerescape.com/wiki/Long_Live_the_Coeurl)\n**Stage 2** | [Coeurls Chase Boys](https://ffxiv.gamerescape.com/wiki/Coeurls_Chase_Boys)",
+				"map": "https://www.retahgaming.com/ffxiv/images/hwfull/coeurlregina.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Coeurlregina",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/Coeurls_Chase_Boys_Chase_Coeurls"
+			},
+			"Proto Ultima | Prey Online | ultima | ulti | proto": {
+				"description": "After five millennia offline, Proto Ultima has restored auxiliary power and begun a full systems check. To recharge its main power cells, the Allagan killing machine has deployed several aether collectors guarded by some of the most frightening of the fallen empire's godless creations.",
+				"location": "Azys Lla",
+				"level": "59",
+				"name": "Prey Online",
+				"thumbnail": "http://ffxiv.gamerescape.com/w/images/1/11/Map65_Icon.png",
+				"timer": "Every 34-48 Hours",
+				"weather": "<:Hyperelectricity:873819536477028372> Hyperelectricity",
+				"rewards": "**Gold** | 3x [Proto Ultima Exoplating](https://ffxiv.gamerescape.com/wiki/Proto_Ultima_Exoplating)\n**Silver** | 2x [Proto Ultima Exoplating](https://ffxiv.gamerescape.com/wiki/Proto_Ultima_Exoplating)\n**Bronze** | 1x [Proto Ultima Exoplating](https://ffxiv.gamerescape.com/wiki/Proto_Ultima_Exoplating)",
+				"process": "",
+				"map": "https://www.retahgaming.com/ffxiv/images/hwfull/preyonline.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Prey_Online",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/Prey_Online"
+			}
+		},
+		"Stormblood (4.0)": {
+			"Tamamo Gozen | Foxy Lady | foxy | tamamo | fox": {
+				"description": "Upon capture by a wicked Hingan onmyoji, the nine-tailed fox spirit slumbering deep within the young maiden Hikuzume awakens. Now, the only way to stop the legendary Tamamo Gozen is with an excessive display of force.",
+				"location": "Yanxia",
+				"level": "70",
+				"name": "Foxy Lady",
+				"thumbnail": "https://i.imgur.com/2c2f5hm.png",
+				"timer": "Every 12-48 Hours",
+				"weather": "",
+				"rewards": "**Gold** | 15x [Sassho-seki Fragment](https://ffxiv.gamerescape.com/wiki/Sassho-seki_Fragment)\n**Silver** | 6x [Sassho-seki Fragment](https://ffxiv.gamerescape.com/wiki/Sassho-seki_Fragment)",
+				"process": "**Stage 1a** | [More to Offer](https://ffxiv.gamerescape.com/wiki/More_to_Offer)\n**└►Stage 1b** | [Freedom Flies](https://ffxiv.gamerescape.com/wiki/Freedom_Flies)\n**Stage 2** | [Outfoxed](https://ffxiv.gamerescape.com/wiki/Outfoxed)",
+				"map": "https://www.retahgaming.com/ffxiv/images/sbfull/foxylady.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Tamamo_Gozen",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/Foxy_Lady"
+			},
+			"Ixion | A Horse Outside | ixion | ma there's a weird fuckin horse outside": {
+				"description": "It is said on a mighty levinbolt doth the warsteed Ixion ride-thunder, the rumbling of his hooves as they pound the very heavens. Ware the coming storm, for hell descendeth.",
+				"location": "The Lochs",
+				"level": "70",
+				"name": "A Horse Outside",
+				"thumbnail": "https://i.imgur.com/E6gPeQF.png",
+				"timer": "Every 18-36 Hours",
+				"weather": "<:Quicklevin:873820437254135838> Quicklevin",
+				"rewards": "**Gold** | 6x [Ixion Horn](https://ffxiv.gamerescape.com/wiki/Ixion_Horn)\n**Silver** | 4x [Ixion Horn](https://ffxiv.gamerescape.com/wiki/Ixion_Horn)",
+				"process": "",
+				"map": "https://www.retahgaming.com/ffxiv/images/sbfull/ixion.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Ixion",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/A_Horse_Outside"
+			}
+		},
+		"Shadowbringers (5.0)": {
+			"Archaeotania | The Head, the Tail, the Whole Damned Thing | arch | archae | archeotania | arc": {
+				"description": "Drawn by the scent of sanguine coral, Archaeotania finally shows itself. The time has come to end its reign of terror once and for all.",
+				"location": "The Tempest",
+				"level": "80",
+				"name": "The Head, the Tail, the Whole Damned Thing",
+				"thumbnail": "https://i.imgur.com/H5jaoaf.png",
+				"timer": "Every 24-48 Hours",
+				"weather": "",
+				"rewards": "**Gold** | 6x [Archaeotania's Horn](https://ffxiv.gamerescape.com/wiki/Archaeotania%27s_Horn)\n**Silver** | 4x [Archaeotania's Horn](https://ffxiv.gamerescape.com/wiki/Archaeotania%27s_Horn)\n**Bronze** | 2x [Archaeotania's Horn](https://ffxiv.gamerescape.com/wiki/Archaeotania%27s_Horn)",
+				"process": "**Stage 1** | [Where Has the Dagon](https://ffxiv.gamerescape.com/wiki/Where_Has_the_Dagon)\n**Stage 2** | [Ondo of Blood](https://ffxiv.gamerescape.com/wiki/Ondo_of_Blood)\n**Stage 3** | [Lookin' Back on the Track](https://ffxiv.gamerescape.com/wiki/Lookin%27_Back_on_the_Track)\n**Stage 4** | [Coral Support](https://ffxiv.gamerescape.com/wiki/Coral_Support)\n**Stage 5** | [Low Coral Fiber](https://ffxiv.gamerescape.com/wiki/Low_Coral_Fiber)\n**Stage 6** | [Nothing Like a Trappin' Life](https://ffxiv.gamerescape.com/wiki/Nothing_Like_a_Trappin%27_Life)",
+				"map": "https://www.retahgaming.com/ffxiv/images/shfull/archaeotania.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Archaeotania",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/The_Head,_the_Tail,_the_Whole_Damned_Thing"
+			},
+			"Formidable | A Finale Most Formidable | formidable | formid | frog | form": {
+				"description": "It appears that the Goggs have been secretly engineering a massive new automaton capable of thwacking and throttling on a scare heretofore unheard of. Put an end to the malevolent machina by doing a little thwacking and/or throttling of your own.",
+				"location": "Kholusia",
+				"level": "80",
+				"name": "A Finale Most Formidable",
+				"thumbnail": "https://i.imgur.com/3l2iaGB.png",
+				"timer": "Every 24-48 Hours",
+				"weather": "",
+				"rewards": "**Gold** | 6x [Formidable Cog](https://ffxiv.gamerescape.com/wiki/Formidable_Cog)\n**Silver** | 4x [Formidable Cog](https://ffxiv.gamerescape.com/wiki/Formidable_Cog)\n**Bronze** | 2x [Formidable Cog](https://ffxiv.gamerescape.com/wiki/Formidable_Cog)",
+				"process": "**Stage 1** | [Ironbeard Builders - Resist](https://ffxiv.gamerescape.com/wiki/Ironbeard_Builders_-_Resist)\n**└►Stage 1b** | [Ironbeard Builders - Revolt](https://ffxiv.gamerescape.com/wiki/Ironbeard_Builders_-_Revolt)\n**└►Stage 1c** | [Ironbeard Builders - Rebuilt](https://ffxiv.gamerescape.com/wiki/Ironbeard_Builders_-_Rebuilt)\n**Stage 2a** | [Foes Most Formidable](https://ffxiv.gamerescape.com/wiki/Foes_Most_Formidable)\n**└►Stage 2b** | [A Family Most Formidable](https://ffxiv.gamerescape.com/wiki/A_Family_Most_Formidable)",
+				"map": "https://www.retahgaming.com/ffxiv/images/shfull/formidable.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Formidable",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/A_Finale_Most_Formidable"
+			}
+		}
+	}
+}

@@ -1,0 +1,233 @@
+{
+	"worlds": {
+		"dcs": {
+			"0": {
+				"name": "Aether"
+			},
+			"1": {
+				"name": "Chaos"
+			},
+			"2": {
+				"name": "Crystal"
+			},
+			"3": {
+				"name": "Elemental"
+			},
+			"4": {
+				"name": "Gaia"
+			},
+			"5": {
+				"name": "Light"
+			},
+			"6": {
+				"name": "Mana"
+			},
+			"7": {
+				"name": "Primal"
+			}
+		},
+		"servers": {
+			"0": {
+				"name": "Adamantoise"
+			},
+			"1": {
+				"name": "Aegis"
+			},
+			"2": {
+				"name": "Alexander"
+			},
+			"3": {
+				"name": "Anima"
+			},
+			"4": {
+				"name": "Asura"
+			},
+			"5": {
+				"name": "Bahamut"
+			},
+			"6": {
+				"name": "Balmung"
+			},
+			"7": {
+				"name": "Behemoth"
+			},
+			"8": {
+				"name": "Belias"
+			},
+			"9": {
+				"name": "Brynhildr"
+			},
+			"10": {
+				"name": "Cactuar"
+			},
+			"11": {
+				"name": "Carbuncle"
+			},
+			"12": {
+				"name": "Cerberus"
+			},
+			"13": {
+				"name": "Chocobo"
+			},
+			"14": {
+				"name": "Coeurl"
+			},
+			"15": {
+				"name": "Diabolos"
+			},
+			"16": {
+				"name": "Durandal"
+			},
+			"17": {
+				"name": "Excalibur"
+			},
+			"18": {
+				"name": "Exodus"
+			},
+			"19": {
+				"name": "Faerie"
+			},
+			"20": {
+				"name": "Famfrit"
+			},
+			"21": {
+				"name": "Fenrir"
+			},
+			"22": {
+				"name": "Garuda"
+			},
+			"23": {
+				"name": "Gilgamesh"
+			},
+			"24": {
+				"name": "Goblin"
+			},
+			"25": {
+				"name": "Gungnir"
+			},
+			"26": {
+				"name": "Hades"
+			},
+			"27": {
+				"name": "Hyperion"
+			},
+			"28": {
+				"name": "Ifrit"
+			},
+			"29": {
+				"name": "Ixion"
+			},
+			"30": {
+				"name": "Jenova"
+			},
+			"31": {
+				"name": "Kujata"
+			},
+			"32": {
+				"name": "Lamia"
+			},
+			"33": {
+				"name": "Leviathan"
+			},
+			"34": {
+				"name": "Lich"
+			},
+			"35": {
+				"name": "Louisoix"
+			},
+			"36": {
+				"name": "Malboro"
+			},
+			"37": {
+				"name": "Mandragora"
+			},
+			"38": {
+				"name": "Masamune"
+			},
+			"39": {
+				"name": "Mateus"
+			},
+			"40": {
+				"name": "Midgardsormr"
+			},
+			"41": {
+				"name": "Moogle"
+			},
+			"42": {
+				"name": "Odin"
+			},
+			"43": {
+				"name": "Omega"
+			},
+			"44": {
+				"name": "Pandaemonium"
+			},
+			"45": {
+				"name": "Phoenix"
+			},
+			"46": {
+				"name": "Ragnarok"
+			},
+			"47": {
+				"name": "Ramuh"
+			},
+			"48": {
+				"name": "Ridill"
+			},
+			"49": {
+				"name": "Sargatanas"
+			},
+			"50": {
+				"name": "Shinryu"
+			},
+			"51": {
+				"name": "Shiva"
+			},
+			"52": {
+				"name": "Siren"
+			},
+			"53": {
+				"name": "Spriggan"
+			},
+			"54": {
+				"name": "Tiamat"
+			},
+			"55": {
+				"name": "Titan"
+			},
+			"56": {
+				"name": "Tonberry"
+			},
+			"57": {
+				"name": "Twintania"
+			},
+			"58": {
+				"name": "Typhon"
+			},
+			"59": {
+				"name": "Ultima"
+			},
+			"60": {
+				"name": "Ultros"
+			},
+			"61": {
+				"name": "Unicorn"
+			},
+			"62": {
+				"name": "Valefor"
+			},
+			"63": {
+				"name": "Yojimbo"
+			},
+			"64": {
+				"name": "Zalera"
+			},
+			"65": {
+				"name": "Zeromus"
+			},
+			"66": {
+				"name": "Zodiark"
+			}
+		}
+	}
+}
