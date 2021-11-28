@@ -173,7 +173,7 @@ Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to a
         async for entry in guild.audit_logs(action=disnake.AuditLogAction.kick):
             created_at = datetime.strptime(str(entry.created_at).split(".")[0], "%Y-%m-%d %H:%M:%S")
             if entry.target.id == member.id and entry.reason is not None\
-                    and "for failing to verify within" in entry.reason and entry.user.id == self.bot.user.id\
+                    and "for failing to verify your character" in entry.reason and entry.user.id == self.bot.user.id\
                     and created_at > time_filter:  # Functions in this block execute if the user was auto-kicked
                 # for failing to verify within the threshold.
                 channel = disnake.utils.get(guild.channels, name="auto-actioned-log")
