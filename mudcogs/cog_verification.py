@@ -427,11 +427,11 @@ character on the Crystal datacenter! Here's a link to their Hunting Discord.
 [Invite](https://discord.gg/S8fKQvh)""")
             elif "Light" in new[1]:
                 embed.add_field(inline=False, name="Clan Centurio:", value="""Looks like you verified with a \
-character on the Crystal datacenter! Here's a link to their Hunting Discord.
+character on the Light datacenter! Here's a link to their Hunting Discord.
 [Invite](https://discord.gg/h52Uzm4""")
             elif "Primal" in new[1]:
                 embed.add_field(inline=False, name="The Coeurl:", value="""Looks like you verified with a \
-character on the Crystal datacenter! Here's a link to their Hunting Discord.
+character on the Primal datacenter! Here's a link to their Hunting Discord.
 [Invite](https://discord.gg/k4xNWdV)""")
         embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
         await ctx.send(embed=embed)

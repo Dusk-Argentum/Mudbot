@@ -148,9 +148,9 @@ Example: <@97153790897045504> | `97153790897045504`"""
             embed = disnake.Embed(color=disnake.Color(0xf02a07), description="""Your account is too new to join this \
 Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to appeal.""",
                                   title="Sorry, you're too new!")
-            embed.set_author(icon_url=self.bot.user.avatar_url, name=self.bot.user.name)
-            embed.set_thumbnail(url=guild.banner_url)
-            embed.set_footer(icon_url=guild.icon_url, text=guild.name)
+            embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+            embed.set_thumbnail(url=guild.banner.url)
+            embed.set_footer(icon_url=guild.icon.url, text=guild.name)
             try:
                 await member.send(embed=embed)
             except HTTPException:
