@@ -126,8 +126,14 @@ error detailed below."""
                 continue
         embed = disnake.Embed(color=disnake.Color(0xf02a07),
                               title=f"Member{' automatically ' if auto_ban == 1 else ' '}banned.")
-        embed.set_author(icon_url=entry.user.display_avatar.url, name=entry.user.name)
-        embed.set_thumbnail(url=entry.target.display_avatar.url)
+        try:
+            embed.set_author(icon_url=entry.user.avatar.url, name=entry.user.name)
+        except AttributeError:
+            embed.set_author(name=entry.user.name)
+        try:
+            embed.set_thumbnail(url=entry.target.avatar.url)
+        except AttributeError:
+            pass
         embed.add_field(name="Responsible Nutty Moderator:", value=f"""{entry.user.mention}
 {entry.user}
 (`{entry.user.id}`)""")
@@ -215,8 +221,14 @@ Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to a
             return
         embed = disnake.Embed(color=disnake.Color(0xf59a38),
                               title=f"Member{' automatically ' if auto_kick == 1 else ' '}kicked.")
-        embed.set_author(icon_url=entry.user.avatar.url, name=entry.user.name)
-        embed.set_thumbnail(url=entry.target.avatar.url)
+        try:
+            embed.set_author(icon_url=entry.user.avatar.url, name=entry.user.name)
+        except AttributeError:
+            embed.set_author(name=entry.user.name)
+        try:
+            embed.set_thumbnail(url=entry.target.avatar.url)
+        except AttributeError:
+            pass
         embed.add_field(name="Responsible Nutty Moderator:", value=f"""{entry.user.mention}
 {entry.user}
 (`{entry.user.id}`)""")
@@ -248,8 +260,14 @@ Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to a
             else:
                 continue
         embed = disnake.Embed(color=disnake.Color(0xebaba0), title="User unbanned.")
-        embed.set_author(icon_url=entry.user.avatar.url, name=entry.user.name)
-        embed.set_thumbnail(url=entry.target.avatar.url)
+        try:
+            embed.set_author(icon_url=entry.user.avatar.url, name=entry.user.name)
+        except AttributeError:
+            embed.set_author(name=entry.user.name)
+        try:
+            embed.set_thumbnail(url=entry.target.avatar.url)
+        except AttributeError:
+            pass
         embed.add_field(name="Responsible Nutty Moderator:", value=f"""{entry.user.mention}
 {entry.user}
 (`{entry.user.id}`)""")
@@ -300,8 +318,14 @@ Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to a
             channel = disnake.utils.get(guild.channels, name="auto-actioned-log")
             title = "Member unmuted."
         embed = disnake.Embed(color=disnake.Color(0x69727a), title=title)
-        embed.set_author(icon_url=entry.user.avatar.url, name=entry.user.name)
-        embed.set_thumbnail(url=entry.target.avatar.url)
+        try:
+            embed.set_author(icon_url=entry.user.avatar.url, name=entry.user.name)
+        except AttributeError:
+            embed.set_author(name=entry.user.name)
+        try:
+            embed.set_thumbnail(url=entry.target.avatar.url)
+        except AttributeError:
+            pass
         embed.add_field(name="Responsible Nutty Moderator:", value=f"""{entry.user.mention}
 {entry.user}
 (`{entry.user.id}`)""")
