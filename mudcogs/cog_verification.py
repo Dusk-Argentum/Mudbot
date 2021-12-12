@@ -22,6 +22,7 @@ import requests  # Imports the requests module for use in making HTTP requests t
 
 
 import sqlite3  # Imports the sqlite3 module for use in keeping track of the database.
+from sqlite3 import OperationalError
 
 
 from typing import Union
@@ -39,10 +40,15 @@ Mention another user to view theirs.""", name="info",
     async def info(self, ctx, member: Union[disnake.Member, disnake.User] = None):
         if member is None:
             member = ctx.author
-        con = sqlite3.connect("characters.db")  # Connects to the database file.
+        try:
+            con = sqlite3.connect("characters.db", timeout=30.0)  # Connects to the database file.
+        except OperationalError:
+            await ctx.send("Please wait a moment and try again.")
+            return
         cur = con.cursor()  # Sets the cursor within the database.
         cur.execute("SELECT discord_id FROM characters")  # Selects all of the Discord IDs.
         ids = cur.fetchall()  # Fetches all of the Discord IDs.
+        con.close()  # Closes the connection.
         for id_ in ids:  # Loops through every Discord ID and checks it against either the author's or the ID of the
             # user provided.
             id_ = re.search(r"\(\'(\d+)\',", str(id_))  # Searches for a valid Discord ID within the information
@@ -58,29 +64,38 @@ Mention another user to view theirs.""", name="info",
             return
         attributes = ["character_id", "dc", "first", "last", "portrait", "server"]  # Makes a list of the attributes.
         info = []
+        try:
+            con = sqlite3.connect("characters.db", timeout=30.0)
+        except OperationalError:
+            await ctx.send("Please wait a moment and try again.")
+            return
+        cur = con.cursor()
         for attribute in attributes:
             cur.execute(f"SELECT {attribute} FROM characters WHERE discord_id = '{str(member.id)}'")  # Selects the
             # attribute that the loop is currently on from the character's table where the Discord ID matches the
             # ID of the provided user.
             details = re.search(r"\([\'\"](.+)[\'\"],\)", str(cur.fetchall()))
             info.append(details.group(1))
+        con.close()
         embed = disnake.Embed(color=disnake.Color(0x3b9da5), title="Character information:")
         embed.set_author(icon_url=member.avatar.url, name=f"{member.name} ({member.id})")
         embed.set_thumbnail(url=info[4])
-        embed.add_field(name="Name:", value=f"{info[2]} {info[3]}")
-        embed.add_field(name="Server:", value=f"{info[5]} ({info[1]})")
+        embed.add_field(inline=True, name="Name:", value=f"{info[2]} {info[3]}")
+        embed.add_field(inline=True, name="Server:", value=f"{info[5]} ({info[1]})")
+        embed.add_field(inline=False, name="Lodestone:",
+                        value=f"[{info[0]}](https://na.finalfantasyxiv.com/lodestone/character/{info[0]}/)")
         embed.set_footer(icon_url=ctx.guild.icon.url,
                          text="If this information is outdated, please update it by verifying again.")
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=["id_link", "l"], brief="Links your FFXIV character to your Discord.",
+    @commands.command(aliases=["id_link", "id", "l"], brief="Links your FFXIV character to your Discord.",
                       help="""Links your FFXIV character to your Discord or updates it if already linked. Accepts \
 `<first> <last> <world>` and `<lodestone ID>`.""", name="link", usage=f"""link <first> <last> <world>` OR \
 `{PREFIX}link <lodestone ID>""")
     @commands.guild_only()
     async def link(self, ctx, first: str = None, last: str = None, world: str = None):
         wait = await ctx.send("""Attempting to verify your character... Please wait...
-This process can take up to thirty seconds.""")  # Squeenix please give us a native Lodestone API.
+This could take up to a minute...""")  # Squeenix please give us a native Lodestone API.
         id_ = []
         if first.isnumeric() and first is not None:  # Functions in this block execute if the first name is a string
             # of numbers instead of a name. Bypasses searching for character ID using a name.
@@ -88,7 +103,7 @@ This process can take up to thirty seconds.""")  # Squeenix please give us a nat
             pass
         elif not first.isnumeric() and first is not None:  # Functions in this block execute if the first name is a
             # string of non-numeric things (for example, letters).
-            if (last, world) is None:  # Functions in this block execute if either the last name or world name is not
+            if last is None or world is None:  # Functions in this block execute if either the last name or world name is not
                 # provided.
                 await ctx.send(f"""One or more arguments missing. Please ensure you are running the command properly.
 Example: `{PREFIX}link Dusk Argentum Gilgamesh`""")  # Please do not attempt to verify as me.
@@ -130,7 +145,12 @@ Please make sure all inputs were spelled properly and try again.""")
                 else:
                     continue
             else:
-                await ctx.send(f"""There was no character with the name **{first} {last}** found on **{world}**.
+                if len(first) < 4 or len(last) < 4:
+                    await ctx.send(f"""Your character's name is too short to reliably find. Please try again using \
+your Lodestone ID.
+Example: `{PREFIX}link 22568447`.""")
+                else:
+                    await ctx.send(f"""There was no character with the name **{first} {last}** found on **{world}**.
 Please make sure all inputs were spelled properly and try again.""")
                 await wait.delete()
                 return
@@ -211,19 +231,31 @@ Proper usage:
             await wait.delete()
             return
         new = [id_, dc, first, last, portrait, server]  # Sets a list of the new information.
-        con = sqlite3.connect("characters.db")
+        try:
+            con = sqlite3.connect("characters.db", timeout=30.0)
+        except OperationalError:
+            await ctx.send("Please wait a moment and try again.")
+            return
         cur = con.cursor()
         cur.execute("SELECT discord_id FROM characters")
         ids = cur.fetchall()
+        con.close()
         new_diff = []  # Sets an empty list for the new stuff.
         old_diff = []  # Sets an empty list for the old stuff.
         old = []  # Sets an empty list for the old..?
         if str(ctx.author.id) in str(ids):
             attributes = ["character_id", "dc", "first", "last", "portrait", "server"]
+            try:
+                con = sqlite3.connect("characters.db", timeout=30.0)
+            except OperationalError:
+                await ctx.send("Please wait a moment and try again.")
+                return
+            cur = con.cursor()
             for attribute in attributes:
                 cur.execute(f"SELECT {attribute} FROM characters WHERE discord_id = '{str(ctx.author.id)}'")
                 details = re.search(r"\([\'\"](.+)[\'\"],\)", str(cur.fetchall()))
                 old.append(details.group(1))
+            con.close()
             for count, attribute in enumerate(new):  # Functions in this loop execute for every thing in the new list.
                 if attribute == old[count]:  # Functions in this block execute if the old attribute and new one
                     # are the same.
@@ -239,6 +271,12 @@ Proper usage:
             with open("worlds.json", "r+") as worlds:
                 d = json.load(worlds)  # d is used instead of data cuz I wrote this line after I had already used
                 # the data name for a different variable and didn't feel like rewriting it.
+            try:
+                con = sqlite3.connect("characters.db", timeout=30.0)
+            except OperationalError:
+                await ctx.send("Please wait a moment and try again.")
+                return
+            cur = con.cursor()
             for count, unused in enumerate(new):  # Functions in this block update information to the new stuff.
                 if new[count] != old[count]:
                     update = f"UPDATE characters SET {attributes[count]} = ? WHERE discord_id = ?"
@@ -248,6 +286,8 @@ Proper usage:
                     first = new[2]
                 if count == 3:
                     last = new[3]
+            con.commit()  # Commits the new information.
+            con.close()
             new_dc = disnake.utils.get(ctx.guild.roles, name=new[1])
             if new_dc not in ctx.guild.roles:  # Functions in this block execute if the DC name is not in the guild's
                 # role list. Basically just future-proofing.
@@ -316,9 +356,31 @@ Proper usage:
                 pass
         elif str(ctx.author.id) not in str(ids):  # Functions in this block execute if the member is not already in
             # the database.
+            try:
+                con = sqlite3.connect("characters.db", timeout=30.0)
+            except OperationalError:
+                await ctx.send("Please wait a moment and try again.")
+                return
+            cur = con.cursor()
             cur.execute("""INSERT INTO characters VALUES (?, ?, ?, ?, ?, ?, ?)""",  # Makes a new row with the
                         # provided information.
                         (str(ctx.author.id), str(id_), dc, first, last, portrait, server))
+            con.commit()
+            con.close()
+            licensed_hunter = disnake.utils.get(ctx.guild.roles, name="Licensed Hunter")
+            if licensed_hunter in ctx.author.roles:
+                worlds_list = []
+                with open("worlds.json", "r") as worlds:
+                    d = json.load(worlds)
+                for count, world in enumerate(d["worlds"]["dcs"]):
+                    worlds_list.append(d["worlds"]["dcs"][str(count)]["name"])
+                for count, world in enumerate(d["worlds"]["servers"]):
+                    worlds_list.append(d["worlds"]["servers"][str(count)]["name"])
+                for role in ctx.author.roles:
+                    if role.name in worlds_list:
+                        for world in worlds_list:
+                            if role.name == world:
+                                await ctx.author.remove_roles(role)
             if dc not in str(ctx.guild.roles):
                 await ctx.guild.create_role(name=dc)
             dc_role = disnake.utils.get(ctx.guild.roles, name=dc)
@@ -337,8 +399,6 @@ Proper usage:
                 await ctx.author.add_roles(server_role)
             except (Forbidden, HTTPException):
                 pass
-        con.commit()  # Commits the new information.
-        con.close()  # Then closes the connection.
         description = "** **"  # Sets a blank description, to be edited. Usually.
         licensed_hunter = disnake.utils.get(ctx.guild.roles, name="Licensed Hunter")
         licensed_viewer = disnake.utils.get(ctx.guild.roles, name="Licensed Viewer")
@@ -428,7 +488,7 @@ character on the Crystal datacenter! Here's a link to their Hunting Discord.
             elif "Light" in new[1]:
                 embed.add_field(inline=False, name="Clan Centurio:", value="""Looks like you verified with a \
 character on the Light datacenter! Here's a link to their Hunting Discord.
-[Invite](https://discord.gg/h52Uzm4""")
+[Invite](https://discord.gg/h52Uzm4)""")
             elif "Primal" in new[1]:
                 embed.add_field(inline=False, name="The Coeurl:", value="""Looks like you verified with a \
 character on the Primal datacenter! Here's a link to their Hunting Discord.
@@ -438,11 +498,13 @@ character on the Primal datacenter! Here's a link to their Hunting Discord.
         await wait.delete()
 
     @commands.command(aliases=["u", "un_link"], brief="Removes your character from the database.",
-                      help="Removes your character from the database. Also removes the applicable roles.",
+                      help="Removes your character from the database. Also removes all roles.",
                       name="unlink", usage="unlink")
     @commands.guild_only()
     async def unlink(self, ctx):
-        confirm = await ctx.send("Unlinking your account will remove all your roles. Proceed?")
+        confirm = await ctx.send("""Unlinking your account will remove all your roles and remove your access to the \
+server.
+Proceed?""")
         await confirm.add_reaction("👍")
         await confirm.add_reaction("👎")
         reactions = ["👍", "👎"]
@@ -462,10 +524,15 @@ character on the Primal datacenter! Here's a link to their Hunting Discord.
             await ctx.send("Unlinking aborted.")
             return
         await confirm.delete()
-        con = sqlite3.connect("characters.db")
+        try:
+            con = sqlite3.connect("characters.db", timeout=30.0)
+        except OperationalError:
+            await ctx.send("Please wait a moment and try again.")
+            return
         cur = con.cursor()
         cur.execute("SELECT discord_id FROM characters")
         ids = cur.fetchall()
+        con.close()
         for id_ in ids:
             id_ = re.search(r"\(\'(\d+)\',", str(id_))
             if id_.group(1) == str(ctx.author.id):
@@ -475,15 +542,25 @@ character on the Primal datacenter! Here's a link to their Hunting Discord.
 If you see this message, but have verified properly (have Licensed Hunter role, can see channels, etc.), \
 please open a support ticket.""")
             return
+        try:
+            con = sqlite3.connect("characters.db", timeout=30.0)
+        except OperationalError:
+            await ctx.send("Please wait a moment and try again.")
+            return
+        cur = con.cursor()
         con.execute(f"DELETE FROM characters WHERE discord_id = '{str(ctx.author.id)}'")
         con.commit()
+        con.close()
         for role in ctx.author.roles:
             try:
                 await ctx.author.remove_roles(role)
             except (Forbidden, HTTPException):
                 continue
-        await ctx.author.send("""You have successfully unlinked your character.
+        try:
+            await ctx.author.send("""You have successfully unlinked your character.
 To regain access to the server, you must re-link your account.""")
+        except Forbidden:
+            return
 
 
 def setup(bot):

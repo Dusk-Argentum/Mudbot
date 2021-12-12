@@ -7,8 +7,8 @@ import disnake
 from disnake import HTTPException
 from disnake.ext import commands
 from disnake.ext.commands import BotMissingPermissions, ChannelNotFound, CheckFailure, CommandInvokeError, \
-    CommandNotFound, MemberNotFound, MissingAnyRole, NoPrivateMessage, NotOwner, UserNotFound  # Imports a bunch of
-# exceptions.
+    CommandNotFound, MemberNotFound, MissingAnyRole, NoPrivateMessage, NotOwner, UnexpectedQuoteError, UserNotFound
+# Imports a bunch of exceptions.
 
 
 import json
@@ -30,6 +30,7 @@ class MudEvents(commands.Cog):
         if ctx.author.id == self.bot.owner_id:  # Functions in this block execute if the command invoker is the bot's
             # owner.
             await ctx.send(error)  # Sends the unedited error text to the channel.
+        raw_error = error
         if isinstance(error, BotMissingPermissions):  # Functions in this block execute if the bot is missing the
             # permissions required to execute a function.
             error = "I do not have permission to enact this command."
@@ -70,9 +71,32 @@ Example: <@97153790897045504> | `97153790897045504`"""
             error = "You cannot run this command in a private message."
         if isinstance(error, NotOwner):  # Functions in this block execute if the invoker is cringe.
             error = "You're not cool enough to run this command."
+        if isinstance(error, UnexpectedQuoteError):
+            if ctx.command.name == "link":
+                await ctx.send(f"""You have an invalid quote. Please **copy and paste** the below text to verify.
+`{ctx.message.content.replace("‘", "'")}`""")
+                return
+            error = "Unexpected quote. Please use `'` instead of `‘`."
         if isinstance(error, UserNotFound):  # Functions in this block execute if the provided user is invalid.
             error = """User not found. Please make sure to @mention the user, or use their Discord ID.
 Example: <@97153790897045504> | `97153790897045504`"""
+        channel = self.bot.get_channel(917980973306638346)  # Grabs the error reporting channel for Mudbot on
+        # my private server.
+        embed = disnake.Embed(color=disnake.Color(0x3b9da5), description="An exception was caught.", title="Error!")
+        # Functions below define the various aspects of an embed and their content.
+        embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+        embed.set_thumbnail(url=self.bot.user.avatar.url)
+        timestamp = int((datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0], "%Y-%m-%d %H:%M:%S") -
+                         datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
+        value = f"""A command {f"(`{PREFIX}{ctx.command.name}`)" if ctx.command is not None else ""} invoked by \
+{ctx.author.mention} (`{ctx.author.id}`) at <t:{timestamp}:F> in {ctx.channel.mention} (`{ctx.channel.id}`) caused the \
+error detailed below."""
+        embed.add_field(inline=False, name="Source:", value=value)
+        embed.add_field(inline=False, name="Raw Error:", value=str(raw_error))
+        embed.add_field(inline=False, name="Message Sent:", value=error)
+        embed.add_field(inline=False, name="Message Content:", value=f"`{ctx.message.content}`")
+        embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
+        await channel.send(embed=embed)
         await ctx.send(f"Error: {error}")  # Sends the error text.
 
     @commands.Cog.listener()
@@ -353,12 +377,15 @@ Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to a
 
     @commands.Cog.listener()
     async def on_ready(self):  # Functions in this block execute when the bot is finished starting up.
-        cog_tasks.MudTasks.auto_kick_unverified.start(self)  # Executes the auto-kick task.
-        cog_tasks.MudTasks.check_temp_bans.start(self)  # Executes the task that checks whether or not temp-bans are in
-        # the past.
-        cog_tasks.MudTasks.check_temp_mutes.start(self)  # Same as above, but for mutes.
-        cog_tasks.MudTasks.status_rotation.start(self)  # Executes the status rotation task.
-        cog_tasks.MudTasks.viewer_removal.start(self)  # Executes the viewer removal task.
+        try:
+            cog_tasks.MudTasks.auto_kick_unverified.start(self)  # Executes the auto-kick task.
+            cog_tasks.MudTasks.check_temp_bans.start(self)  # Executes the task that checks whether or not temp-bans are
+            # in the past.
+            cog_tasks.MudTasks.check_temp_mutes.start(self)  # Same as above, but for mutes.
+            cog_tasks.MudTasks.status_rotation.start(self)  # Executes the status rotation task.
+            cog_tasks.MudTasks.viewer_removal.start(self)  # Executes the viewer removal task.
+        except RuntimeError:
+            print("Tasks already started.")
         print(f"{self.bot.user.name} online. Awaiting commands.")  # Let's the person viewing the console know
         # that the bot started up successfully.
 

@@ -119,6 +119,36 @@
 				"monster_url": "https://ffxiv.gamerescape.com/wiki/Formidable",
 				"fate_url": "https://ffxiv.gamerescape.com/wiki/A_Finale_Most_Formidable"
 			}
+		},
+		"Endwalker (6.0)": {
+				"Chi | Omicron Recall: Killing Order | chi | omicron": {
+				"description": "Unit N-6205 has successfully established a connection with Chi─which has arrived with offensive protocols fully primed. It would seem that the only way to retrieve its data is to defeat it in combat.",
+				"location": "Ultima Thule",
+				"level": "90",
+				"name": "Omicron Recall: Killing Order",
+				"thumbnail": "https://i.imgur.com/ZmBtiKv.png",
+				"timer": "Every 36-72 Hours",
+				"weather": "",
+				"rewards": "**Gold** | 6x [Chi Bolt](https://ffxiv.gamerescape.com/wiki/Chi_Bolt)\n**Silver** | 4x [Chi Bolt](https://ffxiv.gamerescape.com/wiki/Chi_Bolt)\n**Bronze** | 2x [Chi Bolt](https://ffxiv.gamerescape.com/wiki/Chi_Bolt)",
+				"process": "**Stage 1** | [Omicron Recall: Comms Expansion](https://ffxiv.gamerescape.com/wiki/Omicron_Recall:_Comms_Expansion)\n**Stage 2** | [Omicron Recall: Secure Connection](https://ffxiv.gamerescape.com/wiki/Omicron_Recall:_Secure_Connection)",
+				"map": "https://www.retahgaming.com/ffxiv/images/endfull/chi.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Chi_(Enemy)",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/Omicron_Recall:_Killing_Order"
+			},
+			"Daivadipa | Devout Pilgrims vs. Daivadipa | dai | daiv | daivad | daivadipa | thavnair": {
+				"description": "Hearing the prayers of pilgrims, a deity has descended─albeit a false one from the Tower of Zot. This pretender to the name of Daivadipa must be consigned to the aether whence it came.",
+				"location": "Thavnair",
+				"level": "90",
+				"name": "Devout Pilgrims vs. Daivadipa",
+				"thumbnail": "https://i.imgur.com/5fOPI5E.png",
+				"timer": "Every 36-72 Hours",
+				"weather": "",
+				"rewards": "**Gold** | 6x [Daivadipa's Bead](https://ffxiv.gamerescape.com/wiki/Daivadipa%27s_Bead)\n**Silver** | 4x [Daivadipa's Bead](https://ffxiv.gamerescape.com/wiki/Daivadipa%27s_Bead)\n**Bronze** | 2x [Daivadipa's Bead](https://ffxiv.gamerescape.com/wiki/Daivadipa%27s_Bead)",
+				"process": "**Stage 1** | [Devout Pilgrims vs. the Jungle Lizards](https://ffxiv.gamerescape.com/wiki/Devout_Pilgrims_vs._the_Jungle_Lizards)\n**Stage 2** | [Devout Pilgrims vs. the Apalala](https://ffxiv.gamerescape.com/wiki/Devout_Pilgrims_vs._the_Apalala)",
+				"map": "https://www.retahgaming.com/ffxiv/images/endfull/daivadipa.gif",
+				"monster_url": "https://ffxiv.gamerescape.com/wiki/Daivadipa",
+				"fate_url": "https://ffxiv.gamerescape.com/wiki/Devout_Pilgrims_vs._Daivadipa"
+			}
 		}
 	}
 }
