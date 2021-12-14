@@ -95,7 +95,7 @@ Mention another user to view theirs.""", name="info",
     @commands.guild_only()
     async def link(self, ctx, first: str = None, last: str = None, world: str = None):
         wait = await ctx.send("""Attempting to verify your character... Please wait...
-This could take up to a minute...""")  # Squeenix please give us a native Lodestone API.
+This could take up to a minute.""")  # Squeenix please give us a native Lodestone API.
         id_ = []
         if first.isnumeric() and first is not None:  # Functions in this block execute if the first name is a string
             # of numbers instead of a name. Bypasses searching for character ID using a name.
@@ -105,9 +105,9 @@ This could take up to a minute...""")  # Squeenix please give us a native Lodest
             # string of non-numeric things (for example, letters).
             if last is None or world is None:  # Functions in this block execute if either the last name or world name is not
                 # provided.
-                await ctx.send(f"""One or more arguments missing. Please ensure you are running the command properly.
+                await wait.edit(content=f"""One or more arguments missing. Please ensure you are running the command \
+properly.
 Example: `{PREFIX}link Dusk Argentum Gilgamesh`""")  # Please do not attempt to verify as me.
-                await wait.delete()
                 return
             first = first.lower()  # The following lines make every letter in the first, last, and world names
             # lowercase...
@@ -120,21 +120,20 @@ Example: `{PREFIX}link Dusk Argentum Gilgamesh`""")  # Please do not attempt to 
                 r = (requests.get
                      (f"https://na.finalfantasyxiv.com/lodestone/character/?q={first}+{last}&worldname={world}"))
                 # Makes a request to the Lodestone searching for the character with the given information.
-            if r.status_code != 200:  # Functions in this block execute if the request did not receive a status 202,
+            if r.status_code != 200:  # Functions in this block execute if the request did not receive a status 200
                 # which is basically an "OK".
-                await ctx.send(f"""Apologies for the inconvenience, but an error occurred.
+                await wait.edit(content=f"""Apologies for the inconvenience, but an error occurred.
 `{r.status_code}`
 If you see this message too many times, please open a support ticket.""")
-                await wait.delete()
                 return
             html = Soup(r.text, "html.parser")  # Turns the HTML from the request into something parsable.
             not_found = html.select(".parts__zero")  # Selects the appropriate element, if it exists.
             if not_found:  # If the not_found element named above exists, functions in this block execute.
                 # Only happens if information provided is incorrect,
                 # Theoretically.
-                await ctx.send(f"""There was no character with the name **{first} {last}** found on **{world}**.
+                await wait.edit(content=f"""There was no character with the name **{first} {last}** found on \
+**{world}**.
 Please make sure all inputs were spelled properly and try again.""")
-                await wait.delete()
                 return
             character = []
             for character in html.select("div.entry"):  # Parses every character returned in the search.
@@ -146,13 +145,13 @@ Please make sure all inputs were spelled properly and try again.""")
                     continue
             else:
                 if len(first) < 4 or len(last) < 4:
-                    await ctx.send(f"""Your character's name is too short to reliably find. Please try again using \
-your Lodestone ID.
+                    await wait.edit(content=f"""Your character's name is too short to reliably find. Please try again \
+using your Lodestone ID.
 Example: `{PREFIX}link 22568447`.""")
                 else:
-                    await ctx.send(f"""There was no character with the name **{first} {last}** found on **{world}**.
+                    await wait.edit(content=f"""There was no character with the name **{first} {last}** found on
+**{world}**.
 Please make sure all inputs were spelled properly and try again.""")
-                await wait.delete()
                 return
             id_ = re.search(r"""/lodestone/character/(\d{1,10})/""", str(character.select(".entry__link"))).group(1)
             # The above gets the character ID of the found character, if a character is found.
@@ -163,15 +162,18 @@ Please make sure all inputs were spelled properly and try again.""")
             async with ctx.typing():
                 r = requests.get(f"https://na.finalfantasyxiv.com/lodestone/character/{id_}/class_job/")
             if r.status_code == 404:
-                await ctx.send(f"""There was no character with the name **{first} {last}** found on **{world}**.
+                if first.isnumeric():
+                    await wait.edit(content=f"""There was no character with the ID **{first}** found.
+Please make sure all inputs were entered properly and try again.""")
+                elif not first.isnumeric():
+                    await wait.edit(content=f"""There was no character with the name **{first} {last}** found on \
+**{world}**.
 Please make sure all inputs were spelled properly and try again.""")
-                await wait.delete()
                 return
             elif r.status_code != 200:
-                await ctx.send(f"""Apologies for the inconvenience, but an error occurred.
+                await wait.edit(content=f"""Apologies for the inconvenience, but an error occurred.
 `{r.status_code}`
 If you see this message too many times, please open a support ticket.""")
-                await wait.delete()
                 return
             html = Soup(r.text, "html.parser")
             class_above_threshold = False
@@ -184,25 +186,27 @@ If you see this message too many times, please open a support ticket.""")
                     class_above_threshold = True
                     break
             else:
-                await ctx.send(f"""Apologies for the inconvenience, but the moderation team of this server \
-has determined that only characters that have at least one class/job at level {threshold} will be able to make use of \
+                licensed_hunter = disnake.utils.get(ctx.guild.roles, name="Licensed Hunter")
+                if licensed_hunter in ctx.author.roles:
+                    await wait.edit(content="Bypassing level gate...")
+                    pass
+                elif licensed_hunter not in ctx.author.roles:
+                    await wait.edit(content=f"""Apologies for the inconvenience, but the moderation team of this server\
+ has determined that only characters that have at least one class/job at level {threshold} will be able to make use of \
 this server.
 Please attempt to verify once again once you have at least one class/job at level {threshold}!""")
                 # Sorry to new players. You can join eventually. I prommy.
-                await wait.delete()
-                return
+                    return
         async with ctx.typing():  # Gets the provided character's Lodestone page.
             r = requests.get(f"https://na.finalfantasyxiv.com/lodestone/character/{id_}/")
         if r.status_code == 404:  # Functions in this block execute if the status returned is 404, not found.
-            await ctx.send(f"""There was no character with the name **{first} {last}** found on **{world}**.
+            await wait.edit(content=f"""There was no character with the name **{first} {last}** found on **{world}**.
 Please make sure all inputs were spelled properly and try again.""")
-            await wait.delete()
             return
         elif r.status_code != 200:
-            await ctx.send(f"""Apologies for the inconvenience, but an error occurred.
+            await wait.edit(content=f"""Apologies for the inconvenience, but an error occurred.
 `{r.status_code}`
 If you see this message too many times, please open a support ticket.""")
-            await wait.delete()
             return
         html = Soup(r.text, "html.parser")
         name = re.search(r"""chara__name\">([\w'-]{2,15})\s([\w'-]{2,15})<""",
@@ -227,14 +231,13 @@ Proper usage:
             embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
             embed.set_thumbnail(url=self.bot.user.avatar.url)
             embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
-            await ctx.send(embed=embed)
-            await wait.delete()
+            await wait.edit(content=None, embed=embed)
             return
         new = [id_, dc, first, last, portrait, server]  # Sets a list of the new information.
         try:
             con = sqlite3.connect("characters.db", timeout=30.0)
         except OperationalError:
-            await ctx.send("Please wait a moment and try again.")
+            await wait.edit(content="Please wait a moment and try again.")
             return
         cur = con.cursor()
         cur.execute("SELECT discord_id FROM characters")
@@ -248,7 +251,7 @@ Proper usage:
             try:
                 con = sqlite3.connect("characters.db", timeout=30.0)
             except OperationalError:
-                await ctx.send("Please wait a moment and try again.")
+                await wait.edit(content="Please wait a moment and try again.")
                 return
             cur = con.cursor()
             for attribute in attributes:
@@ -274,7 +277,7 @@ Proper usage:
             try:
                 con = sqlite3.connect("characters.db", timeout=30.0)
             except OperationalError:
-                await ctx.send("Please wait a moment and try again.")
+                await wait.edit(content="Please wait a moment and try again.")
                 return
             cur = con.cursor()
             for count, unused in enumerate(new):  # Functions in this block update information to the new stuff.
@@ -359,7 +362,7 @@ Proper usage:
             try:
                 con = sqlite3.connect("characters.db", timeout=30.0)
             except OperationalError:
-                await ctx.send("Please wait a moment and try again.")
+                await wait.edit(content="Please wait a moment and try again.")
                 return
             cur = con.cursor()
             cur.execute("""INSERT INTO characters VALUES (?, ?, ?, ?, ?, ?, ?)""",  # Makes a new row with the
@@ -409,6 +412,9 @@ Proper usage:
             if str(ctx.author.id) in str(ids) and ctx.channel.id == 738670827490377800:
                 description = """Welcome back! Be sure to peruse <#865129809452728351> to add Hunt-related roles to \
 yourself."""
+            elif str(ctx.author.id) in str(ids) and ctx.channel.id != 738670827490377800:
+                description = """Information updated! Thank you for taking the time to keep your information \
+up-to-date."""
             elif str(ctx.author.id) not in str(ids):
                 description = """Welcome to Aether Hunts! Be sure to peruse <#865129809452728351> to add Hunt-related \
 roles to yourself."""
@@ -438,12 +444,18 @@ You're welcome to attempt the linking process again with a character on Aether, 
                 if isinstance(new_diff[count], disnake.Role):
                     new_value.append(new_diff[count].mention)
                 elif isinstance(new_diff[count], str):
-                    new_value.append(new_diff[count])
+                    if new_diff[count] == "":
+                        pass
+                    elif new_diff[count] != "":
+                        new_value.append(new_diff[count])
             for count, diff in enumerate(old_diff):
                 if isinstance(old_diff[count], disnake.Role):
                     old_value.append(f"~~{old_diff[count].mention}~~")
                 elif isinstance(old_diff[count], str):
-                    old_value.append(f"~~{old_diff[count]}~~")
+                    if old_diff[count] == "":
+                        pass
+                    elif old_diff[count] != "":
+                        old_value.append(f"~~{old_diff[count]}~~")
             for value in new_value:
                 arrow_value.append("►")
             if "Aether" in new[1] and licensed_viewer in ctx.author.roles:
@@ -494,8 +506,7 @@ character on the Light datacenter! Here's a link to their Hunting Discord.
 character on the Primal datacenter! Here's a link to their Hunting Discord.
 [Invite](https://discord.gg/k4xNWdV)""")
         embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
-        await ctx.send(embed=embed)
-        await wait.delete()
+        await wait.edit(content=None, embed=embed)
 
     @commands.command(aliases=["u", "un_link"], brief="Removes your character from the database.",
                       help="Removes your character from the database. Also removes all roles.",
@@ -516,18 +527,17 @@ Proceed?""")
         try:
             reaction, users = await self.bot.wait_for("reaction_add", timeout=60, check=check)
         except TimeoutError:  # Functions in this block execute if the unlink prompt times out.
-            await confirm.delete()
-            await ctx.send("Unlinking aborted. Neither accepted reaction added.")
+            await confirm.edit(content="Unlinking aborted. Neither accepted reaction added.")
+            await confirm.clear_reactions()
             return
         if str(reaction.emoji) == "👎":
-            await confirm.delete()
-            await ctx.send("Unlinking aborted.")
+            await confirm.edit(content="Unlinking aborted.")
+            await confirm.clear_reactions()
             return
-        await confirm.delete()
         try:
             con = sqlite3.connect("characters.db", timeout=30.0)
         except OperationalError:
-            await ctx.send("Please wait a moment and try again.")
+            await confirm.edit(content="Please wait a moment and try again.")
             return
         cur = con.cursor()
         cur.execute("SELECT discord_id FROM characters")
@@ -538,14 +548,13 @@ Proceed?""")
             if id_.group(1) == str(ctx.author.id):
                 break
         else:
-            await ctx.send("""You are not in my database.
-If you see this message, but have verified properly (have Licensed Hunter role, can see channels, etc.), \
-please open a support ticket.""")
+            await confirm.edit(content=f"""You are not in my database.
+If you are a Licensed Hunter, you can begin the verification process by using the `{PREFIX}link` command.""")
             return
         try:
             con = sqlite3.connect("characters.db", timeout=30.0)
         except OperationalError:
-            await ctx.send("Please wait a moment and try again.")
+            await confirm.edit(content="Please wait a moment and try again.")
             return
         cur = con.cursor()
         con.execute(f"DELETE FROM characters WHERE discord_id = '{str(ctx.author.id)}'")

@@ -89,8 +89,9 @@ Example: <@97153790897045504> | `97153790897045504`"""
         timestamp = int((datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0], "%Y-%m-%d %H:%M:%S") -
                          datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
         value = f"""A command {f"(`{PREFIX}{ctx.command.name}`)" if ctx.command is not None else ""} invoked by \
-{ctx.author.mention} (`{ctx.author.id}`) at <t:{timestamp}:F> in {ctx.channel.mention} (`{ctx.channel.id}`) caused the \
-error detailed below."""
+{ctx.author.mention} (`{ctx.author.id}`) at <t:{timestamp}:F> in {f"{ctx.channel.mention} (`{ctx.channel.id}`)" if
+        ctx.channel.type == disnake.ChannelType.text else f"a DM with {ctx.author.mention} (`{ctx.author.id}`)"} \
+caused the error detailed below."""
         embed.add_field(inline=False, name="Source:", value=value)
         embed.add_field(inline=False, name="Raw Error:", value=str(raw_error))
         embed.add_field(inline=False, name="Message Sent:", value=error)
@@ -401,15 +402,28 @@ Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to a
 
     @commands.Cog.listener()
     async def on_ready(self):  # Functions in this block execute when the bot is finished starting up.
+        await asyncio.sleep(1)
         try:
             cog_tasks.MudTasks.auto_kick_unverified.start(self)  # Executes the auto-kick task.
+        except RuntimeError:
+            pass
+        try:
             cog_tasks.MudTasks.check_temp_bans.start(self)  # Executes the task that checks whether or not temp-bans are
             # in the past.
+        except RuntimeError:
+            pass
+        try:
             cog_tasks.MudTasks.check_temp_mutes.start(self)  # Same as above, but for mutes.
+        except RuntimeError:
+            pass
+        try:
             cog_tasks.MudTasks.status_rotation.start(self)  # Executes the status rotation task.
+        except RuntimeError:
+            pass
+        try:
             cog_tasks.MudTasks.viewer_removal.start(self)  # Executes the viewer removal task.
         except RuntimeError:
-            print("Tasks already started.")
+            pass
         print(f"{self.bot.user.name} online. Awaiting commands.")  # Let's the person viewing the console know
         # that the bot started up successfully.
 
