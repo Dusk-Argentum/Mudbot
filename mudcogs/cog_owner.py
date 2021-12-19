@@ -450,7 +450,7 @@ character on the Primal datacenter! Here's a link to their Hunting Discord.
         embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
         await wait.edit(content=None, embed=embed)
 
-    @commands.command(aliases="fun", brief="Forces a user to unlink and removes their roles.", help="""Forces a \
+    @commands.command(aliases=["fun"], brief="Forces a user to unlink and removes their roles.", help="""Forces a \
 user to unlink and removes their roles.""", name="force_unlink", usage="force_unlink <@mention>`/`<ID>")
     @commands.guild_only()
     async def force_unlink(self, ctx, user: Union[disnake.Member, disnake.User] = None):
