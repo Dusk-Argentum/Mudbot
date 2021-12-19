@@ -149,7 +149,7 @@ Please make sure all inputs were spelled properly and try again.""")
 using your Lodestone ID.
 Example: `{PREFIX}link 22568447`.""")
                 else:
-                    await wait.edit(content=f"""There was no character with the name **{first} {last}** found on
+                    await wait.edit(content=f"""There was no character with the name **{first} {last}** found on \
 **{world}**.
 Please make sure all inputs were spelled properly and try again.""")
                 return

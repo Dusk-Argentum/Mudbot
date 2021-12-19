@@ -52,7 +52,7 @@ Example: <#628080650427039764> | `628080650427039764`"""
                     # Makes a list of channels where the command can be used.
                 error = f"""The command `{ctx.command.name}` cannot be used here.
 Valid channels: <#{">, <#".join(channels)}>."""
-            elif ctx.command.name in ["conductor", "spawner"]:
+            elif ctx.command.name in ["conductor", "spawner"] and "rolerequest" not in ctx.channel.name:
                 error = "This command must be used in a role request ticket."
         if isinstance(error, CommandInvokeError):  # Functions in this block execute if there is an unhandled
             # exception which causes the command to execute improperly.

@@ -184,10 +184,10 @@ http://discord.gg/aetherhunts"""
             licensed_viewers.seek(0)
             json.dump(data, licensed_viewers, indent=4)
             licensed_viewers.truncate()
-            for member in list(data["licensed_viewers"]):
+            for member_id in list(data["licensed_viewers"]):
                 member = guild.get_member(int(member))
                 if member is None:
-                    del data["licensed_viewers"][str(member)]
+                    del data["licensed_viewers"][str(member_id)]
                     continue
             licensed_viewers.seek(0)
             json.dump(data, licensed_viewers, indent=4)
