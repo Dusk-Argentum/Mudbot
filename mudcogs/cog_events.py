@@ -177,7 +177,8 @@ caused the error detailed below."""
                 else:
                     continue
             embed = disnake.Embed(color=disnake.Color(0xf02a07), description="""Your account is too new to join this \
-Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to appeal.""",
+Discord. Please visit [our ban appeal page](https://unban.aetherhunts.net/) to appeal.
+Unban appeals for new accounts will be accepted once a moderator is able to view your appeal.""",
                                   title="Sorry, you're too new!")
             embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
             embed.set_thumbnail(url=guild.banner.url)

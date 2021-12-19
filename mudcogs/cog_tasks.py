@@ -166,24 +166,32 @@ http://discord.gg/aetherhunts"""
         guild = self.bot.get_guild(GUILD)
         with open("licensed_viewers.json", "r") as licensed_viewers:
             data = json.load(licensed_viewers)
-        for key, value in list(data["licensed_viewers"].items()):
-            if datetime.strptime(str(data["licensed_viewers"][str(key)]["time"]), "%Y-%m-%d %H:%M:%S")\
-                < datetime.strptime(str(datetime.now(timezone.utc) - timedelta(minutes=5)).partition(".")[0],
-                                    "%Y-%m-%d %H:%M:%S"):
-                member = guild.get_member(int(key))
-                if member is None:
-                    del data["licensed_viewers"][str(key)]
-                    continue
-                elif member is not None:
-                    viewer = disnake.utils.get(guild.roles, name="Licensed Viewer")
+        channel = disnake.utils.get(guild.channels, name="get-registered-here")
+        viewer = disnake.utils.get(guild.roles, name="Licensed Viewer")
+        for member in channel.members:
+            if viewer in member.roles:
+                if str(member.id) in list(data["licensed_viewers"]):
+                    if datetime.strptime(str(data["licensed_viewers"][str(member.id)]["time"]), "%Y-%m-%d %H:%M:%S")\
+                        < datetime.strptime(str(datetime.now(timezone.utc) - timedelta(minutes=5)).split(".")[0],
+                                            "%Y-%m-%d %H:%M:%S"):
+                        await member.remove_roles(viewer)
+                        del data["licensed_viewers"][str(member.id)]
+                        continue
+                elif str(member.id) not in list(data["licensed_viewers"]):
                     await member.remove_roles(viewer)
-                    del data["licensed_viewers"][str(key)]
                     continue
-        else:
-            with open("licensed_viewers.json", "w") as licensed_viewers:
-                licensed_viewers.seek(0)
-                json.dump(data, licensed_viewers, indent=4)
-                licensed_viewers.truncate()
+        with open("licensed_viewers.json", "r+") as licensed_viewers:
+            licensed_viewers.seek(0)
+            json.dump(data, licensed_viewers, indent=4)
+            licensed_viewers.truncate()
+            for member in list(data["licensed_viewers"]):
+                member = guild.get_member(int(member))
+                if member is None:
+                    del data["licensed_viewers"][str(member)]
+                    continue
+            licensed_viewers.seek(0)
+            json.dump(data, licensed_viewers, indent=4)
+            licensed_viewers.truncate()
 
 
 def setup(bot):

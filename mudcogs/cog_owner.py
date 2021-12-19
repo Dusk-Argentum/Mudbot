@@ -32,6 +32,9 @@ import sqlite3
 from sqlite3 import OperationalError
 
 
+from typing import Union
+
+
 class Owner(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -48,55 +51,47 @@ class Owner(commands.Cog):
 
     @commands.command(aliases=["fl"], brief="Forces verification for a user.", help="Forces verification for a user.",
                       name="force_link", usage=f"""force_link <user> <first> <last> <world>` OR `{PREFIX}force_veri \
-<lodestone ID>`""")  # Force unlink coming soon to a Mudbot near you
+<lodestone ID>`""")  # Comments on force_link and force_unlink can be found in the Verification cog.
     @commands.guild_only()
     async def force_link(self, ctx, member: disnake.Member = None, first: str = None, last: str = None,
                          world: str = None):
         wait = await ctx.send("""Attempting to verify this character... Please wait...
-This could take up to a minute.""")  # Squeenix please give us a native Lodestone API.
+This could take up to a minute.""")
         id_ = []
         if member is None:
             raise MemberNotFound
-        if first.isnumeric() and first is not None:  # Functions in this block execute if the first name is a string
-            # of numbers instead of a name. Bypasses searching for character ID using a name.
+        if first.isnumeric() and first is not None:
             id_ = first
             pass
-        elif not first.isnumeric() and first is not None:  # Functions in this block execute if the first name is a
-            # string of non-numeric things (for example, letters).
-            if last is None or world is None:  # Functions in this block execute if either the last name or world name is not
-                # provided.
+        elif not first.isnumeric() and first is not None:
+            if last is None or world is None:
                 await wait.edit(content=f"""One or more arguments missing. Please ensure you are running the command \
 properly.
-Example: `{PREFIX}link Dusk Argentum Gilgamesh`""")  # Please do not attempt to verify as me.
+Example: `{PREFIX}link Dusk Argentum Gilgamesh`""")
                 return
-            first = first.lower()  # The following lines make every letter in the first, last, and world names
-            # lowercase...
+            first = first.lower()
             last = last.lower()
             world = world.lower()
-            first = first.capitalize()  # And then these following lines capitalize the first letter in each.
-            last = last.capitalize()  # Breaks things, because the world gILGAMEsH isn't valid, for example.
+            first = first.capitalize()
+            last = last.capitalize()
             world = world.capitalize()
-            async with ctx.typing():  # Shows a typing indicator while this long af process happens.
+            async with ctx.typing():
                 r = (requests.get
                      (f"https://na.finalfantasyxiv.com/lodestone/character/?q={first}+{last}&worldname={world}"))
-                # Makes a request to the Lodestone searching for the character with the given information.
-            if r.status_code != 200:  # Functions in this block execute if the request did not receive a status 200
-                # which is basically an "OK".
+            if r.status_code != 200:
                 await wait.edit(content=f"""Apologies for the inconvenience, but an error occurred.
 `{r.status_code}`
 If you see this message too many times, please open a support ticket.""")
                 return
-            html = Soup(r.text, "html.parser")  # Turns the HTML from the request into something parsable.
-            not_found = html.select(".parts__zero")  # Selects the appropriate element, if it exists.
-            if not_found:  # If the not_found element named above exists, functions in this block execute.
-                # Only happens if information provided is incorrect,
-                # Theoretically.
+            html = Soup(r.text, "html.parser")
+            not_found = html.select(".parts__zero")
+            if not_found:
                 await wait.edit(content=f"""There was no character with the name **{first} {last}** found on \
 **{world}**.
 Please make sure all inputs were spelled properly and try again.""")
                 return
             character = []
-            for character in html.select("div.entry"):  # Parses every character returned in the search.
+            for character in html.select("div.entry"):
                 name = re.search(r"""entry__name\">([\w'-]{2,15})\s([\w'-]{2,15})<""",
                                  str(character.select(".entry__name")))
                 if name is not None and f"{name.group(1)} {name.group(2)}" == f"{first} {last}":
@@ -114,11 +109,9 @@ Example: `{PREFIX}link 22568447`.""")
 Please make sure all inputs were spelled properly and try again.""")
                 return
             id_ = re.search(r"""/lodestone/character/(\d{1,10})/""", str(character.select(".entry__link"))).group(1)
-            # The above gets the character ID of the found character, if a character is found.
         with open("server_config.json", "r") as server_config:
             data = json.load(server_config)
-        if data["server_config"][str(ctx.guild.id)]["level_gate"]["state"] == "True":  # Functions in the following
-            # blocks dictate how the level-gating function functions.
+        if data["server_config"][str(ctx.guild.id)]["level_gate"]["state"] == "True":
             async with ctx.typing():
                 r = requests.get(f"https://na.finalfantasyxiv.com/lodestone/character/{id_}/class_job/")
             if r.status_code == 404:
@@ -155,11 +148,10 @@ If you see this message too many times, please open a support ticket.""")
 server has determined that only characters that have at least one class/job at level {threshold} will be able to make \
 use of this server.
 Please attempt to verify once again once you have at least one class/job at level {threshold}!""")
-                    # Sorry to new players. You can join eventually. I prommy.
                     return
-        async with ctx.typing():  # Gets the provided character's Lodestone page.
+        async with ctx.typing():
             r = requests.get(f"https://na.finalfantasyxiv.com/lodestone/character/{id_}/")
-        if r.status_code == 404:  # Functions in this block execute if the status returned is 404, not found.
+        if r.status_code == 404:
             await wait.edit(content=f"""There was no character with the name **{first} {last}** found on **{world}**.
 Please make sure all inputs were spelled properly and try again.""")
             return
@@ -171,15 +163,12 @@ If you see this message too many times, please open a support ticket.""")
         html = Soup(r.text, "html.parser")
         name = re.search(r"""chara__name\">([\w'-]{2,15})\s([\w'-]{2,15})<""",
                          str(html.select("div.frame__chara__box:nth-child(2) > .frame__chara__name")))
-        # Grabs the name.
         world = re.search(r"""World\"></i>(\w{4,12})\s\((\w{4,9})""",
                           str(html.select("p.frame__chara__world:last-of-type")))
-        # Grabs the world.
         portrait = re.search(r"""src=\"(\S+)\"""", str(html.select(".frame__chara__face > img:nth-child(1)"))).group(1)
-        # Grabs the portrait.
-        dc = world.group(2)  # Gets the DC from the second group in the world selection.
-        first = name.group(1)  # Gets the first name from the first group in the name selection.
-        last = name.group(2)  # And so on and so forth.
+        dc = world.group(2)
+        first = name.group(1)
+        last = name.group(2)
         portrait = portrait
         server = world.group(1)
         if first == "Dusk" and last == "Argentum" and ctx.author.id != self.bot.owner_id:
@@ -187,13 +176,12 @@ If you see this message too many times, please open a support ticket.""")
 instructions more clearly. You have attempted to verify as the example character.
 Proper usage:
 `{PREFIX}link <first_name> <last_name> <world_name>`""", title="Whoops!")
-            # No verifying as me! No doubles!
             embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
             embed.set_thumbnail(url=self.bot.user.avatar.url)
             embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
             await wait.edit(content=None, embed=embed)
             return
-        new = [id_, dc, first, last, portrait, server]  # Sets a list of the new information.
+        new = [id_, dc, first, last, portrait, server]
         try:
             con = sqlite3.connect("characters.db", timeout=30.0)
         except OperationalError:
@@ -203,9 +191,9 @@ Proper usage:
         cur.execute("SELECT discord_id FROM characters")
         ids = cur.fetchall()
         con.close()
-        new_diff = []  # Sets an empty list for the new stuff.
-        old_diff = []  # Sets an empty list for the old stuff.
-        old = []  # Sets an empty list for the old..?
+        new_diff = []
+        old_diff = []
+        old = []
         if str(member.id) in str(ids):
             attributes = ["character_id", "dc", "first", "last", "portrait", "server"]
             try:
@@ -219,11 +207,10 @@ Proper usage:
                 details = re.search(r"\([\'\"](.+)[\'\"],\)", str(cur.fetchall()))
                 old.append(details.group(1))
             con.close()
-            for count, attribute in enumerate(new):  # Functions in this loop execute for every thing in the new list.
-                if attribute == old[count]:  # Functions in this block execute if the old attribute and new one
-                    # are the same.
-                    if count == 0 or count == 4:  # But ignores character ID and portrait.
-                        continue  # Because those aren't displayed.
+            for count, attribute in enumerate(new):
+                if attribute == old[count]:
+                    if count == 0 or count == 4:
+                        continue
                     new_diff.append("")
                     old_diff.append("")
                 elif attribute != old[count]:
@@ -232,15 +219,14 @@ Proper usage:
                     new_diff.append(new[count])
                     old_diff.append(old[count])
             with open("worlds.json", "r+") as worlds:
-                d = json.load(worlds)  # d is used instead of data cuz I wrote this line after I had already used
-                # the data name for a different variable and didn't feel like rewriting it.
+                d = json.load(worlds)
             try:
                 con = sqlite3.connect("characters.db", timeout=30.0)
             except OperationalError:
                 await wait.edit(content="Please wait a moment and try again.")
                 return
             cur = con.cursor()
-            for count, unused in enumerate(new):  # Functions in this block update information to the new stuff.
+            for count, unused in enumerate(new):
                 if new[count] != old[count]:
                     update = f"UPDATE characters SET {attributes[count]} = ? WHERE discord_id = ?"
                     data = (new[count], str(member.id))
@@ -249,11 +235,10 @@ Proper usage:
                     first = new[2]
                 if count == 3:
                     last = new[3]
-            con.commit()  # Commits the new information.
+            con.commit()
             con.close()
             new_dc = disnake.utils.get(ctx.guild.roles, name=new[1])
-            if new_dc not in ctx.guild.roles:  # Functions in this block execute if the DC name is not in the guild's
-                # role list. Basically just future-proofing.
+            if new_dc not in ctx.guild.roles:
                 await ctx.guild.create_role(name=new[1])
                 world_update = {str(int(len(d["worlds"]["dcs"])) + 2): {
                     "name": new[1]
@@ -263,8 +248,7 @@ Proper usage:
                 worlds.seek(0)
                 json.dump(d, worlds, indent=4)
                 worlds.truncate()
-            old_dc = disnake.utils.get(ctx.guild.roles, name=old[1])  # The following functions remove old stuff and
-            # add the new stuff.
+            old_dc = disnake.utils.get(ctx.guild.roles, name=old[1])
             if old_dc in member.roles:
                 try:
                     await member.remove_roles(old_dc)
@@ -283,11 +267,11 @@ Proper usage:
                 await member.add_roles(new_dc)
             except (Forbidden, HTTPException):
                 pass
-            try:  # The following function changes the member's name. If it can.
+            try:
                 await member.edit(nick=f"{first} {last}")
             except (Forbidden, HTTPException):
                 pass
-            new_server = disnake.utils.get(ctx.guild.roles, name=new[5])  # Same stuff as DC.
+            new_server = disnake.utils.get(ctx.guild.roles, name=new[5])
             if new_server not in ctx.guild.roles:
                 await ctx.guild.create_role(name=new[5])
                 world_update = {str(int(len(d["worlds"]["servers"])) + 2): {
@@ -317,16 +301,14 @@ Proper usage:
                 await member.add_roles(new_server)
             except (Forbidden, HTTPException):
                 pass
-        elif str(member.id) not in str(ids):  # Functions in this block execute if the member is not already in
-            # the database.
+        elif str(member.id) not in str(ids):
             try:
                 con = sqlite3.connect("characters.db", timeout=30.0)
             except OperationalError:
                 await wait.edit(content="Please wait a moment and try again.")
                 return
             cur = con.cursor()
-            cur.execute("""INSERT INTO characters VALUES (?, ?, ?, ?, ?, ?, ?)""",  # Makes a new row with the
-                        # provided information.
+            cur.execute("""INSERT INTO characters VALUES (?, ?, ?, ?, ?, ?, ?)""",
                         (str(member.id), str(id_), dc, first, last, portrait, server))
             con.commit()
             con.close()
@@ -362,10 +344,10 @@ Proper usage:
                 await member.add_roles(server_role)
             except (Forbidden, HTTPException):
                 pass
-        description = "** **"  # Sets a blank description, to be edited. Usually.
+        description = "** **"
         licensed_hunter = disnake.utils.get(ctx.guild.roles, name="Licensed Hunter")
         licensed_viewer = disnake.utils.get(ctx.guild.roles, name="Licensed Viewer")
-        if "Aether" in new[1]:  # Functions in this block execute if the member is from Aether.
+        if "Aether" in new[1]:
             if ctx.channel.id == 738670827490377800:
                 await member.add_roles(licensed_viewer)
             await member.add_roles(licensed_hunter)
@@ -378,7 +360,7 @@ up-to-date."""
             elif str(member.id) not in str(ids):
                 description = """Welcome to Aether Hunts! Be sure to peruse <#865129809452728351> to add Hunt-related \
 roles to yourself."""
-        elif "Aether" not in new[1]:  # Functions in this block execute if the member is not from Aether.
+        elif "Aether" not in new[1]:
             if licensed_hunter in member.roles:
                 await member.remove_roles(licensed_hunter)
             description = """Thank you for verifying! Unfortunately, Aether Hunts is a community dedicated to hunting \
@@ -387,8 +369,7 @@ You're welcome to attempt the linking process again with a character on Aether, 
         embed = disnake.Embed(color=disnake.Color(0x3b9da5), description=description, title="Verification complete!")
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=portrait)
-        if str(member.id) in str(ids):  # Functions in this block execute if the member is not already in the
-            # database.
+        if str(member.id) in str(ids):
             if new_diff[0] is not None and old_diff[0] is not None and new_diff[0] in str(ctx.guild.roles) \
                     and old_diff[0] in str(ctx.guild.roles):
                 new_diff[0] = disnake.utils.get(ctx.guild.roles, name=new_diff[0])
@@ -430,18 +411,16 @@ You're welcome to attempt the linking process again with a character on Aether, 
             old_value = "\n".join(old_value)
             if new_diff[0] is None and len(new_diff[1]) == 0 and len(new_diff[2]) == 0 and new_diff[3] is None \
                     and old_diff[0] is None and len(old_diff[1]) == 0 and len(old_diff[2]) == 0 and old_diff[3] is None:
-                arrow_value = "<:dusk:906079428524777524>"  # Me face.
+                arrow_value = "<:dusk:906079428524777524>"
                 old_value = "Nothing changed!"
                 new_value = "You're good to go!"
             embed.add_field(inline=True, name="Old:", value=old_value)
             embed.add_field(inline=True, name="►", value=arrow_value)
-            embed.add_field(inline=True, name="New:", value=new_value)  # This stuff looks weird in certain
-            # circumstances. Requires further testing and the ability to know how it happens to fix. Effects nothing
-            # functionally, just cosmetically.
-        elif str(member.id) not in str(ids):  # Another block that executes if the member is not in the database.
+            embed.add_field(inline=True, name="New:", value=new_value)
+        elif str(member.id) not in str(ids):
             added_names = []
             added_roles = []
-            for item in new:  # Functions in this loop add to lists that show what information changed.
+            for item in new:
                 if item == new[1] or item == new[5]:
                     role = disnake.utils.get(ctx.guild.roles, name=item)
                     added_roles.append(role)
@@ -455,7 +434,7 @@ You're welcome to attempt the linking process again with a character on Aether, 
                     value.append(item.mention)
             embed.add_field(inline=True, name="Added:", value="\n".join(value))
             embed.add_field(inline=True, name="Name Changed:", value=" ".join(added_names))
-        if "Aether" not in new[1]:  # Functions in this block execute if the member is not on Aether.
+        if "Aether" not in new[1]:
             if "Crystal" in new[1]:
                 embed.add_field(inline=False, name="Crystal Hunts:", value="""Looks like you verified with a \
 character on the Crystal datacenter! Here's a link to their Hunting Discord.
@@ -470,6 +449,63 @@ character on the Primal datacenter! Here's a link to their Hunting Discord.
 [Invite](https://discord.gg/k4xNWdV)""")
         embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
         await wait.edit(content=None, embed=embed)
+
+    @commands.command(aliases="fun", brief="Forces a user to unlink and removes their roles.", help="""Forces a \
+user to unlink and removes their roles.""", name="force_unlink", usage="force_unlink <@mention>`/`<ID>")
+    @commands.guild_only()
+    async def force_unlink(self, ctx, user: Union[disnake.Member, disnake.User] = None):
+        confirm = await ctx.send("""Unlinking this account will remove all their roles and remove their access to the \
+server.
+        Proceed?""")
+        await confirm.add_reaction("👍")
+        await confirm.add_reaction("👎")
+        reactions = ["👍", "👎"]
+
+        def check(reaction, user):
+            return user == ctx.author and str(reaction.emoji) in reactions
+
+        try:
+            reaction, users = await self.bot.wait_for("reaction_add", timeout=60, check=check)
+        except TimeoutError:
+            await confirm.edit(content="Unlinking aborted. Neither accepted reaction added.")
+            await confirm.clear_reactions()
+            return
+        if str(reaction.emoji) == "👎":
+            await confirm.edit(content="Unlinking aborted.")
+            await confirm.clear_reactions()
+            return
+        try:
+            con = sqlite3.connect("characters.db", timeout=30.0)
+        except OperationalError:
+            await confirm.edit(content="Please wait a moment and try again.")
+            return
+        cur = con.cursor()
+        cur.execute("SELECT discord_id FROM characters")
+        ids = cur.fetchall()
+        con.close()
+        for id_ in ids:
+            id_ = re.search(r"\(\'(\d+)\',", str(id_))
+            if id_.group(1) == str(user.id):
+                break
+        else:
+            await confirm.edit(content="They are not in my database.")
+            return
+        try:
+            con = sqlite3.connect("characters.db", timeout=30.0)
+        except OperationalError:
+            await confirm.edit(content="Please wait a moment and try again.")
+            return
+        cur = con.cursor()
+        con.execute(f"DELETE FROM characters WHERE discord_id = '{str(user.id)}'")
+        con.commit()
+        con.close()
+        if isinstance(user, disnake.Member):
+            for role in user.roles:
+                try:
+                    await user.remove_roles(role)
+                except (Forbidden, HTTPException):
+                    continue
+        await ctx.send("That user has been successfully unverified and must now repeat the verification process.")
 
     @commands.command(aliases=["inv"], brief="Sends invite link.", help="Sends invite link.", name="invite",
                       usage="invite")
