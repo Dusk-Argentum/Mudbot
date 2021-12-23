@@ -648,6 +648,19 @@ status.""", name="change", usage="status change (status)")
                 bot_config.truncate()
         await ctx.send("Status rotation is now on.")
 
+    @commands.command(aliases=["vr"], brief="Removes all members from Licensed Viewer.", help="""Removes all members \
+from Licensed Viewer.""", name="viewer_removal", usage="viewer_removal")
+    @commands.guild_only()
+    async def viewer_removal(self, ctx):
+        viewer = disnake.utils.get(ctx.guild.roles, name="Licensed Viewer")
+        count = 0
+        for member in ctx.guild.members:
+            if viewer in member.roles:
+                await member.remove_roles(viewer)
+                count += 1
+        await ctx.send(f"Removed Licensed Viewer from {count} member{'s' if count != 1 else ''}.")
+
+
 
 def setup(bot):
     bot.add_cog(Owner(bot))

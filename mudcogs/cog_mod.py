@@ -296,7 +296,8 @@ for the specified duration. Supports @mention and ID.""", name="temp_ban", usage
                     break
                 else:
                     continue
-        await ctx.message.add_reaction("👍")
+        await ctx.message.add_reaction("👍")  # TODO: A lookup command, search by lodestone name/id, give basic info,
+        # a lodestone link, and a confirmation of whether or not that user is in the database OR Discord
 
 
 def setup(bot):
