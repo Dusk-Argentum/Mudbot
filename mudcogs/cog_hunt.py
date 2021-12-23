@@ -29,7 +29,7 @@ class Hunt(commands.Cog):
         self.bot = bot
 
     async def cog_check(self, ctx):  # Defines a check that applies to every command in this cog.
-        hunter = disnake.utils.get(ctx.guild.roles, name="Licensed Hunter")  # Gets the admin role by name.
+        hunter = disnake.utils.get(ctx.guild.roles, name="Licensed Hunter")
         if hunter not in ctx.author.roles:
             raise MissingAnyRole([1])
         return hunter in ctx.author.roles  # Permits the command to execute if the admin role is in the author's roles.

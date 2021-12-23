@@ -50,8 +50,8 @@ class Owner(commands.Cog):
         await ctx.send(" ".join(args))
 
     @commands.command(aliases=["fl"], brief="Forces verification for a user.", help="Forces verification for a user.",
-                      name="force_link", usage=f"""force_link <user> <first> <last> <world>` OR `{PREFIX}force_veri \
-<lodestone ID>`""")  # Comments on force_link and force_unlink can be found in the Verification cog.
+                      name="force_link", usage=f"""force_link <user> <first> <last> <world>` OR `{PREFIX}force_link \
+<lodestone ID>""")  # Comments on force_link and force_unlink can be found in the Verification cog.
     @commands.guild_only()
     async def force_link(self, ctx, member: disnake.Member = None, first: str = None, last: str = None,
                          world: str = None):
@@ -659,7 +659,6 @@ from Licensed Viewer.""", name="viewer_removal", usage="viewer_removal")
                 await member.remove_roles(viewer)
                 count += 1
         await ctx.send(f"Removed Licensed Viewer from {count} member{'s' if count != 1 else ''}.")
-
 
 
 def setup(bot):
