@@ -141,10 +141,7 @@ minions "Forgiven Rebellion" "Amh Araeng"`.""")
                                     zone = location
                                     break
                             else:
-                                await ctx.send(f"""The zone `{zone}` is not a valid zone. To view a list of valid \
-zones, please use `{PREFIX}minions`.
-Example usage: `{PREFIX}minions "Forgiven Rebellion" "Amh Araeng"`.""")
-                                return
+                                continue
                         break
                     else:
                         continue
