@@ -1,15 +1,12 @@
 import json
 from datetime import datetime, timedelta, timezone
 
-
 import disnake
 from disnake import Forbidden, HTTPException, NotFound
 from disnake.ext import commands
 from disnake.ext.commands import BotMissingPermissions, MemberNotFound, MissingAnyRole, UserNotFound
 
-
 import re
-
 
 from typing import Union  # Imports the Union submodule from typing for use in argument unity.
 
@@ -143,7 +140,8 @@ for the specified duration. Supports @mention and ID.""", name="temp_ban", usage
             duration = int(duration.group(1)) * 3600
         elif duration.group(2).lower() == "d":
             duration = int(duration.group(1)) * 86400
-        timestamp = int(((datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0], "%Y-%m-%d %H:%M:%S") +
+        timestamp = int(((datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)),
+                                            "%Y-%m-%d %H:%M:%S") +
                           timedelta(seconds=duration)) - datetime.strptime("1970-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"))
                         .total_seconds())
         # The above long, unwieldy statement gets the amount of seconds that have passed since epoch for use in
@@ -155,8 +153,8 @@ for the specified duration. Supports @mention and ID.""", name="temp_ban", usage
         except HTTPException:
             await ctx.send("Due to a Discord limitation, please keep your reason below 475 characters.")
             return
-        expiration = datetime.strptime(str(datetime.now(timezone.utc) + timedelta(seconds=duration)).partition(".")[0],
-                                       "%Y-%m-%d %H:%M:%S")
+        expiration = datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None) +
+                                           timedelta(seconds=duration)), "%Y-%m-%d %H:%M:%S")
         entry = {
             user.id: {
                 "expiration": str(expiration)
@@ -197,8 +195,9 @@ for the specified duration. Supports @mention and ID.""", name="temp_ban", usage
             duration = int(duration.group(1)) * 3600
         elif duration.group(2).lower() == "d":
             duration = int(duration.group(1)) * 86400
-        timestamp = int(((datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0], "%Y-%m-%d %H:%M:%S") +
-                         timedelta(seconds=duration)) - datetime.strptime("1970-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"))
+        timestamp = int(((datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)),
+                                            "%Y-%m-%d %H:%M:%S") +
+                          timedelta(seconds=duration)) - datetime.strptime("1970-01-01 00:00:00", "%Y-%m-%d %H:%M:%S"))
                         .total_seconds())
         try:
             await member.add_roles(muted, reason=f"{ctx.author.id}: {reason} (Until <t:{timestamp}>)")
@@ -207,8 +206,8 @@ for the specified duration. Supports @mention and ID.""", name="temp_ban", usage
         except HTTPException:
             await ctx.send("Due to a Discord limitation, please keep your reason below 475 characters.")
             return
-        expiration = datetime.strptime(str(datetime.now(timezone.utc) + timedelta(seconds=duration)).partition(".")[0],
-                                       "%Y-%m-%d %H:%M:%S")
+        expiration = datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None) +
+                                           timedelta(seconds=duration)), "%Y-%m-%d %H:%M:%S")
         entry = {
             member.id: {
                 "expiration": str(expiration)

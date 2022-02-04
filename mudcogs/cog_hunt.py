@@ -20,7 +20,7 @@ MINION_ICON_URL = "https://cdn.discordapp.com/attachments/740603224826052608/740
 MINION_COLOR = 0x757a92
 
 
-RG_ICON_URL = "https://www.retahgaming.com/rgicon.png"  # Thank you to Retah Sosshaa of Midgardsormr for this
+RG_ICON_URL = "https://www.retahgaming.com/favicon.png"  # Thank you to Retah Sosshaa of Midgardsormr for this
 # wonderful site and allowing me to use your maps and assets. Keep up the good work!
 
 
@@ -114,157 +114,101 @@ To view a specific FATE, use `{PREFIX}fate <name>`, eg. `{PREFIX}fate ixion` or 
             embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
             await ctx.send(embed=embed)
 
-    @commands.group(aliases=["goss", "gossip", "m"], brief="Shows Forgiven Gossip locations.", case_insensitive=True,
-                    help="""Shows the locations of the Forgiven Gossip marks in the provided zone.""", name="minions",
-                    usage="minions <zone>")
-    @cog_tasks.is_allowed_channel()  # Uses a custom check to ensure the command is being executed in an allowed
-    # channel.
+    @commands.command(aliases=["goss", "gossip", "m", "shroud"], brief="Shows the location of SS Rank minions.",
+                      help="""Shows the locations of the SS Rank minions (Forgiven Gossip [ShB]/Ker Shroud [EW]) in \
+the provided zone.""", name="minions", usage="minions (mark) (zone)")
+    @cog_tasks.is_allowed_channel()
     @commands.guild_only()
-    async def minions(self, ctx):
-        if ctx.invoked_subcommand is not None:
+    async def minions(self, ctx, mark: str = None, zone: str = None):
+        with open("minions.json", "r", encoding="utf-8") as minions:
+            data = json.load(minions)
+        for expansions, minions in data["minions"].items():
+            for names in minions.keys():
+                keys = names.split(" | ")
+                for count, mark_full in enumerate(keys):
+                    if mark is None:
+                        break
+                    if zone is None:
+                        await ctx.send(f"""Please specify what zone the mark has spawned in. Example usage: `{PREFIX}\
+minions "Forgiven Rebellion" "Amh Araeng"`.""")
+                        return
+                    if mark.lower().removeprefix('"').removesuffix('"') == str(keys[int(count)]).lower():
+                        mark = names
+                        for location in data["minions"][expansions][names]["locations"].keys():
+                            keys = location.split(" | ")
+                            for count1, zone_full in enumerate(keys):
+                                if zone.lower().removeprefix('"').removesuffix('"') == str(keys[int(count1)]).lower():
+                                    zone = location
+                                    break
+                            else:
+                                await ctx.send(f"""The zone `{zone}` is not a valid zone. To view a list of valid \
+zones, please use `{PREFIX}minions`.
+Example usage: `{PREFIX}minions "Forgiven Rebellion" "Amh Araeng"`.""")
+                                return
+                        break
+                    else:
+                        continue
+                else:
+                    continue
+                break
+            else:
+                continue
+            break
+        else:
+            await ctx.send(f"""The mark/zone pairing of `{mark}` `{zone}` was not valid. Correct usage: `{PREFIX}\
+minions <mark> <zone>`, eg. `{PREFIX}minions "Forgiven Rebellion" "Amh Araeng"`.""")
             return
-        embed = disnake.Embed(color=MINION_COLOR, description="""Upon the defeat of certain S Rank marks \
-in Norvrandt, the minions of an extraordinarily powerful mark will begin to prey... Find and defeat them to spawn \
-Forgiven Rebellion.""", title="Minions")
-        embed.set_author(icon_url=MINION_ICON_URL, name="Forgiven Gossip")
-        embed.set_thumbnail(url=MINION_ICON_URL)
-        argument = []
-        for arguments in ctx.command.walk_commands():
-            argument.append(arguments)
-        argument.sort(key=lambda argus: argus.name)  # I don't know what lambda does and when I tried to look it
-        # up I literally had to go take a break. The fuck is an "anonymous function"?
-        # I wrote this comment when I initially made this function and I still don't know what lambda does.
-        for count, arguments in enumerate(argument):
-            embed.add_field(inline=False, name=f"""`{argument[count].name}` (Alias{"es" if
-            len(argument[count].aliases) > 1 else ""}: `{"`, `".join(argument[count].aliases)}`)""",
-                            value=argument[count].help)
-        embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
-        await ctx.send(embed=embed)
-
-    @minions.command(aliases=["aa", "ahmaraeng"], brief="Shows the minions map for Amh Araeng.", help="Shows the \
-spawning locations of Forgiven Gossip in Amh Araeng.", name="amharaeng", usage="minions amharaeng")
-    @commands.guild_only()
-    async def amharaeng(self, ctx, world: str = "See previous post."):  # Most people won't realize you can define
-        # what world FR is on now, so the default argument is the previous default.
-        embed = disnake.Embed(color=MINION_COLOR, title="""The minions of an extraordinarily powerful mark are on \
+        if mark is None:
+            embed = disnake.Embed(color=MINION_COLOR, description=f"""Upon the defeat of S Rank marks in zones \
+within Shadowbringers or Endwalker, there is a chance that the minions of an extraordinarily powerful mark will begin \
+to prey... Find and defeat them to spawn their respective extraordinarily powerful marks! These marks are listed below.
+To view the spawning locations for a specific mark's minions on a specific map, use `{PREFIX}minions <mark> <zone>`, \
+eg. `{PREFIX}minions "Forgiven Rebellion" "Amh Araeng"` or `{PREFIX}minions Ker Garlemald`.
+**As a reminder, bringing up a map pings the S Rank role, so please only bring up a map when a mark has spawned there\
+**. If you wish to view the maps alone, you can view them on the \
+[RetahGaming.com](https://www.retahgaming.com/ffxiv/huntmaps.php) website.""", title="Minions")
+            embed.set_author(icon_url=MINION_ICON_URL, name="Minion Information")
+            embed.set_thumbnail(url=MINION_ICON_URL)
+            embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
+            expansions = []
+            for count, expansion in enumerate(data["minions"]):
+                expansions.append(expansion)
+                aliases = []
+                locations = []
+                location_aliases = []
+                marks = []
+                mark_aliases = []
+                urls = []
+                for mark in data["minions"][expansion].keys():
+                    aliases.append(mark.split(" | ")[1])
+                    marks.append(mark.split(" | ")[0])
+                    for location in data["minions"][expansion][mark]["locations"].keys():
+                        locations.append(location.split(" | ")[0])
+                        location_aliases.append(location.split(" | ")[1])
+                        mark_aliases.append(str(data["minions"][expansion].keys()).split(" | ")[1].removesuffix("'])"))
+                        urls.append(data["minions"][expansion][mark]["locations"][location]["url"])
+                else:
+                    value = [f"**{data['minions'][expansion][mark]['name']}**"]
+                    for count2, location in enumerate(locations):
+                        value.append(f"""[{location}]({urls[int(count2)]}) (`{PREFIX}minions {mark_aliases[int(count2)]} \
+{location_aliases[int(count2)]}`)""")
+                    str(value).removesuffix(" | ")
+                    embed.add_field(inline=False, name=expansion, value=" |\n".join(value))
+            await ctx.send(embed=embed)
+        elif mark is not None:
+            embed = disnake.Embed(color=MINION_COLOR, title="""The minions of an extraordinarily powerful mark are on \
 the hunt for prey...""")
-        embed.set_author(icon_url=MINION_ICON_URL, name="Forgiven Gossip")
-        embed.set_thumbnail(url=MINION_ICON_URL)
-        embed.add_field(inline=True, name="Forgiven Gossip:", value="""`X 14 Y 32`
-`X 13 Y 12`
-`X 30 Y 10`
-`X 30 Y 25`""")
-        embed.add_field(inline=True, name="Forgiven Rebellion:", value="`X 27 Y 35`")
-        embed.add_field(inline=True, name="World:", value=world)
-        embed.add_field(inline=False, name="Map:", value=""":blue_circle: | Forgiven Gossip
-:red_circle: | Forgiven Rebellion""")
-        embed.set_image(url="https://retahgaming.com/ffxiv/images/shfull/ahmssfull.gif")
-        embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
-        await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
-<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
-
-    @minions.command(aliases=["il", "ilmeg"], brief="Shows the minions map for Il Mheg.", help="""Shows the \
-spawning locations of Forgiven Gossip in Il Mheg.""", name="ilmheg", usage="minions ilmheg")
-    async def ilmheg(self, ctx, world: str = "See previous post."):
-        embed = disnake.Embed(color=MINION_COLOR, title="""The minions of an extraordinarily powerful mark are on \
-the hunt for prey...""")
-        embed.set_author(icon_url=MINION_ICON_URL, name="Forgiven Gossip")
-        embed.set_thumbnail(url=MINION_ICON_URL)
-        embed.add_field(inline=True, name="Forgiven Gossip:", value="""`X 06 Y 30`
-`X 32 Y 11`
-`X 25 Y 22`
-`X 24 Y 37`""")
-        embed.add_field(inline=True, name="Forgiven Rebellion:", value="`X 13 Y 23`")
-        embed.add_field(inline=True, name="World:", value=world)
-        embed.add_field(inline=False, name="Map:", value=""":blue_circle: | Forgiven Gossip
-:red_circle: | Forgiven Rebellion""")
-        embed.set_image(url="https://retahgaming.com/ffxiv/images/shfull/mhegssfull.gif")
-        embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
-        await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
-<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
-
-    @minions.command(aliases=["kh", "khol", "ko"], brief="Shows the minions map for Kholusia.", help="""Shows the \
-spawning locations of Forgiven Gossip in Kholusia.""", name="kholusia", usage="minions kholusia")
-    async def kholusia(self, ctx, world: str = "See previous post."):
-        embed = disnake.Embed(color=MINION_COLOR, title="""The minions of an extraordinarily powerful mark are on \
-the hunt for prey...""")
-        embed.set_author(icon_url=MINION_ICON_URL, name="Forgiven Gossip")
-        embed.set_thumbnail(url=MINION_ICON_URL)
-        embed.add_field(inline=True, name="Forgiven Gossip:", value="""`X 08 Y 29`
-`X 12 Y 15`
-`X 23 Y 15`
-`X 33 Y 32`""")
-        embed.add_field(inline=True, name="Forgiven Rebellion:", value="`X 24 Y 37`")
-        embed.add_field(inline=True, name="World:", value=world)
-        embed.add_field(inline=False, name="Map:", value=""":blue_circle: | Forgiven Gossip
-:red_circle: | Forgiven Rebellion""")
-        embed.set_image(url="https://retahgaming.com/ffxiv/images/shfull/kholusiassfull.gif")
-        embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
-        await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
-<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
-
-    @minions.command(aliases=["ll", "lake"], brief="Shows the minions map for Lakeland.", help="""Shows the \
-spawning locations of Forgiven Gossip in Lakeland.""", name="lakeland", usage="minions lakeland")
-    # Aliases are out of alphabetical order on purpose here.
-    async def lakeland(self, ctx, world: str = "See previous post."):
-        embed = disnake.Embed(color=MINION_COLOR, title="""The minions of an extraordinarily powerful mark are on \
-the hunt for prey...""")
-        embed.set_author(icon_url=MINION_ICON_URL, name="Forgiven Gossip")
-        embed.set_thumbnail(url=MINION_ICON_URL)
-        embed.add_field(inline=True, name="Forgiven Gossip:", value="""`X 10 Y 25`
-`X 13 Y 10`
-`X 33 Y 12`
-`X 30 Y 36`""")
-        embed.add_field(inline=True, name="Forgiven Rebellion:", value="`X 23 Y 22`")
-        embed.add_field(inline=True, name="World:", value=world)
-        embed.add_field(inline=False, name="Map:", value=""":blue_circle: | Forgiven Gossip
-:red_circle: | Forgiven Rebellion""")
-        embed.set_image(url="https://retahgaming.com/ffxiv/images/shfull/lakelandssfull.gif")
-        embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
-        await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
-<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
-
-    @minions.command(aliases=["rk", "rak_tika", "rak'tika", "rak", "rg", "rt"], brief="""Shows the minions map for \
-the Rak'tika Greatwood.""", help="""Shows the spawning locations of Forgiven Gossip in the Rak'tika Greatwood.""",
-                     # Aliases are also out of order on purpose here.
-                     name="raktika", usage="minions raktika")
-    async def raktika(self, ctx, world: str = "See previous post."):
-        embed = disnake.Embed(color=MINION_COLOR, title="""The minions of an extraordinarily powerful mark are on \
-the hunt for prey...""")
-        embed.set_author(icon_url=MINION_ICON_URL, name="Forgiven Gossip")
-        embed.set_thumbnail(url=MINION_ICON_URL)
-        embed.add_field(inline=True, name="Forgiven Gossip:", value="""`X 15 Y 36`
-`X 05 Y 22`
-`X 19 Y 22`
-`X 30 Y 13`""")
-        embed.add_field(inline=True, name="Forgiven Rebellion:", value="`X 24 Y 37`")
-        embed.add_field(inline=True, name="World:", value=world)
-        embed.add_field(inline=False, name="Map:", value=""":blue_circle: | Forgiven Gossip
-:red_circle: | Forgiven Rebellion""")
-        embed.set_image(url="https://retahgaming.com/ffxiv/images/shfull/greatwoodssfull.gif")
-        embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
-        await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
-<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
-
-    @minions.command(aliases=["tm", "temp", "tmp"], brief="Shows the minions map for the Tempest.", help="""Shows the \
-spawning locations of Forgiven Gossip in the Tempest.""", name="tempest", usage="minions tempest")
-    # And here.
-    async def tempest(self, ctx, world: str = "See previous post."):
-        embed = disnake.Embed(color=MINION_COLOR, title="""The minions of an extraordinarily powerful mark are on \
-the hunt for prey...""")
-        embed.set_author(icon_url=MINION_ICON_URL, name="Forgiven Gossip")
-        embed.set_thumbnail(url=MINION_ICON_URL)
-        embed.add_field(inline=True, name="Forgiven Gossip:", value="""`X 08 Y 07`
-`X 25 Y 09`
-`X 38 Y 14`
-`X 34 Y 30`""")
-        embed.add_field(inline=True, name="Forgiven Rebellion:", value="`X 13 Y 22`")
-        embed.add_field(inline=True, name="World:", value=world)
-        embed.add_field(inline=False, name="Map:", value=""":blue_circle: | Forgiven Gossip
-:red_circle: | Forgiven Rebellion""")
-        embed.set_image(url="https://retahgaming.com/ffxiv/images/shfull/tempestssfull.gif")
-        embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
-        await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
+            info = data["minions"][expansions][mark]
+            embed.set_author(icon_url=info["minion_icon_url"], name=info["minion_name"])
+            embed.set_thumbnail(url=info["minion_icon_url"])
+            embed.add_field(inline=True, name=f"{info['minion_name']}:", value=info["locations"][zone]["minions"])
+            embed.add_field(inline=True, name=f"{info['name']}:", value=info["locations"][zone]["mark"])
+            embed.add_field(inline=True, name="World:", value="See previous post.")
+            embed.add_field(inline=False, name="Map:", value=f""":blue_circle: | {info["minion_name"]}
+:red_circle: | {info["name"]}""")
+            embed.set_image(url=info["locations"][zone]["url"])
+            embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
+            await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
 <@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
 
 

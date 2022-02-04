@@ -1,0 +1,82 @@
+{
+	"minions": {
+		"Shadowbringers (5.0)": {
+			"Forgiven Rebellion | fr | rebellion": {
+				"name": "Forgiven Rebellion",
+				"locations": {
+					"Amh Araeng | aa | ahmaraeng | amharaeng": {
+						"mark": "`X 27 Y 35`",
+						"minions": "`X 14 Y 32`\n`X 13 Y 12`\n`X 30 Y 10`\n`X 30 Y 25`",
+						"url": "https://retahgaming.com/ffxiv/images/shfull/ahmssfull.gif"
+					},
+					"Il Mheg | il | ilmeg": {
+						"mark": "`X 13 Y 23`",
+						"minions": "`X 06 Y 30`\n`X 32 Y 11`\n`X 25 Y 22`\n`X 24 Y 37`",
+						"url": "https://retahgaming.com/ffxiv/images/shfull/mhegssfull.gif"
+					},
+					"Kholusia | kh | khol | ko": {
+						"mark": "`X 24 Y 37`",
+						"minions": "`X 08 Y 29`\n`X 12 Y 15`\n`X 23 Y 15`\n`X 33 Y 32`",
+						"url": "https://retahgaming.com/ffxiv/images/shfull/kholusiassfull.gif"
+					},
+					"Lakeland | ll | lake": {
+						"mark": "`X 23 Y 22`",
+						"minions": "`X 10 Y 25`\n`X 13 Y 10`\n`X 33 Y 12`\n`X 30 Y 36`",
+						"url": "https://retahgaming.com/ffxiv/images/shfull/lakelandssfull.gif"
+					},
+					"Rak'tika Greatwood | rk | rak_tika | rak'tika | rak | rg | rt": {
+						"mark": "`X 24 Y 37`",
+						"minions": "`X 15 Y 36`\n`X 05 Y 22`\n`X 19 Y 22`\n`X 30 Y 13`",
+						"url": "https://retahgaming.com/ffxiv/images/shfull/greatwoodssfull.gif"
+					},
+					"Tempest | tm | temp | tmp": {
+						"mark": "`X 13 Y 22`",
+						"minions": "`X 07 Y 07`\n`X 25 Y 09`\n`X 37 Y 14`\n`X 34 Y 30`",
+						"url": "https://retahgaming.com/ffxiv/images/shfull/tempestssfull.gif"
+					}
+				},
+				"minion_icon_url": "https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png",
+				"minion_name": "Forgiven Gossip"
+			}
+		},
+		"Endwalker (6.0)": {
+			"Ker | ker": {
+				"name": "Ker",
+				"locations": {
+					"Elpis | el | elp": {
+						"mark": "`X 23 Y 20`",
+						"minions": "`X 08 Y 36`\n`X 17 Y 07`\n`X 29 Y 07`\n`X 38 Y 13`",
+						"url": "https://www.retahgaming.com/ffxiv/images/endfull/elpis.gif"
+					},
+					"Garlemald | gr | garle": {
+						"mark": "`X 20 Y 24`",
+						"minions": "`X 18 Y 10`\n`X 23 Y 33`\n`X 33 Y 09`\n`X 33 Y 29`",
+						"url": "https://www.retahgaming.com/ffxiv/images/endfull/garlemald.gif"
+					},
+					"Labyrinthos | la | lab | laby": {
+						"mark": "`X 25 Y 16`",
+						"minions": "`X 09 Y 23`\n`X 25 Y 08`\n`X 26 Y 33`\n`X 35 Y 18`",
+						"url": "https://www.retahgaming.com/ffxiv/images/endfull/labyrinthos.gif"
+					},
+					"Mare Lamentorum | ml | mare | moon": {
+						"mark": "`X 18 Y 21`",
+						"minions": "`X 12 Y 21`\n`X 12 Y 37`\n`X 29 Y 35`\n`X 34 Y 23`",
+						"url": "https://www.retahgaming.com/ffxiv/images/endfull/marelamentorum.gif"
+					},
+					"Thavnair | tv | thav": {
+						"mark": "`X 24 Y 17`",
+						"minions": "`X 12 Y 16`\n`X 17 Y 30`\n`X 23 Y 10`\n`X 17 Y 30`",
+						"url": "https://www.retahgaming.com/ffxiv/images/endfull/thavnair.gif"
+					},
+					"Ultima Thule | ut | ul | ult | ultima": {
+						"mark": "`X 15 Y 29`",
+						"minions": "`X 11 Y 31`\n`X 16 Y 17`\n`X 23 Y 33`\n`X 32 Y 10`",
+						"url": "https://www.retahgaming.com/ffxiv/images/endfull/ultimathule.gif"
+					}
+				},
+				"minion_icon_url": "https://cdn.discordapp.com/attachments/570431587422830617/938943277846118450/ker_shroud.png",
+				"minion_name": "Ker Shroud"
+			}
+		}
+	}
+}

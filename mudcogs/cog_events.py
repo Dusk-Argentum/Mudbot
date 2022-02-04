@@ -2,7 +2,6 @@ import asyncio  # Imports asyncio, used for sleeping/waiting.
 
 from datetime import datetime, timedelta, timezone  # Imports datetime, useful for logging and doing math with times.
 
-
 import disnake
 from disnake import HTTPException
 from disnake.ext import commands
@@ -13,10 +12,8 @@ from disnake.ext.commands import BotMissingPermissions, ChannelNotFound, CheckFa
 
 import json
 
-
 from mudbot import GUILD, PREFIX  # Imports the GUILD and PREFIX global variables from the main bot file.
 from mudcogs import cog_tasks  # Imports the cog_tasks file.
-
 
 import re
 
@@ -86,10 +83,11 @@ Example: <@97153790897045504> | `97153790897045504`"""
         # Functions below define the various aspects of an embed and their content.
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=self.bot.user.avatar.url)
-        timestamp = int((datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0], "%Y-%m-%d %H:%M:%S") -
+        timestamp = int((datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)),
+                                           "%Y-%m-%d %H:%M:%S") -
                          datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
         value = f"""A command {f"(`{PREFIX}{ctx.command.name}`)" if ctx.command is not None else ""} invoked by \
-{ctx.author.mention} (`{ctx.author.id}`) at <t:{timestamp}:F> in {f"{ctx.channel.mention} (`{ctx.channel.id}`)" if
+{ctx.author.mention} (`{ctx.author.id}`) on <t:{timestamp}:F> in {f"{ctx.channel.mention} (`{ctx.channel.id}`)" if
         ctx.channel.type == disnake.ChannelType.text else f"a DM with {ctx.author.mention} (`{ctx.author.id}`)"} \
 caused the error detailed below."""
         embed.add_field(inline=False, name="Source:", value=value)
@@ -112,7 +110,7 @@ caused the error detailed below."""
         # from other bots have this weird delay. idk. Don't use slash commands.
         async for entry in guild.audit_logs(action=disnake.AuditLogAction.ban):  # Loops for every entry in the guild's
             # audit logs that is a ban.
-            if entry.target.id == user.id and entry.reason is not None and "Your account is too new" in entry.reason\
+            if entry.target.id == user.id and entry.reason is not None and "Your account is too new" in entry.reason \
                     and entry.user.id == self.bot.user.id:  # Functions in this block execute if the user was banned
                 # for being too new.
                 channel = disnake.utils.get(guild.channels, name="auto-actioned-log")  # Gets the appropriate channel.
@@ -141,7 +139,8 @@ caused the error detailed below."""
         embed.add_field(name="Action Taken On:", value=f"""{entry.target.mention}
 {entry.target}
 (`{entry.target.id}`)""")
-        timestamp = int((datetime.strptime(str(entry.created_at).split(".")[0], "%Y-%m-%d %H:%M:%S") -
+        timestamp = int((datetime.strptime(str(entry.created_at.replace(microsecond=0, tzinfo=None)),
+                                           "%Y-%m-%d %H:%M:%S") -
                          datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
         embed.add_field(inline=False, name="Time of Action:", value=f"<t:{str(timestamp)}> (<t:{str(timestamp)}:R>)")
         embed.add_field(inline=False, name="Reason:",
@@ -167,9 +166,10 @@ caused the error detailed below."""
             threshold = int(threshold.group(1)) * 3600
         elif threshold.group(2).lower() == "d":
             threshold = int(threshold.group(1)) * 86400
-        creation_time = datetime.strptime(str(member.created_at).split(".")[0], "%Y-%m-%d %H:%M:%S")
-        age = int(str((datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0],
-                       "%Y-%m-%d %H:%M:%S") - creation_time).total_seconds()).split(".")[0])
+        age = int(str((datetime.strptime(str((datetime.now(timezone.utc)).replace(microsecond=0, tzinfo=None)),
+                                         "%Y-%m-%d %H:%M:%S") -
+                       datetime.strptime(str(member.created_at.replace(microsecond=0, tzinfo=None)),
+                                         "%Y-%m-%d %H:%M:%S")).total_seconds()).split(".")[0])
         if age < threshold:
             async for entry in guild.audit_logs(action=disnake.AuditLogAction.unban):
                 if entry.target.id == member.id:
@@ -200,12 +200,13 @@ Unban appeals for new accounts will be accepted once a moderator is able to view
         channel = None
         entry = None
         await asyncio.sleep(1)
-        time_filter = datetime.strptime(str(datetime.now(timezone.utc) - timedelta(seconds=5)).split(".")[0],
-                                        "%Y-%m-%d %H:%M:%S")
+        time_filter = datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None) -
+                                            timedelta(seconds=5)), "%Y-%m-%d %H:%M:%S")
         async for entry in guild.audit_logs(action=disnake.AuditLogAction.kick):
-            created_at = datetime.strptime(str(entry.created_at).split(".")[0], "%Y-%m-%d %H:%M:%S")
-            if entry.target.id == member.id and entry.reason is not None\
-                    and "for failing to verify your character" in entry.reason and entry.user.id == self.bot.user.id\
+            created_at = datetime.strptime(str(entry.created_at.replace(microsecond=0, tzinfo=None)),
+                                           "%Y-%m-%d %H:%M:%S")
+            if entry.target.id == member.id and entry.reason is not None \
+                    and "for failing to verify your character" in entry.reason and entry.user.id == self.bot.user.id \
                     and created_at > time_filter:  # Functions in this block execute if the user was auto-kicked
                 # for failing to verify within the threshold.
                 channel = disnake.utils.get(guild.channels, name="auto-actioned-log")
@@ -237,7 +238,8 @@ Unban appeals for new accounts will be accepted once a moderator is able to view
         embed.add_field(name="Action Taken On:", value=f"""{entry.target.mention}
 {entry.target}
 (`{entry.target.id}`)""")
-        timestamp = int((datetime.strptime(str(entry.created_at).split(".")[0], "%Y-%m-%d %H:%M:%S") -
+        timestamp = int((datetime.strptime(str(entry.created_at.replace(microsecond=0, tzinfo=None)),
+                                           "%Y-%m-%d %H:%M:%S") -
                          datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
         embed.add_field(inline=False, name="Time of Action:", value=f"<t:{str(timestamp)}> (<t:{str(timestamp)}:R>)")
         embed.add_field(inline=False, name="Reason:",
@@ -276,7 +278,8 @@ Unban appeals for new accounts will be accepted once a moderator is able to view
         embed.add_field(name="Action Taken On:", value=f"""{entry.target.mention}
 {entry.target}
 (`{entry.target.id}`)""")
-        timestamp = int((datetime.strptime(str(entry.created_at).split(".")[0], "%Y-%m-%d %H:%M:%S") -
+        timestamp = int((datetime.strptime(str(entry.created_at.replace(microsecond=0, tzinfo=None)),
+                                           "%Y-%m-%d %H:%M:%S") -
                          datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
         embed.add_field(inline=False, name="Time of Action:", value=f"<t:{str(timestamp)}> (<t:{str(timestamp)}:R>)")
         embed.add_field(inline=False, name="Reason:",
@@ -334,7 +337,8 @@ Unban appeals for new accounts will be accepted once a moderator is able to view
         embed.add_field(name="Action Taken On:", value=f"""{entry.target.mention}
 {entry.target}
 (`{entry.target.id}`)""")
-        timestamp = int((datetime.strptime(str(entry.created_at).split(".")[0], "%Y-%m-%d %H:%M:%S") -
+        timestamp = int((datetime.strptime(str(entry.created_at.replace(microsecond=0, tzinfo=None)),
+                                           "%Y-%m-%d %H:%M:%S") -
                          datetime.strptime("1970-01-01", "%Y-%m-%d")).total_seconds())
         embed.add_field(inline=False, name="Time of Action:", value=f"<t:{str(timestamp)}> (<t:{str(timestamp)}:R>)")
         embed.add_field(inline=False, name="Reason:",
@@ -355,7 +359,7 @@ Unban appeals for new accounts will be accepted once a moderator is able to view
         hunter = disnake.utils.get(guild.roles, name="Licensed Hunter")
         if hunter in before.roles and hunter in after.roles:
             return
-        if len(hunter.members) == int(data["server_config"][str(guild.id)]["milestone_notify"]["threshold"])\
+        if len(hunter.members) == int(data["server_config"][str(guild.id)]["milestone_notify"]["threshold"]) \
                 and hunter not in before.roles and hunter in after.roles:
             admin = disnake.utils.get(guild.roles, name="Admin")
             channel = disnake.utils.get(guild.channels, id=int(data["server_config"][str(guild.id)]["milestone_notify"]

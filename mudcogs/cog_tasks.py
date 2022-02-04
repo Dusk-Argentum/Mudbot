@@ -35,6 +35,7 @@ def is_allowed_channel():  # This defines a custom check called is_allowed_chann
                 return True
             else:
                 return False
+
     return commands.check(predicate)
 
 
@@ -76,9 +77,9 @@ class MudTasks(commands.Cog):
             elif threshold == 1:
                 word = "day"
         for member in channel.members:
-            age = int(str((datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0],
-                                             "%Y-%m-%d %H:%M:%S") - datetime.strptime
-                                            (str(member.joined_at).split(".")[0],
+            age = int(str((datetime.strptime(str((datetime.now(timezone.utc)).replace(microsecond=0, tzinfo=None)),
+                                             "%Y-%m-%d %H:%M:%S") -
+                           datetime.strptime(str(member.joined_at.replace(microsecond=0, tzinfo=None)),
                                              "%Y-%m-%d %H:%M:%S")).total_seconds()).split(".")[0])
             if len(member.roles) == 1 and age > threshold:  # Functions in this block execute if the members has
                 # no roles (the only role they have is @everyone role, which is the one role) and they have been
@@ -108,7 +109,8 @@ http://discord.gg/aetherhunts"""
         for user, time in list(data["temporary_punishments"]["bans"].items()):
             expiration = datetime.strptime(str(data["temporary_punishments"]["bans"][str(user)]["expiration"]),
                                            "%Y-%m-%d %H:%M:%S")
-            if expiration < datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0], "%Y-%m-%d %H:%M:%S"):
+            if expiration < datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)),
+                                              "%Y-%m-%d %H:%M:%S"):
                 del data["temporary_punishments"]["bans"][str(user)]
                 user = await self.bot.fetch_user(int(user))
                 try:
@@ -131,7 +133,8 @@ http://discord.gg/aetherhunts"""
         for user, time in list(data["temporary_punishments"]["mutes"].items()):
             expiration = datetime.strptime(str(data["temporary_punishments"]["mutes"][str(user)]["expiration"]),
                                            "%Y-%m-%d %H:%M:%S")
-            if expiration < datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0], "%Y-%m-%d %H:%M:%S"):
+            if expiration < datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)),
+                                              "%Y-%m-%d %H:%M:%S"):
                 del data["temporary_punishments"]["mutes"][str(user)]
                 user = guild.get_member(int(user))
                 if user is None:
@@ -171,9 +174,9 @@ http://discord.gg/aetherhunts"""
         for member in channel.members:
             if viewer in member.roles:
                 if str(member.id) in list(data["licensed_viewers"]):
-                    if datetime.strptime(str(data["licensed_viewers"][str(member.id)]["time"]), "%Y-%m-%d %H:%M:%S")\
-                        < datetime.strptime(str(datetime.now(timezone.utc) - timedelta(minutes=5)).split(".")[0],
-                                            "%Y-%m-%d %H:%M:%S"):
+                    if datetime.strptime(str(data["licensed_viewers"][str(member.id)]["time"]), "%Y-%m-%d %H:%M:%S") <\
+                        datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None) -
+                                          timedelta(minutes=5)), "%Y-%m-%d %H:%M:%S"):
                         await member.remove_roles(viewer)
                         del data["licensed_viewers"][str(member.id)]
                         continue

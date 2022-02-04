@@ -1,13 +1,10 @@
 from datetime import datetime, timezone
 
-
 import disnake
 from disnake.ext import commands
 from disnake.ext.commands import MemberNotFound, MissingAnyRole
 
-
 import json
-
 
 from mudcogs import cog_tasks
 
@@ -45,9 +42,9 @@ pull complaint timer.""", name="early_pull", usage="early_pull")  # THERE WILL B
         with open("complaint_log.json", "r") as complaint_log:
             data = json.load(complaint_log)
         last_complaint = datetime.strptime(str(data["complaint_log"]["last_complaint"]), "%Y-%m-%d %H:%M:%S")
-        current_duration = int(str((datetime.strptime(str(datetime.now(timezone.utc)).split(".")[0],
-                                                      "%Y-%m-%d %H:%M:%S") - last_complaint).total_seconds()).split(".")
-                               [0])
+        current_duration = int(
+            str((datetime.strptime(str((datetime.now(timezone.utc)).replace(microsecond=0, tzinfo=None)),
+                                   "%Y-%m-%d %H:%M:%S") - last_complaint).total_seconds()).split(".")[0])
         longest_duration = int(data["complaint_log"]["longest_duration"])
         if current_duration > longest_duration:
             longest_duration = str(current_duration)
