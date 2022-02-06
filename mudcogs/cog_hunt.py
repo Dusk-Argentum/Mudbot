@@ -205,8 +205,8 @@ the hunt for prey...""")
 :red_circle: | {info["name"]}""")
             embed.set_image(url=info["locations"][zone]["url"])
             embed.set_footer(icon_url=RG_ICON_URL, text="Maps by RetahGaming.com")
-            await ctx.send(content="""<:minion:610656093680697366> <:minion:610656093680697366> \
-<@&570459958123167745> <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
+            await ctx.send(content=f"""<:minion:610656093680697366> <:minion:610656093680697366> \
+{info["ping"]} <:minion:610656093680697366> <:minion:610656093680697366>""", embed=embed)
 
 
 def setup(bot):

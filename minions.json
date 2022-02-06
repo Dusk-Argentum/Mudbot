@@ -36,7 +36,8 @@
 					}
 				},
 				"minion_icon_url": "https://cdn.discordapp.com/attachments/740603224826052608/740754471575093369/Minion.png",
-				"minion_name": "Forgiven Gossip"
+				"minion_name": "Forgiven Gossip",
+				"ping": "<@&570459958123167745>"
 			}
 		},
 		"Endwalker (6.0)": {
@@ -75,7 +76,8 @@
 					}
 				},
 				"minion_icon_url": "https://cdn.discordapp.com/attachments/570431587422830617/938943277846118450/ker_shroud.png",
-				"minion_name": "Ker Shroud"
+				"minion_name": "Ker Shroud",
+				"ping": "<@&898914895775563788>"
 			}
 		}
 	}
