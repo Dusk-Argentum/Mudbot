@@ -212,7 +212,7 @@ If you see this message too many times, please open a support ticket.""")
         name = re.search(r"""chara__name\">([\w'-]{2,15})\s([\w'-]{2,15})<""",
                          str(html.select("div.frame__chara__box:nth-child(2) > .frame__chara__name")))
         # Grabs the name.
-        world = re.search(r"""World\"></i>(\w{4,12})\s\((\w{4,9})""",
+        world = re.search(r"(\w{4,12})\s\[(\w{4,9})]",
                           str(html.select("p.frame__chara__world:last-of-type")))
         # Grabs the world.
         portrait = re.search(r"""src=\"(\S+)\"""", str(html.select(".frame__chara__face > img:nth-child(1)"))).group(1)
@@ -472,9 +472,7 @@ You're welcome to attempt the linking process again with a character on Aether, 
                 new_value = "You're good to go!"
             embed.add_field(inline=True, name="Old:", value=old_value)
             embed.add_field(inline=True, name="►", value=arrow_value)
-            embed.add_field(inline=True, name="New:", value=new_value)  # This stuff looks weird in certain
-            # circumstances. Requires further testing and the ability to know how it happens to fix. Effects nothing
-            # functionally, just cosmetically.
+            embed.add_field(inline=True, name="New:", value=new_value)
         elif str(ctx.author.id) not in str(ids):  # Another block that executes if the member is not in the database.
             added_names = []
             added_roles = []
