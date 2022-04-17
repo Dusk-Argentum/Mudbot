@@ -49,7 +49,7 @@ pull complaint timer.""", name="early_pull", usage="early_pull")  # THERE WILL B
             longest_duration = str(current_duration)
             longest_duration_update = {"longest_duration": longest_duration}
             data["complaint_log"].update(longest_duration_update)
-        last_complaint_update = {"last_complaint": str(datetime.now(timezone.utc)).split(".")[0]}
+        last_complaint_update = {"last_complaint": str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None))}
         data["complaint_log"].update(last_complaint_update)
         with open("complaint_log.json", "w") as complaint_log:
             complaint_log.seek(0)
