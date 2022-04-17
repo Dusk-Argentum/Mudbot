@@ -39,45 +39,74 @@ Conductor role to the mentioned member. Only usable in tickets.""", name="conduc
 pull complaint timer.""", name="early_pull", usage="early_pull")  # THERE WILL BE MORE.
     @commands.guild_only()
     async def early_pull(self, ctx):
-        with open("complaint_log.json", "r") as complaint_log:
-            data = json.load(complaint_log)
-        last_complaint = datetime.strptime(str(data["complaint_log"]["last_complaint"]), "%Y-%m-%d %H:%M:%S")
-        current_duration = int((datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None)),
-                                "%Y-%m-%d %H:%M:%S") - last_complaint).total_seconds())
-        longest_duration = int(data["complaint_log"]["longest_duration"])
-        if current_duration > longest_duration:
-            longest_duration = str(current_duration)
-            longest_duration_update = {"longest_duration": longest_duration}
-            data["complaint_log"].update(longest_duration_update)
-        last_complaint_update = {"last_complaint": str(datetime.now(timezone.utc).replace(microsecond=0, tzinfo=None))}
-        data["complaint_log"].update(last_complaint_update)
-        with open("complaint_log.json", "w") as complaint_log:
-            complaint_log.seek(0)
-            json.dump(data, complaint_log, indent=4)
-            complaint_log.truncate()
-        embed = disnake.Embed(color=disnake.Color(0x3b9da5), description="""Please remember that Aether Hunts \
+        place = "top"
+        try:
+            with open("complaint_log.json", "r") as complaint_log:
+                data = json.load(complaint_log)
+            place = "alfa"
+            last_complaint = datetime.strptime(str(data["complaint_log"]["last_complaint"]), "%Y-%m-%d %H:%M:%S")
+            place = "bravo"
+            current_duration = int((datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0,
+                                                                                             tzinfo=None)),
+                                    "%Y-%m-%d %H:%M:%S") - last_complaint).total_seconds())
+            place = "charlie"
+            longest_duration = int(data["complaint_log"]["longest_duration"])
+            place = "delta"
+            if current_duration > longest_duration:
+                longest_duration = str(current_duration)
+                longest_duration_update = {"longest_duration": longest_duration}
+                data["complaint_log"].update(longest_duration_update)
+            last_complaint_update = {"last_complaint": str(datetime.now(timezone.utc).replace(microsecond=0,
+                                                                                              tzinfo=None))}
+            place = "echo"
+            data["complaint_log"].update(last_complaint_update)
+            place = "foxtrot"
+            with open("complaint_log.json", "w") as complaint_log:
+                complaint_log.seek(0)
+                json.dump(data, complaint_log, indent=4)
+                complaint_log.truncate()
+            place = "golf"
+            embed = disnake.Embed(color=disnake.Color(0x3b9da5), description="""Please remember that Aether Hunts \
 cannot control whether people pull marks early. Sometimes, this happens by accident. Other times, this is done by \
 people beyond the mod team's jurisdiction. Regardless, please be advised that there will be additional S Rank \
 marks in the future.""", title="Early pull complaint detected!")
-        embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-        embed.set_thumbnail(url=ctx.guild.icon.url)
-        days = divmod(current_duration, 86400)
-        hours = divmod(days[1], 3600)
-        minutes = divmod(hours[1], 60)
-        seconds = divmod(minutes[1], 1)
-        embed.add_field(inline=True, name="Current:", value=f"""We have gone \
+            place = "hotel"
+            embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+            place = "india"
+            embed.set_thumbnail(url=ctx.guild.icon.url)
+            place = "juliett"
+            days = divmod(current_duration, 86400)
+            place = "kilo"
+            hours = divmod(days[1], 3600)
+            place = "lima"
+            minutes = divmod(hours[1], 60)
+            place = "mike"
+            seconds = divmod(minutes[1], 1)
+            place = "november"
+            embed.add_field(inline=True, name="Current:", value=f"""We have gone \
 {days[0]} day{"" if days[0] == 1 else "s"}, {hours[0]} hour{"" if hours[0] == 1 else "s"}, \
 {minutes[0]} minute{"" if minutes[0] == 1 else "s"}, and {seconds[0]} second{"" if seconds[0] == 1 else "s"} \
 since the last logged complaint.""")
-        days = divmod(longest_duration, 86400)
-        hours = divmod(days[1], 3600)
-        minutes = divmod(hours[1], 60)
-        seconds = divmod(minutes[1], 1)
-        embed.add_field(inline=True, name="Record:", value=f"""Our record between logged complaints is {days[0]} \
+            place = "oscar"
+            days = divmod(longest_duration, 86400)
+            place = "papa"
+            hours = divmod(days[1], 3600)
+            place = "quebec"
+            minutes = divmod(hours[1], 60)
+            place = "romeo"
+            seconds = divmod(minutes[1], 1)
+            place = "sierra"
+            embed.add_field(inline=True, name="Record:", value=f"""Our record between logged complaints is {days[0]} \
 day{"" if days[0] == 1 else "s"}, {hours[0]} hour{"" if days[0] == 1 else "s"}, {minutes[0]} minute\
 {"" if minutes[0] == 1 else "s"}, and {seconds[0]} second{"" if seconds[0] == 1 else "s"}.""")
-        embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
-        await ctx.send(embed=embed)
+            place = "tango"
+            embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
+            place = "victor"
+            await ctx.send(embed=embed)
+        except ValueError:
+            await ctx.send(f"""**Critical error**! Please report this to the developer.
+Please include the following word in your report: `{place}`.
+Apologies for the inconvenience!""")
 
     @commands.command(aliases=["spawn"], brief="Adds Spawner to the mentioned member.", help="""Adds the \
 Spawner role to the mentioned member. Only usable in tickets.""", name="spawner", usage="spawner <mention>")
