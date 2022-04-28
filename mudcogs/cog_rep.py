@@ -49,7 +49,7 @@ pull complaint timer.""", name="early_pull", usage="early_pull")  # THERE WILL B
                                                                                              tzinfo=None)),
                                     "%Y-%m-%d %H:%M:%S") -
                                     datetime.strptime(str(data["complaint_log"]["last_complaint"]),
-                                                      "%Y-%m-%d %H:%M:%S")).total_seconds())
+                                                      "%Y-%m-%d %H:%M:%S").replace(tzinfo=None)).total_seconds())
             place = "charlie"
             longest_duration = int(data["complaint_log"]["longest_duration"])
             place = "delta"
