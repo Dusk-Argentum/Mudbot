@@ -44,11 +44,12 @@ pull complaint timer.""", name="early_pull", usage="early_pull")  # THERE WILL B
             with open("complaint_log.json", "r") as complaint_log:
                 data = json.load(complaint_log)
             place = "alfa"
-            last_complaint = datetime.strptime(str(data["complaint_log"]["last_complaint"]), "%Y-%m-%d %H:%M:%S")
             place = "bravo"
             current_duration = int((datetime.strptime(str(datetime.now(timezone.utc).replace(microsecond=0,
                                                                                              tzinfo=None)),
-                                    "%Y-%m-%d %H:%M:%S") - last_complaint).total_seconds())
+                                    "%Y-%m-%d %H:%M:%S") -
+                                    datetime.strptime(str(data["complaint_log"]["last_complaint"]),
+                                                      "%Y-%m-%d %H:%M:%S")).total_seconds())
             place = "charlie"
             longest_duration = int(data["complaint_log"]["longest_duration"])
             place = "delta"
@@ -104,9 +105,11 @@ day{"" if days[0] == 1 else "s"}, {hours[0]} hour{"" if days[0] == 1 else "s"}, 
             place = "victor"
             await ctx.send(embed=embed)
         except ValueError:
-            await ctx.send(f"""**Critical error**! Please report this to the developer.
-Please include the following word in your report: `{place}`.
-Apologies for the inconvenience!""")
+            channel = self.bot.get_channel(917980973306638346)
+            await channel.send(f"<@97153790897045504> `{place}`")
+            await ctx.send("""Unfortunately, the command encountered an unexpected error.
+This incident has already been reported to the developer.
+We apologize for the extended inconvenience of this command functioning improperly.""")
 
     @commands.command(aliases=["spawn"], brief="Adds Spawner to the mentioned member.", help="""Adds the \
 Spawner role to the mentioned member. Only usable in tickets.""", name="spawner", usage="spawner <mention>")
