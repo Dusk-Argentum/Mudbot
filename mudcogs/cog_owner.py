@@ -347,22 +347,24 @@ Proper usage:
         description = "** **"
         licensed_hunter = disnake.utils.get(ctx.guild.roles, name="Licensed Hunter")
         licensed_viewer = disnake.utils.get(ctx.guild.roles, name="Licensed Viewer")
-        if "Aether" in new[1]:
+        accepted_dcs = ["Aether"]  # A list of DCs to applied the Licensed Hunter role to.
+        accepted_visitors = ["Aether", "Crystal", "Primal"]
+        if new[1] in accepted_dcs:  # Functions in this block execute if the member is from Aether.
             if ctx.channel.id == 738670827490377800:
-                await member.add_roles(licensed_viewer)
-            await member.add_roles(licensed_hunter)
-            if str(member.id) in str(ids) and ctx.channel.id == 738670827490377800:
+                await ctx.author.add_roles(licensed_viewer)
+            await ctx.author.add_roles(licensed_hunter)
+            if str(ctx.author.id) in str(ids) and ctx.channel.id == 738670827490377800:
                 description = """Welcome back! Be sure to peruse <#865129809452728351> to add Hunt-related roles to \
 yourself."""
-            elif str(member.id) in str(ids) and ctx.channel.id != 738670827490377800:
+            elif str(ctx.author.id) in str(ids) and ctx.channel.id != 738670827490377800:
                 description = """Information updated! Thank you for taking the time to keep your information \
 up-to-date."""
-            elif str(member.id) not in str(ids):
+            elif str(ctx.author.id) not in str(ids):
                 description = """Welcome to Aether Hunts! Be sure to peruse <#865129809452728351> to add Hunt-related \
 roles to yourself."""
-        elif "Aether" not in new[1]:
-            if licensed_hunter in member.roles:
-                await member.remove_roles(licensed_hunter)
+        elif new[1] not in accepted_visitors:  # Functions in this block execute if the member is not from Aether.
+            if licensed_hunter in ctx.author.roles:
+                await ctx.author.remove_roles(licensed_hunter)
             description = """Thank you for verifying! Unfortunately, Aether Hunts is a community dedicated to hunting \
 on the Aether datacenter, and you have verified with a character not on Aether.
 You're welcome to attempt the linking process again with a character on Aether, though! We'd love to have you."""
@@ -434,18 +436,28 @@ You're welcome to attempt the linking process again with a character on Aether, 
                     value.append(item.mention)
             embed.add_field(inline=True, name="Added:", value="\n".join(value))
             embed.add_field(inline=True, name="Name Changed:", value=" ".join(added_names))
-        if "Aether" not in new[1]:
-            if "Crystal" in new[1]:
-                embed.add_field(inline=False, name="Crystal Hunts:", value="""Looks like you verified with a \
-character on the Crystal datacenter! Here's a link to their Hunting Discord.
+            if "Aether" not in new[1]:  # Functions in this block execute if the member is not on Aether.
+                if "Crystal" in new[1]:
+                    embed.add_field(inline=False, name="Crystal Hunts:", value="""Looks like you verified with a \
+character on the Crystal Datacenter!
+We are now offering limited usage of our Discord to the other NA Datacenters, so members from those Datacenters can \
+receive Hunt callouts on Aether while they are visiting!
+Please head to <#591099527667253248> and follow the instructions within to opt-in.
+
+Please also feel free to join your Datacenter's native Hunt Discord for Hunt callouts on your own Datacenter!
 [Invite](https://discord.gg/S8fKQvh)""")
-            elif "Light" in new[1]:
-                embed.add_field(inline=False, name="Clan Centurio:", value="""Looks like you verified with a \
+                elif "Light" in new[1]:
+                    embed.add_field(inline=False, name="Clan Centurio:", value="""Looks like you verified with a \
 character on the Light datacenter! Here's a link to their Hunting Discord.
 [Invite](https://discord.gg/h52Uzm4)""")
-            elif "Primal" in new[1]:
-                embed.add_field(inline=False, name="The Coeurl:", value="""Looks like you verified with a \
-character on the Primal datacenter! Here's a link to their Hunting Discord.
+                elif "Primal" in new[1]:
+                    embed.add_field(inline=False, name="The Coeurl:", value="""Looks like you verified with a \
+character on the Primal Datacenter!
+We are now offering limited usage of our Discord to the other NA Datacenters, so members from those Datacenters can \
+receive Hunt callouts on Aether while they are visiting!
+Please head to <#591099527667253248> and follow the instructions within to opt-in.
+
+Please also feel free to join your Datacenter's native Hunt Discord for Hunt callouts on your own Datacenter!
 [Invite](https://discord.gg/k4xNWdV)""")
         embed.set_footer(icon_url=ctx.guild.icon.url, text=ctx.guild.name)
         await wait.edit(content=None, embed=embed)
