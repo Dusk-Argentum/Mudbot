@@ -2,28 +2,21 @@ from bs4 import BeautifulSoup as Soup  # Imports the best possible soup, just, l
 # to say, the most beautiful soup, as Soup, because I'm not typing that whole thing every time.
 # Used for parsing HTML gathered from the Lodestone.
 
-
 import json
-
 
 import disnake
 from disnake import Forbidden, HTTPException
 from disnake.ext import commands
 
-
 from mudbot import PREFIX
 
-
 import re
-
 
 import requests  # Imports the requests module for use in making HTTP requests to the Lodestone.
 # What I wouldn't give for an official Lodestone API... Make it happen, Squeenix. Please.
 
-
 import sqlite3  # Imports the sqlite3 module for use in keeping track of the database.
 from sqlite3 import OperationalError
-
 
 from typing import Union
 

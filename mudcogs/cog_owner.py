@@ -1,36 +1,26 @@
 import asyncio
 
-
 from bs4 import BeautifulSoup as Soup
-
 
 import disnake
 from disnake import Forbidden, HTTPException
 from disnake.ext import commands
 from disnake.ext.commands import MemberNotFound
 
-
 import json
-
 
 from mudbot import PREFIX
 
-
 import os
-
 
 import random  # Imports the random module for use in generating random numbers.
 
-
 import re
-
 
 import requests
 
-
 import sqlite3
 from sqlite3 import OperationalError
-
 
 from typing import Union
 

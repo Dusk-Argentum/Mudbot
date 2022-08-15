@@ -2,9 +2,7 @@ import disnake
 from disnake.ext import commands
 from disnake.ext.commands import ChannelNotFound, MissingAnyRole  # Imports an exception handler.
 
-
 import json  # Imports the json module for use in reading and writing JSON files.
-
 
 import re  # Imports the regex module for use in extracting information.
 

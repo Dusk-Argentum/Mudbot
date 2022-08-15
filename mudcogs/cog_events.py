@@ -9,11 +9,10 @@ from disnake.ext.commands import BotMissingPermissions, ChannelNotFound, CheckFa
     CommandNotFound, MemberNotFound, MissingAnyRole, NoPrivateMessage, NotOwner, UnexpectedQuoteError, UserNotFound
 # Imports a bunch of exceptions.
 
-
 import json
 
 from mudbot import GUILD, PREFIX  # Imports the GUILD and PREFIX global variables from the main bot file.
-from mudcogs import cog_tasks  # Imports the cog_tasks file.
+from mudcogs import cog_tasks, cog_verification  # Imports the cog_tasks file.
 
 import re
 
@@ -70,8 +69,9 @@ Example: <@97153790897045504> | `97153790897045504`"""
             error = "You're not cool enough to run this command."
         if isinstance(error, UnexpectedQuoteError):
             if ctx.command.name == "link":
-                await ctx.send(f"""You have an invalid quote. Please **copy and paste** the below text to verify.
-`{ctx.message.content.replace("‘", "'")}`""")
+                args = re.search(r"([\w'-‘]{2,15})\s([\w'-‘]{2,15})\s(\w{4,12})", ctx.message.content)
+                await cog_verification.Verification.link(ctx, ctx, first=args[1].replace("‘", "'"),
+                                                         last=args[2].replace("‘", "'"), world=args[3])
                 return
             error = "Unexpected quote. Please use `'` instead of `‘`."
         if isinstance(error, UserNotFound):  # Functions in this block execute if the provided user is invalid.
