@@ -529,9 +529,9 @@ Leaves the current server if none is provided. Accept only IDs.""", usage="leave
                       help="Lists servers the bot is on.", name="list", usage="list")
     @commands.guild_only()
     async def list(self, ctx):
-        servers = []
+        servers = ""
         for server in self.bot.guilds:
-            servers.append(f"{server.name} (`{server.id}`)\n")
+            servers.join(f"{server.name} (`{server.id}`)\n")
             await asyncio.sleep(1)
         await ctx.author.send(servers)
 

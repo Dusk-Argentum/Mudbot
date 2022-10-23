@@ -205,7 +205,7 @@ If you see this message too many times, please open a support ticket.""")
         name = re.search(r"""chara__name\">([\w'-]{2,15})\s([\w'-]{2,15})<""",
                          str(html.select("div.frame__chara__box:nth-child(2) > .frame__chara__name")))
         # Grabs the name.
-        world = re.search(r"(\w{4,12})\s\[(\w{4,9})]",
+        world = re.search(r"(\w{4,13})\s\[(\w{4,9})]",
                           str(html.select("p.frame__chara__world:last-of-type")))
         # Grabs the world.
         portrait = re.search(r"""src=\"(\S+)\"""", str(html.select(".frame__chara__face > img:nth-child(1)"))).group(1)
@@ -399,7 +399,7 @@ Proper usage:
         licensed_hunter = disnake.utils.get(ctx.guild.roles, name="Licensed Hunter")
         licensed_viewer = disnake.utils.get(ctx.guild.roles, name="Licensed Viewer")
         accepted_dcs = ["Aether"]  # A list of DCs to applied the Licensed Hunter role to.
-        accepted_visitors = ["Aether", "Crystal", "Primal"]
+        accepted_visitors = ["Aether", "Dynamis", "Crystal", "Primal"]
         if new[1] in accepted_dcs:  # Functions in this block execute if the member is from Aether.
             if ctx.channel.id == 738670827490377800:
                 await ctx.author.add_roles(licensed_viewer)
