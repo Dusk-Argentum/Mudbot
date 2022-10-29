@@ -24,6 +24,9 @@
 			},
 			"7": {
 				"name": "Primal"
+			},
+			"8": {
+				"name": "Dynamis"
 			}
 		},
 		"servers": {
@@ -227,6 +230,18 @@
 			},
 			"66": {
 				"name": "Zodiark"
+			},
+			"67": {
+				"name": "Halicarnassus"
+			},
+			"68": {
+				"name": "Maduin"
+			},
+			"69": {
+				"name": "Marilith"
+			},
+			"70": {
+				"name": "Seraph"
 			}
 		}
 	}
