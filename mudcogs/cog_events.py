@@ -69,7 +69,10 @@ Example: <@97153790897045504> | `97153790897045504`"""
             error = "You're not cool enough to run this command."
         if isinstance(error, UnexpectedQuoteError):
             if ctx.command.name == "link":
-                args = re.search(r"([\w'-‘]{2,15})\s([\w'-‘]{2,15})\s(\w{4,12})", ctx.message.content)
+                args = re.search(r"([\w'-‘]{2,15})\s([\w'-‘]{2,15})\s(\w{4,13})", ctx.message.content)
+                if args is None:
+                    error = "Unexpected quote. Please use `'` instead of `‘`."
+                    return
                 await cog_verification.Verification.link(ctx, ctx, first=args[1].replace("‘", "'"),
                                                          last=args[2].replace("‘", "'"), world=args[3])
                 return

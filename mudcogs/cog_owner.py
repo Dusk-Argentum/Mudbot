@@ -10,6 +10,7 @@ from disnake.ext.commands import MemberNotFound
 import json
 
 from mudbot import PREFIX
+from mudcogs.cog_events import NotOwner
 
 import os
 
@@ -30,6 +31,8 @@ class Owner(commands.Cog):
         self.bot = bot
 
     async def cog_check(self, ctx):
+        if ctx.author.id != self.bot.owner_id:
+            raise NotOwner
         return ctx.author.id == self.bot.owner_id
 
     @commands.command(aliases=["de"], brief="Echoes message.", help="Echoes message, deleting invocation.",
@@ -525,13 +528,13 @@ Leaves the current server if none is provided. Accept only IDs.""", usage="leave
             server = self.bot.get_guild(server)
         await server.leave()
 
-    @commands.command(aliases=["server_list"], brief="Lists servers the bot is on.",
+    @commands.command(aliases=["server_list", "sl"], brief="Lists servers the bot is on.",
                       help="Lists servers the bot is on.", name="list", usage="list")
     @commands.guild_only()
     async def list(self, ctx):
-        servers = ""
+        servers = []
         for server in self.bot.guilds:
-            servers.join(f"{server.name} (`{server.id}`)\n")
+            servers.append(f"{server.name} (`{server.id}`)\n")
             await asyncio.sleep(1)
         await ctx.author.send(servers)
 
