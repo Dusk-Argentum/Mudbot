@@ -536,7 +536,7 @@ Leaves the current server if none is provided. Accept only IDs.""", usage="leave
         for server in self.bot.guilds:
             servers.append(f"{server.name} (`{server.id}`)\n")
             await asyncio.sleep(1)
-        await ctx.author.send(servers)
+        await ctx.author.send("".join(servers))
 
     @commands.group(aliases=["stat"], brief="Commands for adjusting bot status.", case_insensitive=True,
                     help="""Commands for adjusting the bot's status, including toggling auto-rotation on/off \
