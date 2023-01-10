@@ -53,8 +53,8 @@ class MudTasks(commands.Cog):
         state = data["server_config"][str(guild.id)]["auto_punish"]["kick"]["state"]
         threshold = data["server_config"][str(guild.id)]["auto_punish"]["kick"]["threshold"]
         threshold = re.search(r"(^\d{1,2})(m$|h$|d$)", threshold)
-        number = ""
-        word = ""
+        number = None
+        word = None
         if threshold.group(2).lower() == "m":
             number = str(threshold.group(1))
             threshold = int(threshold.group(1)) * 60

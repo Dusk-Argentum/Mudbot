@@ -313,7 +313,7 @@ Unban appeals for new accounts will be accepted once a moderator is able to view
                     break
             else:
                 continue
-        title = ""
+        title = None
         channel = disnake.utils.get(guild.channels, name="actioned-log")
         if state == 0:
             title = "Member unmuted."
