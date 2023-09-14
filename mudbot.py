@@ -14,7 +14,7 @@ PREFIX = "DEFAULT_PREFIX"  # The default PREFIX global variable. Defines the def
 TESTS = None
 TOKEN = os.environ.get("Mudbot_TOKEN")  # The token used to authenticate with Discord. Obscured in an
 # environment variable.
-VERSION = "v2.7.2a"  # The version of the bot. Sometimes I forget to update it. It's fine.
+VERSION = "v2.7.3"  # The version of the bot. Sometimes I forget to update it. It's fine.
 
 
 if TOKEN == os.environ.get("Mudbot_TOKEN"):  # The following blocks re-set certain global variables depending on the

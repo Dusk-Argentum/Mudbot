@@ -420,13 +420,13 @@ Proper usage:
                 await ctx.author.add_roles(licensed_viewer)
             await ctx.author.add_roles(licensed_hunter)
             if str(ctx.author.id) in str(ids) and ctx.channel.id == 738670827490377800:
-                description = """Welcome back! Be sure to peruse <#865129809452728351> to add Hunt-related roles to \
+                description = """Welcome back! Be sure to peruse <#1095159801329229945> to add Hunt-related roles to \
 yourself."""
             elif str(ctx.author.id) in str(ids) and ctx.channel.id != 738670827490377800:
                 description = """Information updated! Thank you for taking the time to keep your information \
 up-to-date."""
             elif str(ctx.author.id) not in str(ids):
-                description = """Welcome to Aether Hunts! Be sure to peruse <#865129809452728351> to add Hunt-related \
+                description = """Welcome to Aether Hunts! Be sure to peruse <#1095159801329229945> to add Hunt-related \
 roles to yourself."""
         elif new[1] not in accepted_visitors:  # Functions in this block execute if the member is not from Aether.
             if licensed_hunter in ctx.author.roles:
@@ -901,13 +901,13 @@ clearly. You have attempted to verify as the example character.""", title="Whoop
                 await inter.author.add_roles(licensed_viewer)
             await inter.author.add_roles(licensed_hunter)
             if str(inter.author.id) in str(ids) and inter.channel.id == 738670827490377800:
-                description = """Welcome back! Be sure to peruse <#865129809452728351> to add Hunt-related roles to \
+                description = """Welcome back! Be sure to peruse <#1095159801329229945> to add Hunt-related roles to \
 yourself."""
             elif str(inter.author.id) in str(ids) and inter.channel.id != 738670827490377800:
                 description = """Information updated! Thank you for taking the time to keep your information \
 up-to-date."""
             elif str(inter.author.id) not in str(ids):
-                description = """Welcome to Aether Hunts! Be sure to peruse <#865129809452728351> to add Hunt-related \
+                description = """Welcome to Aether Hunts! Be sure to peruse <#1095159801329229945> to add Hunt-related \
 roles to yourself."""
         elif new[1] not in accepted_visitors:
             if licensed_hunter in inter.author.roles:
