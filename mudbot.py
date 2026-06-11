@@ -12,7 +12,7 @@ GUILD = 348897377400258560  # The default GUILD global variable. Defines the ID 
 PREFIX = "DEFAULT_PREFIX"  # The default PREFIX global variable. Defines the default prefix used to invoke the bot's
 # commands.
 TESTS = None
-TOKEN = os.environ.get("Mudbot_BETA_TOKEN")  # The token used to authenticate with Discord. Obscured in an
+TOKEN = os.environ.get("Mudbot_TOKEN")  # The token used to authenticate with Discord. Obscured in an
 # environment variable.
 VERSION = "v2.7.4"  # The version of the bot. Sometimes I forget to update it. It's fine.
 
