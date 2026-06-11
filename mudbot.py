@@ -12,9 +12,9 @@ GUILD = 348897377400258560  # The default GUILD global variable. Defines the ID 
 PREFIX = "DEFAULT_PREFIX"  # The default PREFIX global variable. Defines the default prefix used to invoke the bot's
 # commands.
 TESTS = None
-TOKEN = os.environ.get("Mudbot_TOKEN")  # The token used to authenticate with Discord. Obscured in an
+TOKEN = os.environ.get("Mudbot_BETA_TOKEN")  # The token used to authenticate with Discord. Obscured in an
 # environment variable.
-VERSION = "v2.7.3"  # The version of the bot. Sometimes I forget to update it. It's fine.
+VERSION = "v2.7.4"  # The version of the bot. Sometimes I forget to update it. It's fine.
 
 
 if TOKEN == os.environ.get("Mudbot_TOKEN"):  # The following blocks re-set certain global variables depending on the
@@ -35,8 +35,9 @@ elif TOKEN == os.environ.get("Mudbot_REWRITE_TOKEN"):
 command_sync_flags = commands.CommandSyncFlags.default()
 
 
-intents = disnake.Intents.all()  # Defines the intents that the bot requires to work. Set to all.
-# intents.members = True  # Enables the Members intent, which facilitates certain logs.
+intents = disnake.Intents.default()  # Defines the intents that the bot requires to work. Set to default initially.
+intents.members = True  # Enables the Members intent, which facilitates certain logs.
+intents.message_content = True  # Enables the Message Content event, which allows message commands to work.
 
 
 bot = commands.Bot(case_insensitive=True, command_prefix=PREFIX, command_sync_flags=command_sync_flags,
