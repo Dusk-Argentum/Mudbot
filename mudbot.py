@@ -1,63 +1,47 @@
-# Welcome to the Mudbot rewrite.
-import disnake  # Mudbot uses Disnake to connect and communicate with Discord. RIP d.py.
-from disnake.ext import commands  # Imports the commands submodule of Disnake.
+# Version 3.0 of Mudbot is a go!
+import disnake  # Imports Disnake, the module used to communicate with Discord's API.
+from disnake.ext import commands  # Imports the commands submodule from Disnake.
+
+import os  # Imports the os builtin, for use in reaching the environment variables of the host machine.
 
 
-import os  # Imports the OS module, used to access environment variables.
+DESCRIPTION = """A bot for use exclusively on the Aether Hunts Discord server (ID: 542602456132091904). \
+Developed by Dusk Argentum (ID: 97153790897045504)."""  # Defines the bot's description.
+# This variable goes unused, but I figured I'd keep it around for clarity's sake.
+GUILD = 348897377400258560  # Defines the guild this bot is intended to be used on. Defaults to my test guild.
+TESTS = []  # Defines an empty list of testing servers.
+TOKEN = os.environ.get("Mudbot_TOKEN")  # Defines the token the bot uses to log in to Discord.
+VERSION = "v3.0"  # Defines the current version of the bot.
 
 
-DESCRIPTION = """A bot for use in the Aether Hunts Discord server. Made by Dusk Argentum#6530."""  # The bot's
-# description.
-GUILD = 348897377400258560  # The default GUILD global variable. Defines the ID of the testing server's guild.
-PREFIX = "DEFAULT_PREFIX"  # The default PREFIX global variable. Defines the default prefix used to invoke the bot's
-# commands.
-TESTS = None
-TOKEN = os.environ.get("Mudbot_TOKEN")  # The token used to authenticate with Discord. Obscured in an
-# environment variable.
-VERSION = "v2.7.4"  # The version of the bot. Sometimes I forget to update it. It's fine.
-
-
-if TOKEN == os.environ.get("Mudbot_TOKEN"):  # The following blocks re-set certain global variables depending on the
-    # token used to connect to Discord.
+if TOKEN == os.environ.get("Mudbot_TOKEN"):  # This conditional block sets the base guild to Aether Hunts if
+    # the current version of the bot is the production version.
     GUILD = 542602456132091904
-    PREFIX = "+"
-    TESTS = None
-elif TOKEN == os.environ.get("Mudbot_BETA_TOKEN"):
+elif TOKEN == os.environ.get("Mudbot_BETA_TOKEN"):  # This conditional block sets the base guild to my testing server
+    # if the current version of the bot is the beta version.
     GUILD = 348897377400258560
-    PREFIX = "-"
-    TESTS = [GUILD]
-elif TOKEN == os.environ.get("Mudbot_REWRITE_TOKEN"):
-    GUILD = 348897377400258560
-    PREFIX = "="
-    TESTS = [GUILD]
+    TESTS = [348897377400258560]  # Fills the TESTS variable with my testing server.
 
 
-command_sync_flags = commands.CommandSyncFlags.default()
+command_sync_flags = commands.CommandSyncFlags.default()  # Defines the Command Sync Flags to the default ones. For use
+# with all-beloved Slash Commands endpoints.
 
 
-intents = disnake.Intents.default()  # Defines the intents that the bot requires to work. Set to default initially.
-intents.members = True  # Enables the Members intent, which facilitates certain logs.
-intents.message_content = True  # Enables the Message Content event, which allows message commands to work.
+intents = disnake.Intents.default()  # Defines the Intents that Mudbot will need access to. Set to the default for now.
 
 
-bot = commands.Bot(case_insensitive=True, command_prefix=PREFIX, command_sync_flags=command_sync_flags,
-                   description=DESCRIPTION, intents=intents, test_guilds=TESTS, owner_id=97153790897045504)
-# Defines the bot as a bot and uses certain variables.
+bot = commands.InteractionBot(command_sync_flags=command_sync_flags, intents=intents, test_guilds=TESTS,
+                              owner_id=97153790897045504)  # Defines the bot as a bot. Which it is.
 
 
-bot.remove_command("help")  # Removes the default help command in favor of a custom one.
+bot.load_extension("mudcogs.admin")
+bot.load_extension("mudcogs.events")  # Loads the cogs, which are the subfiles where all the juicy stuff lives.
+bot.load_extension("mudcogs.help")  # If you're reading these comments, hi! Also, I'm sorry!
+bot.load_extension("mudcogs.owner")  # If you're following along and something isn't explained in the comments in the
+bot.load_extension("mudcogs.rep")  # cog you're looking at, try checking one of the earlier cogs alphabetically.
+bot.load_extension("mudcogs.tasks")  # I had to redo all the comments along with the code because so much shifted around
+bot.load_extension("mudcogs.verification")  # and I'm looking forward to you suffering with me!
 
 
-bot.load_extension("mudcogs.cog_admin")  # The following lines load cogs.
-bot.load_extension("mudcogs.cog_events")  # Cogs are a better way to sort related functions and commands.
-bot.load_extension("mudcogs.cog_help")
-bot.load_extension("mudcogs.cog_hunt")  # If you're reading through all this code and trying to make sense of it,
-bot.load_extension("mudcogs.cog_mod")  # if something doesn't have a comment, look through previous cogs
-bot.load_extension("mudcogs.cog_owner")  # (alphabetically) and it will likely be explained.
-bot.load_extension("mudcogs.cog_rep")
-bot.load_extension("mudcogs.cog_tasks")  # Or not. Commenting everything is hard.
-bot.load_extension("mudcogs.cog_verification")
-
-
-if __name__ == "__main__":  # Runs the bot if this is the main file. Since it is, it will.
-    bot.run(TOKEN)  # Runs the bot, using the appropriate token to verify.
+if __name__ == "__main__":  # This conditional block allows the bot to run if this is the main file. Which it is.
+    bot.run(TOKEN)

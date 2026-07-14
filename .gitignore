@@ -1,9 +1,6 @@
 /bot_config.json
-/licensed_viewers.json
 /server_config.json
 /.idea/
 /__pycache__/
 /characters.db
-/complaint_log.json
-/temporary_punishments.json
 /mudcogs/__pycache__/
