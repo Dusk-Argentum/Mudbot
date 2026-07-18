@@ -1,4 +1,5 @@
 import disnake
+from disnake import ApplicationCommandInteraction
 from disnake.ext import commands
 from disnake.ext.commands import CheckFailure, MissingAnyRole  # Imports the exception that is thrown if the user
 # attempting to invoke a command doesn't have the correct role or uses the command in the incorrect channel.
@@ -8,14 +9,14 @@ class Rep(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    # @staticmethod
-    # async def cog_slash_command_check(inter: ApplicationCommandInteraction):  # The check mentioned in the above
-    #     # comment.
-    #     if inter.data.name in ["conductor", "spawner"] and "rolerequest" not in inter.channel.name:  # Throws a
-    #         # CheckFailure exception if the command used is either /conductor or /spawner, and it is used outside a
-    #         # role request ticket.
-    #         raise CheckFailure
-    #     return inter.data.name in ["conductor", "spawner"] and "rolerequest" in inter.channel.name
+    @staticmethod
+    async def cog_slash_command_check():  # The check mentioned in the above
+        # comment.
+        if inter.data.name in ["conductor", "spawner"] and "rolerequest" not in inter.channel.name:  # Throws a
+            # CheckFailure exception if the command used is either /conductor or /spawner, and it is used outside a
+            # role request ticket.
+            raise CheckFailure
+        return inter.data.name in ["conductor", "spawner"] and "rolerequest" in inter.channel.name
 
     @commands.slash_command(description="""REP/MOD. Grants the Conductor role to the mentioned Member. \
 Only functions in Tickets.""", name="conductor")  # Note the "REP/MOD"; this is the easiest way I could convey to people
