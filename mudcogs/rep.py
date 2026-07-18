@@ -8,7 +8,8 @@ class Rep(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def cog_slash_command_check(self, inter: ApplicationCommandInteraction):  # The check mentioned in the above
+    @staticmethod
+    async def cog_slash_command_check(inter: ApplicationCommandInteraction):  # The check mentioned in the above
         # comment.
         if inter.data.name in ["conductor", "spawner"] and "rolerequest" not in inter.channel.name:  # Throws a
             # CheckFailure exception if the command used is either /conductor or /spawner, and it is used outside a
