@@ -182,6 +182,13 @@ more carefully. You have attempted to verify as the example character.""", title
         new_diff = []  # Defines an empty list with the "new" information.
         old_diff = []  # Same, but for old.
         old = []  # I know it seems like the same, but this is actually a DIFFERENT old.
+        worlds_list_top = []
+        with open("worlds.json", "r+") as worlds:
+            data = json.load(worlds)
+        count = 0
+        for world_entry in data["worlds"]["servers"]:
+            worlds_list_top.append(data["worlds"]["servers"][f"{count}"]["name"])
+            count += 1
         if str(inter.author.id) in str(ids):  # Functions in this block execute if the user is not in the database.
             attributes = ["character_id", "dc", "first", "last", "portrait", "server"]  # Creates a list with the
             # attributes that are the same as the title of each column in the database, for iteration reasons.
@@ -279,12 +286,18 @@ more carefully. You have attempted to verify as the example character.""", title
                 await inter.author.add_roles(new_dc)
             except (Forbidden, HTTPException):
                 pass
-            try:  # Tries to change the user's nickname on the server to their in-game name.
-                await inter.author.edit(nick=f"{first_name} {last_name}")
-            except (Forbidden, HTTPException):
-                pass
+            if new[1] == "Aether":
+                try:  # Tries to change the user's nickname on the server to their in-game name.
+                    await inter.author.edit(nick=f"{first_name} {last_name}")
+                except (Forbidden, HTTPException):
+                    pass
+            elif new[1] in ["Crystal", "Dynamis", "Primal"]:
+                try:
+                    await inter.author.edit(nick=f"{first_name} {last_name} [{dc[:1]}:{str(new[5])[:4]}]")
+                except (Forbidden, HTTPException):
+                    pass
             new_server = disnake.utils.get(inter.guild.roles, name=new[5])  # Same as the DC stuff, but for server.
-            if new_server not in inter.guild.roles:
+            if new_server is not type(None) and new_server.name not in worlds_list_top:
                 with open("worlds.json", "r+") as worlds:
                     world_update = {f"{len(data['worlds']['servers'])}": {
                         "name": new[5]
@@ -373,11 +386,17 @@ more carefully. You have attempted to verify as the example character.""", title
                 await inter.author.add_roles(dc_role)
             except (Forbidden, HTTPException):
                 pass
-            try:
-                await inter.author.edit(nick=f"{first_name} {last_name}")
-            except (Forbidden, HTTPException):
-                pass
-            if server not in str(inter.guild.roles):
+            if dc == "Aether":
+                try:
+                    await inter.author.edit(nick=f"{first_name} {last_name}")
+                except (Forbidden, HTTPException):
+                    pass
+            elif dc in ["Crystal", "Dynamis", "Primal"]:
+                try:
+                    await inter.author.edit(nick=f"{first_name} {last_name} [{dc[:1]}:{str(new[5])[:4]}]")
+                except (Forbidden, HTTPException):
+                    pass
+            if server not in worlds_list_top:
                 with open("worlds.json", "r+") as worlds:
                     world_update = {f"{len(data['worlds']['servers'])}": {
                         "name": server
@@ -399,7 +418,7 @@ more carefully. You have attempted to verify as the example character.""", title
                         worlds.truncate()
                     await inter.guild.create_role(name=server)
             server_role = disnake.utils.get(inter.guild.roles, name=server)
-            if dc  == "Aether":
+            if dc == "Aether":
                 try:
                     await inter.author.add_roles(server_role)
                 except (Forbidden, HTTPException):
@@ -844,6 +863,10 @@ Please ensure all inputs were entered properly and try again.""", title="Charact
                     await inter.author.remove_roles(role)
                 except (Forbidden, HTTPException):
                     continue
+        except (Forbidden, HTTPException):
+            pass
+        try:
+            await inter.author.edit(nick=None)
         except (Forbidden, HTTPException):
             pass
         embed = disnake.Embed(color=disnake.Color(0x3b9da5),
