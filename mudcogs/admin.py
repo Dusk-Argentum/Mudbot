@@ -13,8 +13,7 @@ class Admin(commands.Cog):  # Declares a class, which is going to be a disnake C
     def __init__(self, bot):  # Defines variables which will be inherited by other functions in this Cog.
         self.bot = bot  # Bot is inherited from above and passed down below.
 
-    @staticmethod
-    async def cog_slash_command_check(inter: ApplicationCommandInteraction):  # Defines a check, which executes
+    async def cog_slash_command_check(self, inter: ApplicationCommandInteraction):  # Defines a check, which executes
         # before any command in this Cog is run. This one checks to make sure the user has the Admin role before
         # processing any command.
         admin = disnake.utils.get(inter.guild.roles, name="Admin")  # Grabs the "Admin" Role object from the guild's
