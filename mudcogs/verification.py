@@ -426,16 +426,8 @@ more carefully. You have attempted to verify as the example character.""", title
         description = "** **"  # Sets a "blank" description. Descriptions can't be blank, and a bold space is somehow
         # "not-blank", but reads as blank.
         licensed_hunter = disnake.utils.get(inter.guild.roles, name="Licensed Hunter")
-        licensed_viewer = disnake.utils.get(inter.guild.roles, name="Licensed Viewer")
-        accepted_dcs = ["Aether"]  # Aether Hunts, surprisingly, only caters to the Aether DC.
-        accepted_visitors = ["Aether", "Dynamis", "Crystal", "Primal"]  # But! Aether Hunts has been playing along
-        # mostly nice with people from these DCs as well. Except when they decide they don't like them again, very
-        # suddenly. Then it becomes a problem for everyone else. :)
+        accepted_dcs = ["Aether", "Crystal", "Dynamis", "Primal"]  # We now accept users from ALL NA DCs!
         if new[1] in accepted_dcs:
-            if inter.channel.id == 738670827490377800:  # Functions in this block execute if the channel in which this
-                # command is executed is... A channel I don't get the name of anymore. Probably whatever the onboarding
-                # channel for AH is.
-                await inter.author.add_roles(licensed_viewer)
             await inter.author.add_roles(licensed_hunter)
             if str(inter.author.id) in str(ids) and inter.channel.id == 738670827490377800:
                 description = """Welcome back! Be sure to peruse <#1095159801329229945> to add Hunt-related roles to \
@@ -446,14 +438,15 @@ up-to-date."""
             elif str(inter.author.id) not in str(ids):
                 description = """Welcome to Aether Hunts! Be sure to peruse <#1095159801329229945> to add \
 Hunt-related roles to yourself."""
-        elif new[1] not in accepted_visitors:  # Functions in this block execute if, for whatever reason, someone who
+        elif new[1] not in accepted_dcs:  # Functions in this block execute if, for whatever reason, someone who
             # WAS on Aether linked with a character that isn't even in the Accepted Visitors list. Why?
             if licensed_hunter in inter.author.roles:  # Removes access for people who verify with a character off of
                 # the aforementioned DCs. Sorry! We have little here for you.
                 await inter.author.remove_roles(licensed_hunter)
             description = """Thank you for verifying! Unfortunately, Aether Hunts is a community dedicated to \
-hunting on the Aether datacenter, and you have verified with a character not on Aether.
-You're welcome to attempt the linking process again with a character on Aether, though! We'd love to have you."""
+hunting on the Aether datacenter, and you have verified with a character not on Aether, Crystal, Dynamis, or Primal.
+You're welcome to attempt the linking process again with a character on one of those DCs, though! We'd love to have \
+you."""
         embed = disnake.Embed(color=disnake.Color(0x3b9da5), description=description,
                                 title="Verification complete!")
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
@@ -489,7 +482,7 @@ You're welcome to attempt the linking process again with a character on Aether, 
                         old_value.append(f"~~{old_diff[count]}~~")
             for _ in new_value:
                 arrow_value.append("►")
-            if new[1] in accepted_dcs and licensed_viewer in inter.author.roles:
+            if new[1] in accepted_dcs:
                 arrow_value.append("+")
                 new_value.append(licensed_hunter.mention)
                 old_value.append("** **")
@@ -497,8 +490,7 @@ You're welcome to attempt the linking process again with a character on Aether, 
             new_value = "\n".join(new_value)
             old_value = "\n".join(old_value)
             if new_diff[0] is None and len(new_diff[1]) == 0 and len(new_diff[2]) == 0 and new_diff[3] is None \
-                    and old_diff[0] is None and len(old_diff[1]) == 0 and len(old_diff[2]) == 0 and old_diff[
-                3] is None:
+                    and old_diff[0] is None and len(old_diff[1]) == 0 and len(old_diff[2]) == 0 and old_diff[3] is None:
                 arrow_value = "<:dusk2:1288585929090400257>"  # That's my face!
                 old_value = "Nothing changed!"
                 new_value = "You're good to go!"
@@ -531,23 +523,26 @@ You're welcome to attempt the linking process again with a character on Aether, 
 character on the Crystal Datacenter!
 We are now offering limited usage of our Discord to the other NA Datacenters, so members from those Datacenters can \
 receive Hunt callouts on Aether while they are visiting!
-Please head to <#591099527667253248> and follow the instructions within to opt-in.
+Please head to <#591099527667253248> for more information!
 
 Please also feel free to join your Datacenter's native Hunt Discord for Hunt callouts on your own Datacenter!
 [Invite](https://discord.gg/S8fKQvh)""")  # Gee, I sure hope all these links are up-to-date!
-            elif "Light" in new[1]:
-                embed.add_field(inline=False, name="Clan Centurio:", value="""Looks like you verified with a \
-character on the Light datacenter! Here's a link to their Hunting Discord.
-[Invite](https://discord.gg/h52Uzm4)""")  # No clue why this text is different. I must have had a reason six years ago.
             elif "Primal" in new[1]:
                 embed.add_field(inline=False, name="The Coeurl:", value="""Looks like you verified with a \
 character on the Primal Datacenter!
 We are now offering limited usage of our Discord to the other NA Datacenters, so members from those Datacenters can \
 receive Hunt callouts on Aether while they are visiting!
-Please head to <#591099527667253248> and follow the instructions within to opt-in.
+Please head to <#591099527667253248> for more information!
 
 Please also feel free to join your Datacenter's native Hunt Discord for Hunt callouts on your own Datacenter!
 [Invite](https://discord.gg/k4xNWdV)""")
+            if "Crystal" not in new[1] and "Primal" not in new[1] and new[1] not in accepted_dcs:
+                embed.add_field(inline=False, name="Faloop:", value="""Looks like you verified with a character on \
+a Datacenter that is not in North America!
+Unfortunately, we do not currently offer support for users on non-NA DCs. However, please feel free to join the Faloop \
+server for Hunt callouts for your respective DC!
+
+[Invite](https://discord.gg/faloop)""")
         embed.set_footer(icon_url=inter.guild.icon.url, text=inter.guild.name)
         await inter.edit_original_response(embed=embed, view=None)
         await inter.delete_original_response(delay=300)  # Deletes the response after 300 seconds to keep the channel
