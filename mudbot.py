@@ -11,7 +11,7 @@ Developed by Dusk Argentum (ID: 97153790897045504)."""  # Defines the bot's desc
 GUILD = 348897377400258560  # Defines the guild this bot is intended to be used on. Defaults to my test guild.
 TESTS = []  # Defines an empty list of testing servers.
 TOKEN = os.environ.get("Mudbot_TOKEN")  # Defines the token the bot uses to log in to Discord.
-VERSION = "v3.2"  # Defines the current version of the bot.
+VERSION = "v3.3a"  # Defines the current version of the bot.
 
 
 if TOKEN == os.environ.get("Mudbot_TOKEN"):  # This conditional block sets the base guild to Aether Hunts if
