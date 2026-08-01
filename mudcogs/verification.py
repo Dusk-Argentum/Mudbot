@@ -519,30 +519,40 @@ you."""
             embed.add_field(inline=True, name="Name Changed:", value=" ".join(added_names))
         if "Aether" not in new[1]:
             if "Crystal" in new[1]:
-                embed.add_field(inline=False, name="Crystal Hunts:", value="""Looks like you verified with a \
-character on the Crystal Datacenter!
-We are now offering limited usage of our Discord to the other NA Datacenters, so members from those Datacenters can \
-receive Hunt callouts on Aether while they are visiting!
-Please head to <#591099527667253248> for more information!
+                embed.add_field(inline=False, name="Welcome, Crystal User!", value="""It looks like you've verified \
+with a character on the Crystal Datacenter. You are more than welcome to come join us for hunts on Aether! 
+Please take a look at <#591099527667253248> then head to <#1095159801329229945> to opt-in to content you want to see.
 
-Please also feel free to join your Datacenter's native Hunt Discord for Hunt callouts on your own Datacenter!
-[Invite](https://discord.gg/S8fKQvh)""")  # Gee, I sure hope all these links are up-to-date!
+If you were looking for a Discord that focuses on hunts for the Crystal Datacenter, we suggest you use The Pursuit \
+Discord or the Faloop Discord.
+
+[The Pursuit Invite](https://discord.gg/S8fKQvh)
+[Faloop Invite](https://discord.gg/faloop)""")
+            elif "Dynamis" in new[1]:
+                embed.add_field(inline=False, name="Welcome, Dynamis User!", value="""It looks like you've verified \
+with a character on the Dynamis Datacenter. You are more than welcome to come join us for hunts on Aether! 
+Please take a look at <#591099527667253248> then head to <#1095159801329229945> to opt-in to content you want to see.
+
+If you were looking for a discord that focuses on hunts for the Dynamis Datacenter, we suggest you use the Faloop \
+Discord.
+
+[Faloop Invite](https://discord.gg/faloop)""")
             elif "Primal" in new[1]:
-                embed.add_field(inline=False, name="The Coeurl:", value="""Looks like you verified with a \
-character on the Primal Datacenter!
-We are now offering limited usage of our Discord to the other NA Datacenters, so members from those Datacenters can \
-receive Hunt callouts on Aether while they are visiting!
-Please head to <#591099527667253248> for more information!
+                embed.add_field(inline=False, name="Welcome, Primal User!", value="""It looks like you've verified \
+with a character on the Primal Datacenter. You are more than welcome to come join us for hunts on Aether! 
+Please take a look at <#591099527667253248> then head to <#1095159801329229945> to opt-in to content you want to see.
 
-Please also feel free to join your Datacenter's native Hunt Discord for Hunt callouts on your own Datacenter!
-[Invite](https://discord.gg/k4xNWdV)""")
-            if "Crystal" not in new[1] and "Primal" not in new[1] and new[1] not in accepted_dcs:
-                embed.add_field(inline=False, name="Faloop:", value="""Looks like you verified with a character on \
-a Datacenter that is not in North America!
-Unfortunately, we do not currently offer support for users on non-NA DCs. However, please feel free to join the Faloop \
-server for Hunt callouts for your respective DC!
+If you were looking for a Discord that focuses on hunts for the Primal Datacenter, we suggest you use The Coeurl \
+Discord.
 
-[Invite](https://discord.gg/faloop)""")
+[The Coeurl Invite](https://discord.gg/k4xNWdV)""")
+            if new[1] not in accepted_dcs:
+                embed.add_field(inline=False, name="Welcome, Overseas User!", value="""It looks like you verified \
+with a character that does not have access to the NA Datacluster.
+Unfortunately, we are unable to support users on EU, JP, or OC. Instead, we recommend using the Faloop Discord for \
+Hunts on your DC instead.
+
+[Faloop Invite](https://discord.gg/faloop)""")
         embed.set_footer(icon_url=inter.guild.icon.url, text=inter.guild.name)
         await inter.edit_original_response(embed=embed, view=None)
         await inter.delete_original_response(delay=300)  # Deletes the response after 300 seconds to keep the channel
