@@ -189,7 +189,7 @@ more carefully. You have attempted to verify as the example character.""", title
         for world_entry in data["worlds"]["servers"]:
             worlds_list_top.append(data["worlds"]["servers"][f"{count}"]["name"])
             count += 1
-        if str(inter.author.id) in str(ids):  # Functions in this block execute if the user is not in the database.
+        if str(inter.author.id) in str(ids):  # Functions in this block execute if the user is in the database.
             attributes = ["character_id", "dc", "first", "last", "portrait", "server"]  # Creates a list with the
             # attributes that are the same as the title of each column in the database, for iteration reasons.
             try:
@@ -297,42 +297,44 @@ more carefully. You have attempted to verify as the example character.""", title
                 except (Forbidden, HTTPException):
                     pass
             new_server = disnake.utils.get(inter.guild.roles, name=new[5])  # Same as the DC stuff, but for server.
-            if new_server is not type(None) and new_server.name not in worlds_list_top:
-                with open("worlds.json", "r+") as worlds:
-                    world_update = {f"{len(data['worlds']['servers'])}": {
-                        "name": new[5]
-                    }
-                    }
-                    data["worlds"]["servers"].update(world_update)
-                    worlds.seek(0)
-                    json.dump(data, worlds, indent=4)
-                    worlds.truncate()
-                if new[1] == "Aether":
+            if new_server is not None:  # and new_server.name not in worlds_list_top:
+                if new_server.name not in worlds_list_top:
                     with open("worlds.json", "r+") as worlds:
-                        aether_update = {f"{len(data['worlds']['aether_dc'])}": {
+                        world_update = {f"{len(data['worlds']['servers'])}": {
                             "name": new[5]
                         }
                         }
-                        data["worlds"]["aether_dc"].update(aether_update)
+                        data["worlds"]["servers"].update(world_update)
                         worlds.seek(0)
                         json.dump(data, worlds, indent=4)
                         worlds.truncate()
-                    await inter.guild.create_role(name=new[5])
+                    if new[1] == "Aether":
+                        with open("worlds.json", "r+") as worlds:
+                            aether_update = {f"{len(data['worlds']['aether_dc'])}": {
+                                "name": new[5]
+                            }
+                            }
+                            data["worlds"]["aether_dc"].update(aether_update)
+                            worlds.seek(0)
+                            json.dump(data, worlds, indent=4)
+                            worlds.truncate()
+                        await inter.guild.create_role(name=new[5])
             old_server = disnake.utils.get(inter.guild.roles, name=old[5])
-            if old_server in inter.author.roles:
-                try:
-                    await inter.author.remove_roles(old_server)
-                except (Forbidden, HTTPException):
-                    pass
-            elif old_server not in inter.author.roles:
-                for count, unused in enumerate(data["worlds"]["servers"]):
-                    role = str(data["worlds"]["servers"][str(count)]["name"])
-                    if role in str(inter.author.roles) and role != new_server.name:
-                        old_server = disnake.utils.get(inter.guild.roles, name=role)
-                        try:
-                            await inter.author.remove_roles(old_server)
-                        except (Forbidden, HTTPException):
-                            pass
+            if old_server is not None:
+                if old_server in inter.author.roles:
+                    try:
+                        await inter.author.remove_roles(old_server)
+                    except (Forbidden, HTTPException):
+                        pass
+                elif old_server not in inter.author.roles:
+                    for count, unused in enumerate(data["worlds"]["servers"]):
+                        role = str(data["worlds"]["servers"][str(count)]["name"])
+                        if role in str(inter.author.roles) and role != new_server.name:
+                            old_server = disnake.utils.get(inter.guild.roles, name=role)
+                            try:
+                                await inter.author.remove_roles(old_server)
+                            except (Forbidden, HTTPException):
+                                pass
             if new[1] == "Aether":
                 try:
                     await inter.author.add_roles(new_server)
@@ -417,9 +419,9 @@ more carefully. You have attempted to verify as the example character.""", title
                         json.dump(data, worlds, indent=4)
                         worlds.truncate()
                     await inter.guild.create_role(name=server)
-            server_role = disnake.utils.get(inter.guild.roles, name=server)
             if dc == "Aether":
                 try:
+                    server_role = disnake.utils.get(inter.guild.roles, name=server)
                     await inter.author.add_roles(server_role)
                 except (Forbidden, HTTPException):
                     pass

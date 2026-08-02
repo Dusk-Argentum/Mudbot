@@ -4,3 +4,4 @@
 /__pycache__/
 /characters.db
 /mudcogs/__pycache__/
+/worlds.json
