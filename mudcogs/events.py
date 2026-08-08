@@ -20,10 +20,7 @@ class Events(commands.Cog):  # Defines the class in which all functions in this 
     # while running.
     async def on_slash_command_error(self, inter, error):  # This one is listening for errors when a Slash Command is
         # run.
-        if inter.author.id == self.bot.owner_id:  # This conditional block executes if the person who ran the command
-            # is the owner of the bot.
-            await inter.author.send(f"{type(error)}")  # Sends the raw error type to the owner for use in debugging.
-        raw_error = type(error)  # Renames the error type for use in later logging.
+        raw_error = error  # Renames the error for use in later logging.
         if isinstance(error, CheckFailure):  # Functions in this block execute if the error passed is a CheckFailure,
             # which happens if a disnake check fails to pass.
             if inter.data.name in ["conductor", "spawner"] and "rolerequest" not in inter.channel.name:  # Functions in

@@ -297,7 +297,7 @@ more carefully. You have attempted to verify as the example character.""", title
                 except (Forbidden, HTTPException):
                     pass
             new_server = disnake.utils.get(inter.guild.roles, name=new[5])  # Same as the DC stuff, but for server.
-            if new_server is not None:  # and new_server.name not in worlds_list_top:
+            if new_server is not None:
                 if new_server.name not in worlds_list_top:
                     with open("worlds.json", "r+") as worlds:
                         world_update = {f"{len(data['worlds']['servers'])}": {
