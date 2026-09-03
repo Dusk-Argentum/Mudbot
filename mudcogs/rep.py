@@ -27,6 +27,7 @@ Only functions in Tickets.""", name="conductor")  # Note the "REP/MOD"; this is 
     @commands.has_any_role("Nutty Rep", "Nutty Moderator")
     async def conductor(self, inter, member: disnake.Member):  # Takes a Member as an argument, which can be done
         # via a Mention or with the Member's ID.
+        await inter.response.defer()
         conductor = disnake.utils.get(inter.guild.roles, name="Conductor")
         await member.add_roles(conductor)  # Adds the retrieved Conductor role to the Member.
         embed = disnake.Embed(color=disnake.Color(0x3b9da5),
@@ -38,13 +39,14 @@ Only functions in Tickets.""", name="conductor")  # Note the "REP/MOD"; this is 
         # embed as the A Rank emoji from AH.
         embed.set_footer(icon_url=inter.guild.icon.url, text=inter.guild.name)  # Uses the current guild's icon and
         # name in the footer.
-        await inter.response.send_message(delete_after=300, embed=embed)
+        await inter.response.edit_original_response(delete_after=300, embed=embed)
 
     @commands.slash_command(description="""REP/MOD. Grants the Spawner role to the mentioned Member. \
 Only functions in Tickets.""", name="spawner")
     @commands.contexts(guild=True)
     @commands.has_any_role("Nutty Rep", "Nutty Moderator")
     async def spawner(self, inter, member: disnake.Member):
+        await inter.response.defer()
         spawner = disnake.utils.get(inter.guild.roles, name="Spawner")
         await member.add_roles(spawner)
         embed = disnake.Embed(color=disnake.Color(0x3b9da5),
@@ -55,7 +57,7 @@ Only functions in Tickets.""", name="spawner")
             url="https://cdn.discordapp.com/emojis/758323900219523082.webp?size=48")  # Sets the thumbnail for this
         # embed as the S Rank emoji from AH.
         embed.set_footer(icon_url=inter.guild.icon.url, text=inter.guild.name)
-        await inter.response.send_message(delete_after=300, embed=embed)
+        await inter.response.edit_original_response(delete_after=300, embed=embed)
 
 
 def setup(bot):

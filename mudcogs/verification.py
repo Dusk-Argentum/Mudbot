@@ -186,7 +186,7 @@ more carefully. You have attempted to verify as the example character.""", title
         with open("worlds.json", "r+") as worlds:
             data = json.load(worlds)
         count = 0
-        for world_entry in data["worlds"]["servers"]:
+        for _ in data["worlds"]["servers"]:
             worlds_list_top.append(data["worlds"]["servers"][f"{count}"]["name"])
             count += 1
         if str(inter.author.id) in str(ids):  # Functions in this block execute if the user is in the database.
@@ -484,7 +484,7 @@ you."""
                         old_value.append(f"~~{old_diff[count]}~~")
             for _ in new_value:
                 arrow_value.append("►")
-            if new[1] in accepted_dcs:
+            if new[1] in accepted_dcs and licensed_hunter not in inter.author.roles:
                 arrow_value.append("+")
                 new_value.append(licensed_hunter.mention)
                 old_value.append("** **")
@@ -566,72 +566,59 @@ Lodestone ID.""", name="id_link")  # The two linking commands actually start her
     @commands.contexts(guild=True)
     async def id_link(self, inter, character_id: int = commands.Param(description="Your character's Lodestone ID.",
                                                                       name="id", min_length=1, max_length=9)):
-        embed = disnake.Embed(color=disnake.Color(0x3b9da5), description="Searching for your character...",
-                              title="Please wait...")
-        embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-        embed.set_thumbnail(url=LOADING_IMG)
-        embed.set_footer(icon_url=self.bot.user.avatar.url, text="This may take up to one minute.")  # This usually only
-        # takes a few seconds these days, but it used to take sixteenever.
-        await inter.response.send_message(delete_after=300, embed=embed, ephemeral=True)
-        async with inter.channel.typing():  # This helps to show that the bot has not, in fact, passed away while
-            # doing some web requests.
-            r = requests.get(f"https://na.finalfantasyxiv.com/lodestone/character/{character_id}/")  # Also: /id_link
-            # is officially the faster way to link, because /id_link only makes one web request, while /link makes two!
-            if r.status_code == 403:  # Functions in this block execute if the provided link has a character, but it
-                # is hidden from Mudbot.
-                embed = disnake.Embed(color=disnake.Color(0x9c2c37),
-                                      description=f"""To successfully verify with Mudbot, your must set your \
+        await inter.response.defer()
+        r = requests.get(f"https://na.finalfantasyxiv.com/lodestone/character/{character_id}/")  # Also: /id_link
+        # is officially the faster way to link, because /id_link only makes one web request, while /link makes two!
+        if r.status_code == 403:  # Functions in this block execute if the provided link has a character, but it
+            # is hidden from Mudbot.
+            embed = disnake.Embed(color=disnake.Color(0x9c2c37),
+                                  description=f"""To successfully verify with Mudbot, your must set your \
 Character Profile Page and Character Information: Profile (two different settings) to "All Users".
 You may re-hide your character after verifying.""",
-                                      title="Your character is private!")
-                embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-                embed.set_thumbnail(url=WARNING_IMG)
-                embed.set_footer(icon_url=inter.guild.icon.url,
-                                 text="We hope for your understanding.")
-                await inter.edit_original_response(embed=embed)
-                return
-            elif r.status_code == 404:  # Functions in this block execute if the provided link does not resolve into
-                # an actual character page.
-                embed = disnake.Embed(color=disnake.Color(0x9c2c37),
-                                      description=f"""There was no character with the ID **{character_id}** found.
+                                  title="Your character is private!")
+            embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+            embed.set_thumbnail(url=WARNING_IMG)
+            embed.set_footer(icon_url=inter.guild.icon.url,
+                             text="We hope for your understanding.")
+            await inter.edit_original_response(embed=embed)
+            return
+        elif r.status_code == 404:  # Functions in this block execute if the provided link does not resolve into
+            # an actual character page.
+            embed = disnake.Embed(color=disnake.Color(0x9c2c37),
+                                  description=f"""There was no character with the ID **{character_id}** found.
 Please ensure all inputs were entered properly and try again.""",
-                                      title="Character not found!")
-                embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-                embed.set_thumbnail(url=NOT_FOUND_IMG)
-                embed.set_footer(icon_url=inter.guild.icon.url,
-                                 text="Your ID is in the URL of your character's Lodestone page.")
-                await inter.edit_original_response(embed=embed)
-                return
-            elif r.status_code != 200:
-                embed = disnake.Embed(color=disnake.Color(0x9c2c37),
-                                      description=f"""I wasn't able to find a character...
+                                  title="Character not found!")
+            embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+            embed.set_thumbnail(url=NOT_FOUND_IMG)
+            embed.set_footer(icon_url=inter.guild.icon.url,
+                             text="Your ID is in the URL of your character's Lodestone page.")
+            await inter.edit_original_response(embed=embed)
+            return
+        elif r.status_code != 200:
+            embed = disnake.Embed(color=disnake.Color(0x9c2c37),
+                                  description=f"""I wasn't able to find a character...
 Please ensure all inputs were entered properly and try again.
 Alternatively, ensure your character's Lodestone page is set to be visible to the public.""",
-                                      title="Generic page error code!")  # Kinda ran out of steam with these errors.
-                embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-                embed.set_thumbnail(url=NOT_FOUND_IMG)
-                embed.set_footer(icon_url=inter.guild.icon.url,
-                                 text=f"Error code: {r.status_code}. If this isn't 404, sorry! Please try again later.")
-                await inter.edit_original_response(embed=embed)
-                return
-            await self.link_func(self=self, inter=inter, character_id=character_id)  # Runs the generic link function,
-            # since everything after this point would literally just be copy-pasted. This saves me from needing to
-            # scrutinize both functions if I make a change to one of them. Also, makes the code shorter!
+                                  title="Generic page error code!")  # Kinda ran out of steam with these errors.
+            embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+            embed.set_thumbnail(url=NOT_FOUND_IMG)
+            embed.set_footer(icon_url=inter.guild.icon.url,
+                             text=f"Error code: {r.status_code}. If this isn't 404, sorry! Please try again later.")
+            await inter.edit_original_response(embed=embed)
+            return
+        await self.link_func(self=self, inter=inter, character_id=character_id)  # Runs the generic link function,
+        # since everything after this point would literally just be copy-pasted. This saves me from needing to
+        # scrutinize both functions if I make a change to one of them. Also, makes the code shorter!
 
     @commands.slash_command(description="Shows your current linked information.", name="info")
     @commands.contexts(guild=True)
     async def info(self, inter, member: Union[disnake.Member, disnake.User] = None):  # You can view the linked
         # information for people who are not on the server anymore but are still in the database. This is intended
         # for use for mods, generally, but, eh.
+        await inter.response.defer()
         if member is None:  # Functions in this block execute if the user did not provide a member in the command
             # invocation. Basically, defaults to the user who used the command.
             member = inter.author
-        embed = disnake.Embed(color=disnake.Color(0x3b9da5), description="Looking for that user in my database...",
-                              title="Searching...")
-        embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-        embed.set_thumbnail(url=LOADING_IMG)
-        embed.set_footer(icon_url=self.bot.user.avatar.url, text=f"This should be quick.")
-        await inter.response.send_message(delete_after=300, embed=embed)
         try:
             con = sqlite3.connect("characters.db", timeout=30.0)
         except OperationalError:
@@ -707,12 +694,7 @@ Alternatively, ensure your character's Lodestone page is set to be visible to th
         # Look at these unwieldy arguments! Now do you understand why I split /link and /id_link?
         # Also, this will have to be hard-updated if world names get longer than 13 characters. Surely that will
         # never happen. Surely.
-        embed = disnake.Embed(color=disnake.Color(0x3b9da5), description="Searching for your character...",
-                              title="Please wait...")
-        embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-        embed.set_thumbnail(url=LOADING_IMG)
-        embed.set_footer(icon_url=self.bot.user.avatar.url, text="This may take up to one minute.")
-        await inter.response.send_message(delete_after=300, embed=embed, ephemeral=True)
+        await inter.response.defer()
         first_name = first_name.lower().capitalize().replace("‘", "'")  # This is actually a neat bit of
         # trickery, which I'm going to talk about here because nobody else fucking understands me except you.
         # Some mobile devices replace the default apostrophe character ' with a "smart quote", which is basically
@@ -726,80 +708,80 @@ Alternatively, ensure your character's Lodestone page is set to be visible to th
         # lowercase'd and then capitalized so that, if someone accidentally mixes punctuation in their name, they don't
         # have to retry.
         world_name = world_name.lower().capitalize()
-        async with inter.channel.typing():
-            r = requests.get(
-                f"""https://na.finalfantasyxiv.com/lodestone/character/?q={first_name}+{last_name}
+        r = requests.get(
+            f"""https://na.finalfantasyxiv.com/lodestone/character/?q={first_name}+{last_name}
 &worldname={world_name}""")
-            if r.status_code != 200:
-                embed = disnake.Embed(color=disnake.Color(0x9c2c37), description="Please try again later.",
-                                      title="We're sorry; an error occurred!")
-                embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-                embed.set_thumbnail(url=ERROR_IMG)
-                embed.set_footer(icon_url=self.bot.user.avatar.url, text=f"Error code: {r.status_code}.")
-                await inter.edit_original_response(embed=embed)
-                return
-            html = Soup(r.text, "html.parser")
-            not_found = html.select(".parts__zero")  # This searches for a CSS selector which is used when there
-            # are no results found when searching a character.
-            if not_found:  # Functions in this block execute if there are no results for a character.
+        if r.status_code != 200:
+            embed = disnake.Embed(color=disnake.Color(0x9c2c37), description="Please try again later.",
+                                  title="We're sorry; an error occurred!")
+            embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+            embed.set_thumbnail(url=ERROR_IMG)
+            embed.set_footer(icon_url=self.bot.user.avatar.url, text=f"Error code: {r.status_code}.")
+            await inter.edit_original_response(embed=embed)
+            return
+        html = Soup(r.text, "html.parser")
+        not_found = html.select(".parts__zero")  # This searches for a CSS selector which is used when there
+        # are no results found when searching a character.
+        if not_found:  # Functions in this block execute if there are no results for a character.
+            embed = disnake.Embed(color=disnake.Color(0x9c2c37),
+                                  description=f"""There was no character with the name **{first_name} {last_name}**\
+found on **{world_name}**.
+Please ensure all inputs were entered properly and try again.""",
+                                  title="Character not found!")
+            embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+            embed.set_thumbnail(url=NOT_FOUND_IMG)
+            embed.set_footer(icon_url=inter.guild.icon.url, text="Consider using /id_link instead.")
+            await inter.edit_original_response(embed=embed)
+            return
+        for character in html.select("div.entry"):  # Iterates through every character result returned and finds
+            # the one that has the same first, last, AND world name that was entered.
+            # Mudbot < 3.0 actually didn't check for world name, which was silly of me.
+            name = re.search(r"""entry__name\">([\w'-]{2,15})\s([\w'-]{2,15})<""",
+                            str(character.select(".entry__name")))
+            world = re.search(r"""\"Home World\"></i>(\w{4,13})\s\[""",
+                              str(character.select(".entry__world")))
+            if name is not None and f"{name.group(1)} {name.group(2)}" == f"{first_name} {last_name}" and \
+                    world is not None and f"{world.group(1)}" == f"{world_name}":
+                character = character
+                break  # Stops iterating in the above loop if this is the correct character. Usually only needs to
+                # do one loop, but this stops it from going on and on and on if it finds the correct character
+                # but there's 30 more pages of characters.
+            else:
+                continue
+        else:
+            if len(first_name) < 4 or len(last_name) < 4:  # OK, so: For some reason, the Lodestone is WILDLY
+                # INCONSISTENT with returning correct character names if either your first OR last name is short.
+                # It could really use some fuzzy matching, to be honest. Unfortunately, this problem gets passed
+                # to the user. Some names are just too short to reliably find, and, in lieu of allowing the bot to
+                # loop through a hundred different characters before finding the right one, it just. Doesn't.
                 embed = disnake.Embed(color=disnake.Color(0x9c2c37),
-                                      description=f"""There was no character with the name **{first_name} {last_name}**\
- found on **{world_name}**.
- Please ensure all inputs were entered properly and try again.""",
-                                      title="Character not found!")
+                                      description="""Your character's name is too short to reliably find. \
+Please consider trying again using your Lodestone ID in /id_link.""", title="Character not found!")
+                embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
+                embed.set_thumbnail(url=NOT_FOUND_IMG)
+                embed.set_footer(icon_url=inter.guild.icon.url, text="Bog in, flush out!")
+                await inter.edit_original_response(embed=embed)
+            else:  # Functions in this block execute if there were straight up zero results for the information
+                # the user provided.
+                embed = disnake.Embed(color=disnake.Color(0x9c2c37),
+                                      description=f"""There was no character with the name **{first_name} \
+{last_name}** found on **{world_name}**.
+Please ensure all inputs were entered properly and try again.""", title="Character not found!")
                 embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
                 embed.set_thumbnail(url=NOT_FOUND_IMG)
                 embed.set_footer(icon_url=inter.guild.icon.url, text="Consider using /id_link instead.")
                 await inter.edit_original_response(embed=embed)
-                return
-            for character in html.select("div.entry"):  # Iterates through every character result returned and finds
-                # the one that has the same first, last, AND world name that was entered.
-                # Mudbot < 3.0 actually didn't check for world name, which was silly of me.
-                name = re.search(r"""entry__name\">([\w'-]{2,15})\s([\w'-]{2,15})<""",
-                                str(character.select(".entry__name")))
-                world = re.search(r"""\"Home World\"></i>(\w{4,13})\s\[""",
-                                  str(character.select(".entry__world")))
-                if name is not None and f"{name.group(1)} {name.group(2)}" == f"{first_name} {last_name}" and \
-                        world is not None and f"{world.group(1)}" == f"{world_name}":
-                    character = character
-                    break  # Stops iterating in the above loop if this is the correct character. Usually only needs to
-                    # do one loop, but this stops it from going on and on and on if it finds the correct character
-                    # but there's 30 more pages of characters.
-                else:
-                    continue
-            else:
-                if len(first_name) < 4 or len(last_name) < 4:  # OK, so: For some reason, the Lodestone is WILDLY
-                    # INCONSISTENT with returning correct character names if either your first OR last name is short.
-                    # It could really use some fuzzy matching, to be honest. Unfortunately, this problem gets passed
-                    # to the user. Some names are just too short to reliably find, and, in lieu of allowing the bot to
-                    # loop through a hundred different characters before finding the right one, it just. Doesn't.
-                    embed = disnake.Embed(color=disnake.Color(0x9c2c37),
-                                          description="""Your character's name is too short to reliably find. \
-Please consider trying again using your Lodestone ID in /id_link.""", title="Character not found!")
-                    embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-                    embed.set_thumbnail(url=NOT_FOUND_IMG)
-                    embed.set_footer(icon_url=inter.guild.icon.url, text="Bog in, flush out!")
-                    await inter.edit_original_response(embed=embed)
-                else:  # Functions in this block execute if there were straight up zero results for the information
-                    # the user provided.
-                    embed = disnake.Embed(color=disnake.Color(0x9c2c37),
-                                          description=f"""There was no character with the name **{first_name} \
-{last_name}** found on **{world_name}**.
-Please ensure all inputs were entered properly and try again.""", title="Character not found!")
-                    embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
-                    embed.set_thumbnail(url=NOT_FOUND_IMG)
-                    embed.set_footer(icon_url=inter.guild.icon.url, text="Consider using /id_link instead.")
-                    await inter.edit_original_response(embed=embed)
-                return
-            character_id = re.search(r"/lodestone/character/(\d{1,11})/",
-                                     str(character.select(".entry__link"))).group(1)  # Grabs the character ID from
-            # the returned webpage, which is then...
-            await self.link_func(self=self, inter=inter, character_id=character_id)  # Passed to this function, so it
-            # can find the character's full page in the link_func.
+            return
+        character_id = re.search(r"/lodestone/character/(\d{1,11})/",
+                                 str(character.select(".entry__link"))).group(1)  # Grabs the character ID from
+        # the returned webpage, which is then...
+        await self.link_func(self=self, inter=inter, character_id=character_id)  # Passed to this function, so it
+        # can find the character's full page in the link_func.
 
     @commands.slash_command(description="Unlinks your FFXIV character from your Discord.", name="unlink")
     @commands.contexts(guild=True)
     async def unlink(self, inter):
+        await inter.response.defer()
         embed = disnake.Embed(color=disnake.Color(0x3b9da5),
                               description="Are you sure you want to unlink your accounts?", title="Confirmation")
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
@@ -808,7 +790,7 @@ Please ensure all inputs were entered properly and try again.""", title="Charact
         # This seriously WILL restrict your access to Aether Hunts. It removes ALL of your roles, except ones above
         # Mudbot in the role hierarchy. Which is definitely confusing, at least.
         view = Confirmation()  # A confirmation.
-        await inter.response.send_message(delete_after=300, embed=embed, ephemeral=True, view=view)
+        await inter.response.edit_original_response(delete_after=300, embed=embed, ephemeral=True, view=view)
         await view.wait()
         if Confirmation.forward is False:
             embed = disnake.Embed(color=disnake.Color(0x9c2c37),

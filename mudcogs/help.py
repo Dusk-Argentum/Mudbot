@@ -13,6 +13,7 @@ class Help(commands.Cog):
     @commands.contexts(guild=True)  # A decorator which declares that this command can only be used in guilds, not DMs
     # or Group DMs.
     async def help(self, inter):
+        await inter.response.defer()
         field_count = 0  # Starts a counter of the amount of fields in the message.
         admin = disnake.utils.get(inter.guild.roles, name="Admin")  # Retrieves a Role object from the Interaction's
         # guild named "Admin".
@@ -61,7 +62,7 @@ class Help(commands.Cog):
                          text=f"""Made by @dusk_argentum! | {VERSION}
 Bot avatar by @pixel__toast on Twitter.""")  # Need it to be known that I intentionally didn't update the name of the
         # website. We all know what Twitter is.
-        await inter.response.send_message(delete_after=300, embed=embed)
+        await inter.response.edit_original_response(delete_after=300, embed=embed)
 
 
 def setup(bot):

@@ -63,6 +63,8 @@ class Admin(commands.Cog):  # Declares a class, which is going to be a disnake C
     # Don't worry about it.
     async def gate(self, inter, gate: bool):  # Defines a function, with the gate option being a boolean (True/False)
         # input from the user.
+        await inter.response.defer()  # To prevent Interactions from timing out, this is sent first to give Mudbot
+        # time to react, since Discord only gives bots 3 seconds to respond to Interactions without this.
         with open("server_config.json", "r+") as server_config:  # Opens a file on the host machine.
             data = json.load(server_config)  # Loads the aforementioned file as a JSON object.
             update = {"state": f"{str(gate)}"}  # Updates a line in the JSON object.
@@ -81,13 +83,14 @@ class Admin(commands.Cog):  # Declares a class, which is going to be a disnake C
         embed.set_thumbnail(url=inter.guild.icon)  # Adds a pretty picture to the embed. This one's the guild icon.
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)  # Adds a footer to the embed.
         # This one has the bot's icon and name.
-        await inter.response.send_message(delete_after=300, embed=embed)  # Responds to the initial Interaction by
-        # sending a message with an embed attached, deleting it after 300 seconds.
+        await inter.response.edit_original_response(delete_after=300, embed=embed)  # Edits the deferred Interaction
+        # with the output embed, then deletes it after 300 seconds (5 minutes).
 
     @commands.slash_command(description="ADMIN. Sets the level gate level.", name="level")
     @commands.contexts(guild=True)
     async def level(self, inter, level: int):  # Does a lot of the same as the above function, just with a number
         # instead of a boolean.
+        await inter.response.defer()
         with open("server_config.json", "r+") as server_config:
             data = json.load(server_config)
             update = {"level": f"{str(level)}"}
@@ -101,7 +104,7 @@ class Admin(commands.Cog):  # Declares a class, which is going to be a disnake C
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=inter.guild.icon)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.send_message(delete_after=300, embed=embed)
+        await inter.response.edit_original_response(delete_after=300, embed=embed)
 
 
 def setup(bot):  # Sets up this above Class as a Cog within the bot.

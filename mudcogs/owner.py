@@ -22,11 +22,13 @@ class Owner(commands.Cog):
     @commands.contexts(guild=True)
     async def echo(self, inter, words: str):  # Defines a command which takes the words argument and projects them back
         # out. Looks cooler when I can delete the context message, but that's not possible with Slash Commands.
-        await inter.response.send_message(content=words)
+        await inter.response.defer()
+        await inter.response.edit_original_response(content=words)
 
     @commands.slash_command(description="OWNER. Lists the guilds the bot is on.", name="guilds")
     @commands.contexts(guild=True)
     async def guilds(self, inter):
+        await inter.response.defer()
         embed = disnake.Embed(color=disnake.Color(0x3b9da5),
                              description=f"Leave an undesired guild with /leave.",
                              title="The guilds, as requested.")
@@ -35,11 +37,12 @@ class Owner(commands.Cog):
         for guild in self.bot.guilds:  # Loops through every guild the bot is in and does the below.
             embed.add_field(inline=False, name=guild.id, value=guild.name)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.send_message(delete_after=300, embed=embed)
+        await inter.response.edit_original_response(delete_after=300, embed=embed)
 
     @commands.slash_command(description="OWNER. Leaves the specified server.", name="leave")
     @commands.contexts(guild=True)
     async def leave(self, inter, guild: int):
+        await inter.response.defer()
         guild = self.bot.get_guild(guild)  # Gets the guild by the ID specified in the guild argument.
         await guild.leave()  # Leaves the aforementioned guild.
         embed = disnake.Embed(color=disnake.Color(0x3b9da5),
@@ -48,11 +51,12 @@ class Owner(commands.Cog):
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=inter.author.avatar.url)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.send_message(delete_after=300, embed=embed)
+        await inter.response.edit_original_response(delete_after=300, embed=embed)
 
     @commands.slash_command(description="OWNER. Sets whether the status should rotate.", name="rotate")
     @commands.contexts(guild=True)
     async def rotate(self, inter, rotate: bool):  # Takes rotate boolean (True/False) argument.
+        await inter.response.defer()
         with open("bot_config.json", "r+") as bot_config:  # Opens a file on the host machine in the bot's program
             # directory in the read+ mode (basically a fancy way of saying "do whatever").
             data = json.load(bot_config)  # Loads the file as a JSON object.
@@ -71,12 +75,13 @@ class Owner(commands.Cog):
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=inter.author.avatar.url)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.send_message(delete_after=300, embed=embed)
+        await inter.response.edit_original_response(delete_after=300, embed=embed)
 
     @commands.slash_command(description="OWNER. Sets the status.", name="set")
     @commands.contexts(guild=True)
     async def set(self, inter, status: str):  # Takes the status argument as a custom status to set on the bot.
         # This is where "Playing:" used to go. It's the little text beneath the bot's name on the Member List.
+        await inter.response.defer()
         with open("bot_config.json", "r+") as bot_config:
             data = json.load(bot_config)
             update = {"state": "False"}
@@ -94,7 +99,7 @@ class Owner(commands.Cog):
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=inter.author.avatar.url)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.send_message(delete_after=300, embed=embed)
+        await inter.response.edit_original_response(delete_after=300, embed=embed)
 
 
 def setup(bot):

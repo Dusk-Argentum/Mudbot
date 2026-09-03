@@ -11,6 +11,8 @@ from disnake.ext.commands import CheckFailure, CommandInvokeError, MemberNotFoun
 
 from mudcogs import tasks  # Imports the tasks module, so the bot can do those upon startup.
 
+import traceback
+
 
 class Events(commands.Cog):  # Defines the class in which all functions in this cog are held.
     def __init__(self, bot):  # On initialization of this cog, sets the below variables to be inherited by functions.
@@ -66,7 +68,14 @@ caused the error detailed below."""  # Throws together a bunch of aforementioned
         # field with the exact command invocation... Ish. This looked better in Message Commands.
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)  # Sets the embed footer and fills
         # it with information about the bot.
-        await channel.send(embed=embed)  # Sends the embed in the error log channel.
+        with open("most_recent_exception.txt", "w+") as exception_file:  # Creates an exception text file to write to.
+            exception_file.write(
+                "".join(traceback.format_exception(raw_error))[:200000]
+            )  # Writes the raw traceback to the file that was opened or created.
+        file = disnake.File(
+            "most_recent_exception.txt", filename="most_recent_exception.txt"
+        )  # Defines the opened or created file as a Disnake file to be sent later.
+        await channel.send(embed=embed, file=file)  # Sends the embed in the error log channel.
         embed = disnake.Embed(color=disnake.Color(0x9c2c37), description=f"Error: {error}",
                               title="We're sorry; an error occurred!")  # The following lines build the user-end
         # error message.
