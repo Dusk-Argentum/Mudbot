@@ -62,7 +62,7 @@ class Help(commands.Cog):
                          text=f"""Made by @dusk_argentum! | {VERSION}
 Bot avatar by @pixel__toast on Twitter.""")  # Need it to be known that I intentionally didn't update the name of the
         # website. We all know what Twitter is.
-        await inter.response.edit_original_response(delete_after=300, embed=embed)
+        await inter.edit_original_response(delete_after=300, embed=embed)
 
 
 def setup(bot):

@@ -23,7 +23,7 @@ class Owner(commands.Cog):
     async def echo(self, inter, words: str):  # Defines a command which takes the words argument and projects them back
         # out. Looks cooler when I can delete the context message, but that's not possible with Slash Commands.
         await inter.response.defer()
-        await inter.response.edit_original_response(content=words)
+        await inter.edit_original_response(content=words)
 
     @commands.slash_command(description="OWNER. Lists the guilds the bot is on.", name="guilds")
     @commands.contexts(guild=True)
@@ -37,7 +37,7 @@ class Owner(commands.Cog):
         for guild in self.bot.guilds:  # Loops through every guild the bot is in and does the below.
             embed.add_field(inline=False, name=guild.id, value=guild.name)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.edit_original_response(delete_after=300, embed=embed)
+        await inter.edit_original_response(delete_after=300, embed=embed)
 
     @commands.slash_command(description="OWNER. Leaves the specified server.", name="leave")
     @commands.contexts(guild=True)
@@ -51,7 +51,7 @@ class Owner(commands.Cog):
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=inter.author.avatar.url)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.edit_original_response(delete_after=300, embed=embed)
+        await inter.edit_original_response(delete_after=300, embed=embed)
 
     @commands.slash_command(description="OWNER. Sets whether the status should rotate.", name="rotate")
     @commands.contexts(guild=True)
@@ -75,7 +75,7 @@ class Owner(commands.Cog):
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=inter.author.avatar.url)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.edit_original_response(delete_after=300, embed=embed)
+        await inter.edit_original_response(delete_after=300, embed=embed)
 
     @commands.slash_command(description="OWNER. Sets the status.", name="set")
     @commands.contexts(guild=True)
@@ -99,7 +99,7 @@ class Owner(commands.Cog):
         embed.set_author(icon_url=self.bot.user.avatar.url, name=self.bot.user.name)
         embed.set_thumbnail(url=inter.author.avatar.url)
         embed.set_footer(icon_url=self.bot.user.avatar.url, text=self.bot.user.name)
-        await inter.response.edit_original_response(delete_after=300, embed=embed)
+        await inter.edit_original_response(delete_after=300, embed=embed)
 
 
 def setup(bot):

@@ -39,7 +39,7 @@ Only functions in Tickets.""", name="conductor")  # Note the "REP/MOD"; this is 
         # embed as the A Rank emoji from AH.
         embed.set_footer(icon_url=inter.guild.icon.url, text=inter.guild.name)  # Uses the current guild's icon and
         # name in the footer.
-        await inter.response.edit_original_response(delete_after=300, embed=embed)
+        await inter.edit_original_response(delete_after=300, embed=embed)
 
     @commands.slash_command(description="""REP/MOD. Grants the Spawner role to the mentioned Member. \
 Only functions in Tickets.""", name="spawner")
@@ -57,7 +57,7 @@ Only functions in Tickets.""", name="spawner")
             url="https://cdn.discordapp.com/emojis/758323900219523082.webp?size=48")  # Sets the thumbnail for this
         # embed as the S Rank emoji from AH.
         embed.set_footer(icon_url=inter.guild.icon.url, text=inter.guild.name)
-        await inter.response.edit_original_response(delete_after=300, embed=embed)
+        await inter.edit_original_response(delete_after=300, embed=embed)
 
 
 def setup(bot):

@@ -790,7 +790,7 @@ Please ensure all inputs were entered properly and try again.""", title="Charact
         # This seriously WILL restrict your access to Aether Hunts. It removes ALL of your roles, except ones above
         # Mudbot in the role hierarchy. Which is definitely confusing, at least.
         view = Confirmation()  # A confirmation.
-        await inter.response.edit_original_response(delete_after=300, embed=embed, ephemeral=True, view=view)
+        await inter.edit_original_response(delete_after=300, embed=embed, ephemeral=True, view=view)
         await view.wait()
         if Confirmation.forward is False:
             embed = disnake.Embed(color=disnake.Color(0x9c2c37),
